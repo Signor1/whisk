@@ -1,0 +1,83 @@
+{
+  "name": "@signordev/whisk-react",
+  "version": "0.0.1",
+  "description": "Whisk React — embeddable USDC send widget components, hooks, and providers built on Circle App Kit.",
+  "license": "MIT",
+  "author": "SignorDev (https://github.com/Signor1)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Signor1/whisk.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/Signor1/whisk#readme",
+  "bugs": {
+    "url": "https://github.com/Signor1/whisk/issues"
+  },
+  "keywords": [
+    "whisk",
+    "react",
+    "usdc",
+    "widget",
+    "embed",
+    "circle",
+    "app-kit"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./headless": {
+      "types": "./dist/headless.d.ts",
+      "import": "./dist/headless.js",
+      "require": "./dist/headless.cjs"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@circle-fin/adapter-viem-v2": "^1.0.0",
+    "@circle-fin/app-kit": "^1.0.0",
+    "@signordev/whisk-core": "workspace:*",
+    "clsx": "^2.1.1",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.5"
+  }
+}

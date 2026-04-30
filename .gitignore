@@ -1,0 +1,24 @@
+node_modules
+dist
+.next
+.turbo
+out
+coverage
+*.log
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# Build/cache
+*.tsbuildinfo
+
+# Editor
+.vscode
+.idea
+
+# Defense in depth
+*.dat
+recovery*
+entity_secret*
+entity-secret*
