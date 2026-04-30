@@ -1,5 +1,5 @@
 /**
- * Public type surface for `@signordev/whisk-core`. Keeping this module free
+ * Public type surface for `@strimz/whisk-core`. Keeping this module free
  * of runtime code lets `import type` users avoid bundling anything.
  */
 export type { Chain, ChainKind, ChainNetwork } from "./chain.js";

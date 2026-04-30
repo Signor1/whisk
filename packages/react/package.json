@@ -1,7 +1,7 @@
 {
-  "name": "@signordev/whisk-react",
+  "name": "@strimz/whisk-react",
   "version": "0.0.1",
-  "description": "Whisk React — embeddable USDC send widget components, hooks, and providers built on Circle App Kit.",
+  "description": "Whisk React — embeddable USDC send & bridge widget components, hooks, and providers built on Circle App Kit.",
   "license": "MIT",
   "author": "SignorDev (https://github.com/Signor1)",
   "repository": {
@@ -20,7 +20,10 @@
     "widget",
     "embed",
     "circle",
-    "app-kit"
+    "app-kit",
+    "bridge",
+    "send",
+    "stablecoin"
   ],
   "type": "module",
   "sideEffects": [
@@ -40,7 +43,13 @@
       "import": "./dist/headless.js",
       "require": "./dist/headless.cjs"
     },
-    "./styles.css": "./dist/styles.css"
+    "./tailwind": {
+      "types": "./dist/tailwind.d.ts",
+      "import": "./dist/tailwind.js",
+      "require": "./dist/tailwind.cjs"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./fonts.css": "./dist/fonts.css"
   },
   "files": [
     "dist",
@@ -62,16 +71,20 @@
   },
   "peerDependencies": {
     "react": ">=18",
-    "react-dom": ">=18"
+    "react-dom": ">=18",
+    "@tanstack/react-query": ">=5"
   },
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.0.0",
     "@circle-fin/app-kit": "^1.0.0",
-    "@signordev/whisk-core": "workspace:*",
+    "@strimz/whisk-core": "workspace:*",
     "clsx": "^2.1.1",
-    "viem": "^2.21.0"
+    "lucide-react": "^0.460.0",
+    "viem": "^2.21.0",
+    "wagmi": "^2.13.0"
   },
   "devDependencies": {
+    "@tanstack/react-query": "^5.59.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
