@@ -1,0 +1,60 @@
+/**
+ * Whisk fonts — opt-in stylesheet.
+ *
+ * Whisk's `styles.css` references Inter and Geist Mono in its font stack
+ * but deliberately does not load them: a widget that auto-imports fonts
+ * forces a network request from every host app it gets embedded in,
+ * which is poor citizenship.
+ *
+ * Import this file separately if your host app does not already load
+ * Inter / Geist Mono and you want Whisk to render in its intended type:
+ *
+ * ```ts
+ * import "@strimz/whisk-react/styles.css";
+ * import "@strimz/whisk-react/fonts.css";
+ * ```
+ *
+ * Both fonts ship variable-weight files from the official Vercel /
+ * rsms.me CDNs so you get the full weight range from one URL each.
+ * If you self-host or already use a font CDN, skip this file and the
+ * widget falls back gracefully to your existing fonts.
+ */
+
+/* ============================================================
+   Inter — body / UI
+   Variable font: weight 100–900, slnt -10–0
+   ============================================================ */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    url("https://rsms.me/inter/font-files/InterVariable.woff2?v=4.0")
+      format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    url("https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.0")
+      format("woff2");
+}
+
+/* ============================================================
+   Geist Mono — addresses, txHashes, anything monospaced
+   Variable font: weight 100–900
+   ============================================================ */
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src:
+    url("https://vercel.com/font/geist-mono/GeistMono.woff2") format("woff2");
+}

@@ -1,5 +1,5 @@
 {
-  "name": "@signordev/whisk-core",
+  "name": "@strimz/whisk-core",
   "version": "0.0.1",
   "description": "Whisk core — framework-agnostic engine, types, errors, and state machine for the Whisk USDC widget.",
   "license": "MIT",

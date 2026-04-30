@@ -1,0 +1,555 @@
+/**
+ * Whisk default theme — warm earth-tone system.
+ *
+ * Every visual property routes through a CSS variable so host apps can
+ * override anything from a single `:root` rule without forking any
+ * component. The brand tokens (bg, fg, fg-muted, border, primary,
+ * primary-fg) match the system shipped in the design spec; semantic
+ * tokens (success, warning, destructive) are added as harmonised
+ * defaults you can override the same way.
+ *
+ * Implementation note: tokens are stored as hex so devs can paste any
+ * colour format when overriding. Where opacity composition is needed
+ * (focus rings, hover states), components use `color-mix(in srgb, ...)`
+ * — supported in every evergreen browser (Safari 16.4+, Chrome 111+,
+ * Firefox 113+).
+ */
+
+[data-whisk] {
+  /* ==========================================================
+     Brand surfaces  (override these to match your app)
+     ========================================================== */
+  --whisk-bg: #e4e2d4; /* cream */
+  --whisk-fg: #6e4d54; /* wine — primary text */
+  --whisk-fg-muted: #7a5c63; /* soft wine — labels, hints */
+  --whisk-border: #ca9b8f; /* rose */
+
+  /* ==========================================================
+     Brand accent  (CTA, primary button)
+     ========================================================== */
+  --whisk-primary: #d65c3c; /* terracotta */
+  --whisk-primary-fg: #fbf8ee; /* off-white text on accent */
+
+  /* ==========================================================
+     Derived surfaces  (default to brand; override if needed)
+     ========================================================== */
+  --whisk-card: var(--whisk-bg);
+  --whisk-card-fg: var(--whisk-fg);
+  --whisk-input: var(--whisk-border);
+  --whisk-ring: var(--whisk-primary);
+
+  /* ==========================================================
+     Semantic state  (harmonised with the warm palette)
+     ========================================================== */
+  --whisk-success: #6b8e4e; /* moss green */
+  --whisk-warning: #d69a3c; /* warm amber */
+  --whisk-destructive: #b23a3a; /* deep terracotta-red */
+  --whisk-destructive-fg: #fbf8ee;
+
+  /* ==========================================================
+     Shape
+     ========================================================== */
+  --whisk-radius: 0.625rem; /* fields, buttons */
+  --whisk-radius-sm: 0.375rem; /* badges */
+  --whisk-radius-lg: 1rem; /* card */
+  --whisk-border-w: 0.5px; /* refined hairline borders */
+
+  /* ==========================================================
+     Type  (host apps that already load Inter / Geist Mono get
+     them; others fall back to native system fonts cleanly.)
+     ========================================================== */
+  --whisk-font:
+    "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  --whisk-font-mono:
+    "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+}
+
+/* ============================================================
+   Dark mode — cream/wine relationship inverts.
+   Sage finally has a real home as muted text on deep wine.
+   ============================================================ */
+
+[data-whisk].dark,
+[data-whisk][data-whisk-theme="dark"] {
+  --whisk-bg: #2a1d21; /* deep wine */
+  --whisk-fg: #e4e2d4; /* cream becomes text */
+  --whisk-fg-muted: #b4ad97; /* sage */
+  --whisk-border: #5c3f46; /* mid wine */
+  --whisk-input: #5c3f46;
+  --whisk-card: #33232a; /* slightly lighter than bg for elevation */
+  --whisk-card-fg: var(--whisk-fg);
+
+  /* Accent stays constant — the through-line in both modes. */
+  --whisk-primary: #d65c3c;
+  --whisk-primary-fg: #fbf8ee;
+
+  /* Semantic colours nudge brighter for dark backgrounds. */
+  --whisk-success: #87a468;
+  --whisk-warning: #e1a854;
+  --whisk-destructive: #c84a4a;
+  --whisk-destructive-fg: #fbf8ee;
+}
+
+/* ============================================================
+   Container
+   ============================================================ */
+
+[data-whisk] {
+  font-family: var(--whisk-font);
+  color: var(--whisk-fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-whisk] *,
+[data-whisk] *::before,
+[data-whisk] *::after {
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+
+[data-whisk] .whisk-card {
+  background: var(--whisk-card);
+  color: var(--whisk-card-fg);
+  border: var(--whisk-border-w) solid var(--whisk-border);
+  border-radius: var(--whisk-radius-lg);
+  padding: 1.375rem;
+  box-shadow:
+    0 1px 2px 0 color-mix(in srgb, var(--whisk-fg) 6%, transparent),
+    0 8px 28px -10px color-mix(in srgb, var(--whisk-fg) 10%, transparent);
+}
+
+/* ============================================================
+   Header (brand wordmark + optional eyebrow tag)
+   ============================================================ */
+
+[data-whisk] .whisk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+[data-whisk] .whisk-header__mark {
+  font-family: var(--whisk-font);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--whisk-fg);
+  text-transform: lowercase;
+}
+
+[data-whisk] .whisk-header__tag {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--whisk-fg-muted);
+}
+
+/* ============================================================
+   Field box — inset-label pattern (Stripe-style)
+   ============================================================ */
+
+[data-whisk] .whisk-fieldbox {
+  border: var(--whisk-border-w) solid var(--whisk-border);
+  border-radius: var(--whisk-radius);
+  padding: 0.5rem 0.75rem;
+  background: var(--whisk-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+[data-whisk] .whisk-fieldbox:focus-within {
+  border-color: var(--whisk-ring);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--whisk-ring) 18%, transparent);
+}
+
+[data-whisk] .whisk-fieldbox--invalid {
+  border-color: var(--whisk-destructive);
+}
+
+[data-whisk] .whisk-fieldbox__label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-fieldbox__control {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+[data-whisk] .whisk-fieldbox__control input,
+[data-whisk] .whisk-fieldbox__control select {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--whisk-fg);
+  font-family: inherit;
+  width: 100%;
+}
+
+[data-whisk] .whisk-fieldbox__control input::placeholder {
+  color: color-mix(in srgb, var(--whisk-fg-muted) 60%, transparent);
+}
+
+[data-whisk] .whisk-fieldbox__control input:disabled {
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-fieldbox__suffix {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-fieldbox--amount .whisk-fieldbox__control input {
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+[data-whisk] .whisk-fieldbox--mono .whisk-fieldbox__control input {
+  font-family: var(--whisk-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+[data-whisk] .whisk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--whisk-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.06s ease,
+    box-shadow 0.16s ease,
+    opacity 0.12s ease;
+}
+
+[data-whisk] .whisk-button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--whisk-bg),
+    0 0 0 4px color-mix(in srgb, var(--whisk-ring) 70%, transparent);
+}
+
+[data-whisk] .whisk-button:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+[data-whisk] .whisk-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-whisk] .whisk-button--primary {
+  background: var(--whisk-primary);
+  color: var(--whisk-primary-fg);
+}
+[data-whisk] .whisk-button--primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-primary) 92%, black);
+}
+
+[data-whisk] .whisk-button--secondary {
+  background: color-mix(in srgb, var(--whisk-border) 50%, transparent);
+  color: var(--whisk-fg);
+  border-color: transparent;
+}
+[data-whisk] .whisk-button--secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-border) 75%, transparent);
+}
+
+[data-whisk] .whisk-button--ghost {
+  background: transparent;
+  color: var(--whisk-fg);
+}
+[data-whisk] .whisk-button--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-border) 35%, transparent);
+}
+
+[data-whisk] .whisk-button--outline {
+  background: transparent;
+  border-color: var(--whisk-border);
+  color: var(--whisk-fg);
+}
+[data-whisk] .whisk-button--outline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-border) 30%, transparent);
+}
+
+[data-whisk] .whisk-button--sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+/* ============================================================
+   Inputs
+   ============================================================ */
+
+[data-whisk] .whisk-input {
+  display: block;
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  border: var(--whisk-border-w) solid var(--whisk-input);
+  border-radius: var(--whisk-radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+[data-whisk] .whisk-input:focus {
+  border-color: var(--whisk-ring);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--whisk-ring) 25%, transparent);
+}
+
+[data-whisk] .whisk-input--mono {
+  font-family: var(--whisk-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+}
+
+[data-whisk] .whisk-input--invalid {
+  border-color: var(--whisk-destructive);
+}
+[data-whisk] .whisk-input--invalid:focus {
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--whisk-destructive) 25%, transparent);
+}
+
+/* ============================================================
+   Field labels and helpers
+   ============================================================ */
+
+[data-whisk] .whisk-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--whisk-fg-muted);
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+[data-whisk] .whisk-help {
+  font-size: 0.75rem;
+  color: var(--whisk-fg-muted);
+  margin-top: 0.375rem;
+}
+[data-whisk] .whisk-help--error {
+  color: var(--whisk-destructive);
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+
+[data-whisk] .whisk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: var(--whisk-radius-sm);
+}
+
+[data-whisk] .whisk-badge--success {
+  background: color-mix(in srgb, var(--whisk-success) 18%, transparent);
+  color: var(--whisk-success);
+}
+[data-whisk] .whisk-badge--warning {
+  background: color-mix(in srgb, var(--whisk-warning) 18%, transparent);
+  color: var(--whisk-warning);
+}
+[data-whisk] .whisk-badge--error {
+  background: color-mix(in srgb, var(--whisk-destructive) 18%, transparent);
+  color: var(--whisk-destructive);
+}
+[data-whisk] .whisk-badge--muted {
+  background: color-mix(in srgb, var(--whisk-border) 35%, transparent);
+  color: var(--whisk-fg-muted);
+}
+
+/* ============================================================
+   Mono helper
+   ============================================================ */
+
+[data-whisk] .whisk-mono {
+  font-family: var(--whisk-font-mono);
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   Step rail — connecting line + animated state per step.
+   ============================================================ */
+
+[data-whisk] .whisk-step-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding-left: 1.25rem;
+  margin: 0;
+  list-style: none;
+}
+
+[data-whisk] .whisk-step-rail::before {
+  content: "";
+  position: absolute;
+  left: 0.4375rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: color-mix(in srgb, var(--whisk-border) 65%, transparent);
+}
+
+[data-whisk] .whisk-step {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-step--active {
+  color: var(--whisk-fg);
+  font-weight: 500;
+}
+
+[data-whisk] .whisk-step--success {
+  color: var(--whisk-success);
+}
+
+[data-whisk] .whisk-step--error {
+  color: var(--whisk-destructive);
+}
+
+[data-whisk] .whisk-step__dot {
+  position: relative;
+  margin-left: -1.25rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 9999px;
+  background: var(--whisk-bg);
+  border: 2px solid color-mix(in srgb, var(--whisk-fg-muted) 50%, transparent);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-whisk] .whisk-step--active .whisk-step__dot {
+  border-color: var(--whisk-primary);
+  background: var(--whisk-primary);
+  animation: whisk-pulse 1.4s ease-in-out infinite;
+}
+
+[data-whisk] .whisk-step--success .whisk-step__dot {
+  border-color: var(--whisk-success);
+  background: var(--whisk-success);
+  color: var(--whisk-primary-fg);
+}
+
+[data-whisk] .whisk-step--error .whisk-step__dot {
+  border-color: var(--whisk-destructive);
+  background: var(--whisk-destructive);
+  color: var(--whisk-destructive-fg);
+}
+
+@keyframes whisk-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--whisk-primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 4px
+      color-mix(in srgb, var(--whisk-primary) 15%, transparent);
+  }
+}
+
+/* ============================================================
+   Spinner
+   ============================================================ */
+
+[data-whisk] .whisk-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--whisk-fg-muted) 30%, transparent);
+  border-top-color: var(--whisk-primary);
+  animation: whisk-spin 0.6s linear infinite;
+}
+
+@keyframes whisk-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   Footer (powered-by)
+   ============================================================ */
+
+[data-whisk] .whisk-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding-top: 0.875rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--whisk-border) 50%, transparent);
+  font-size: 0.6875rem;
+  color: var(--whisk-fg-muted);
+  letter-spacing: 0.02em;
+}
+
+[data-whisk] .whisk-footer__mark {
+  font-family: var(--whisk-font);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--whisk-fg);
+  text-transform: lowercase;
+}
