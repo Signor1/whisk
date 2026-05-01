@@ -1,10 +1,6 @@
-<div align="center">
-
 <img src="./logo.png" alt="Whisk Logo" width="200" />
 
-<h1>Whisk</h1>
-
-</div>
+# Whisk
 
 **Embeddable USDC send & bridge widget, built on Circle App Kit.**
 
