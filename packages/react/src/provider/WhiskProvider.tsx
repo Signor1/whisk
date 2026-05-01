@@ -11,8 +11,14 @@ export type WhiskProviderProps = {
   /** The frozen config from `createWhiskConfig(...)`. */
   config: WhiskClientConfig;
   /**
-   * Theme mode. Defaults to following the host app — `"system"` reads the
-   * `prefers-color-scheme` media query at first paint.
+   * Theme mode.
+   *
+   * - `"system"` (default): no `data-whisk-theme` attribute is rendered.
+   *   The widget defers to the user's OS preference via the
+   *   `@media (prefers-color-scheme: dark)` rule in `styles.css`. SSR-
+   *   safe: server and client produce identical markup.
+   * - `"light"` / `"dark"`: pinned. `data-whisk-theme` is set explicitly
+   *   so dev intent always beats OS preference.
    */
   theme?: "light" | "dark" | "system";
   /**
@@ -73,8 +79,6 @@ export function WhiskProvider({
   const evmFactory = config.wallets.find((w) => w.kind === "evm");
   const solanaFactory = config.wallets.find((w) => w.kind === "solana");
   if (solanaFactory) {
-    // Don't throw — the dev may have left it in for forward-compat. Warn
-    // once at mount; the engine still works for any EVM chain in `chains`.
     if (typeof console !== "undefined") {
       console.warn(
         "[whisk] Solana wallet adapter is staged for v0.2; ignoring solana() factory for now.",
@@ -98,9 +102,13 @@ export function WhiskProvider({
     [externalQueryClient],
   );
 
-  // Compute theme attribute once. `data-whisk` scopes our default CSS;
-  // `data-whisk-theme="dark"` lets host apps target `.dark` overrides.
-  const themeAttr = resolveTheme(theme);
+  // ─── Theme attribute resolution ───────────────────────────────────────
+  //
+  // Deterministic and SSR-safe. No `window.matchMedia`, no `useEffect`,
+  // no flash. The CSS layer in `styles.css` handles dark mode via a
+  // `prefers-color-scheme` media query when no explicit theme is set;
+  // explicit `light`/`dark` here pins the colour scheme.
+  const themeAttr = theme === "system" ? undefined : theme;
 
   return (
     <WhiskContext.Provider value={contextValue}>
@@ -109,7 +117,7 @@ export function WhiskProvider({
           <div
             data-whisk=""
             data-whisk-theme={themeAttr}
-            className={themeAttr === "dark" ? "dark" : undefined}
+            className={theme === "dark" ? "dark" : undefined}
           >
             {children}
           </div>
@@ -117,12 +125,4 @@ export function WhiskProvider({
       </QueryClientProvider>
     </WhiskContext.Provider>
   );
-}
-
-function resolveTheme(theme: "light" | "dark" | "system"): "light" | "dark" {
-  if (theme !== "system") return theme;
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
 }

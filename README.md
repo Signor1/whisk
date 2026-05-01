@@ -1,3 +1,5 @@
+![Whisk Logo](./logo.png)
+
 # Whisk
 
 **Embeddable USDC send & bridge widget, built on Circle App Kit.**
