@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Lock } from "lucide-react";
 import {
   chainInfo,
   type Chain,
@@ -22,15 +22,35 @@ export type InputStepProps = {
   onQuote: (recipient: ResolvedRecipient, amount: string) => void;
   /** Last user-facing error to render under the form (resolution etc.). */
   error?: string;
+
+  /* ----- Controlled props (host app pins the value) ----- */
+  /** Lock the amount field. When set, user can't edit. */
+  amount?: string;
+  /** Lock the recipient field. When set, user can't edit. */
+  recipient?: string;
+  /** Lock the source chain selector. */
+  sourceChain?: Chain;
+  /** Lock the destination chain selector. */
+  destinationChain?: Chain;
+
+  /* ----- Uncontrolled defaults ----- */
+  /** Initial amount value; user can still edit. Ignored if `amount` is set. */
+  defaultAmount?: string;
+  /** Initial recipient value. Ignored if `recipient` is set. */
+  defaultRecipient?: string;
+
+  /* ----- Change callbacks ----- */
+  onAmountChange?: (value: string) => void;
+  onRecipientChange?: (value: string) => void;
+  onSourceChainChange?: (chain: Chain) => void;
+  onDestinationChainChange?: (chain: Chain) => void;
 };
 
 /**
- * Compose-the-transfer step. From / To chain pickers up top, recipient
- * field below, then a prominent amount field. Layout follows the
- * design-spec mockup: inset labels, hairline borders, generous spacing.
- *
- * Every transition out of this step (resolve, quote) is signalled
- * through props so the parent owns the engine plumbing.
+ * Compose-the-transfer step. From / To chain pickers, recipient field,
+ * amount field, then a single CTA. Each field can be locked from the
+ * outside via a controlled prop (host app pins it) or initialised via
+ * `default*` props.
  */
 export function InputStep({
   resolvedRecipient,
@@ -38,26 +58,62 @@ export function InputStep({
   onResolve,
   onQuote,
   error,
+  amount: amountProp,
+  recipient: recipientProp,
+  sourceChain: sourceChainProp,
+  destinationChain: destinationChainProp,
+  defaultAmount,
+  defaultRecipient,
+  onAmountChange,
+  onRecipientChange,
+  onSourceChainChange,
+  onDestinationChainChange,
 }: InputStepProps) {
   const { config } = useWhiskContext();
 
-  const initialSource = config.defaultSourceChain ?? config.chains[0]!;
-  const initialDest = config.defaultDestinationChain ?? initialSource;
-  const [sourceChain, setSourceChain] = useState<Chain>(initialSource);
-  const [destChain, setDestChain] = useState<Chain>(initialDest);
-  const [recipientInput, setRecipientInput] = useState("");
-  const [amount, setAmount] = useState("");
+  const initialSource =
+    sourceChainProp ?? config.defaultSourceChain ?? config.chains[0]!;
+  const initialDest =
+    destinationChainProp ?? config.defaultDestinationChain ?? initialSource;
+
+  // Source / destination — controlled if prop given, else local state
+  // initialised from defaults.
+  const [sourceChainState, setSourceChainState] =
+    useState<Chain>(initialSource);
+  const [destChainState, setDestChainState] = useState<Chain>(initialDest);
+
+  const sourceChain = sourceChainProp ?? sourceChainState;
+  const destChain = destinationChainProp ?? destChainState;
+
+  const sourceLocked = sourceChainProp !== undefined;
+  const destLocked = destinationChainProp !== undefined;
+
+  // Recipient — controlled if prop given, else local state initialised
+  // from default.
+  const [recipientState, setRecipientState] = useState(defaultRecipient ?? "");
+  const recipientInput = recipientProp ?? recipientState;
+  const recipientLocked = recipientProp !== undefined;
+
+  // Amount — same pattern.
+  const [amountState, setAmountState] = useState(defaultAmount ?? "");
+  const amount = amountProp ?? amountState;
+  const amountLocked = amountProp !== undefined;
 
   const destInfo = chainInfo(destChain);
 
-  // If the destination chain changes after a recipient was resolved on the
-  // previous one, drop the resolution — addresses don't always cross
-  // chains validly (EVM hex vs Solana base58).
+  // If the destination chain changes after a recipient was resolved on
+  // the previous one, drop the resolution — but only when the recipient
+  // isn't locked by the host (locked recipients are the host's
+  // responsibility to keep valid for the chosen chain).
   useEffect(() => {
-    if (resolvedRecipient && resolvedRecipient.chain !== destChain) {
-      setRecipientInput("");
+    if (
+      resolvedRecipient &&
+      resolvedRecipient.chain !== destChain &&
+      !recipientLocked
+    ) {
+      setRecipientState("");
     }
-  }, [destChain, resolvedRecipient]);
+  }, [destChain, resolvedRecipient, recipientLocked]);
 
   const recipientLooksValid = useMemo(
     () => destInfo.addressRegex.test(recipientInput.trim()),
@@ -75,6 +131,27 @@ export function InputStep({
     !busy && recipientInput.trim().length > 0 && !resolvedRecipient;
   const canReview = !busy && Boolean(resolvedRecipient) && amountValid;
 
+  const handleSourceChange = (chain: Chain) => {
+    if (sourceLocked) return;
+    setSourceChainState(chain);
+    onSourceChainChange?.(chain);
+  };
+  const handleDestChange = (chain: Chain) => {
+    if (destLocked) return;
+    setDestChainState(chain);
+    onDestinationChainChange?.(chain);
+  };
+  const handleRecipientChange = (value: string) => {
+    if (recipientLocked) return;
+    setRecipientState(value);
+    onRecipientChange?.(value);
+  };
+  const handleAmountChange = (value: string) => {
+    if (amountLocked) return;
+    setAmountState(value);
+    onAmountChange?.(value);
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
       <div
@@ -85,10 +162,16 @@ export function InputStep({
         }}
       >
         <FieldBoxSelect
-          label="From"
+          label={
+            sourceLocked ? (
+              <LockedLabel text="From" />
+            ) : (
+              "From"
+            )
+          }
           value={sourceChain}
-          onChange={(e) => setSourceChain(e.target.value as Chain)}
-          disabled={busy}
+          onChange={(e) => handleSourceChange(e.target.value as Chain)}
+          disabled={busy || sourceLocked}
         >
           {config.chains.map((c) => (
             <option key={c} value={c}>
@@ -97,10 +180,10 @@ export function InputStep({
           ))}
         </FieldBoxSelect>
         <FieldBoxSelect
-          label="To"
+          label={destLocked ? <LockedLabel text="To" /> : "To"}
           value={destChain}
-          onChange={(e) => setDestChain(e.target.value as Chain)}
-          disabled={busy}
+          onChange={(e) => handleDestChange(e.target.value as Chain)}
+          disabled={busy || destLocked}
         >
           {config.chains.map((c) => (
             <option key={c} value={c}>
@@ -112,7 +195,9 @@ export function InputStep({
 
       <FieldBox
         label={
-          resolvedRecipient ? (
+          recipientLocked ? (
+            <LockedLabel text="Recipient" />
+          ) : resolvedRecipient ? (
             <span
               style={{
                 display: "inline-flex",
@@ -131,8 +216,9 @@ export function InputStep({
         invalid={recipientInvalid}
         placeholder={destInfo.addressHint}
         value={recipientInput}
-        onChange={(e) => setRecipientInput(e.target.value)}
-        disabled={busy || Boolean(resolvedRecipient)}
+        onChange={(e) => handleRecipientChange(e.target.value)}
+        disabled={busy || recipientLocked || Boolean(resolvedRecipient)}
+        readOnly={recipientLocked}
       />
       {recipientInvalid ? (
         <div className="whisk-help whisk-help--error" style={{ marginTop: 0 }}>
@@ -141,7 +227,7 @@ export function InputStep({
       ) : null}
 
       <FieldBox
-        label="Amount"
+        label={amountLocked ? <LockedLabel text="Amount" /> : "Amount"}
         amount
         suffix="USDC"
         type="number"
@@ -150,9 +236,10 @@ export function InputStep({
         min="0"
         placeholder="0.00"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={(e) => handleAmountChange(e.target.value)}
         invalid={Boolean(amount && !amountValid)}
-        disabled={busy}
+        disabled={busy || amountLocked}
+        readOnly={amountLocked}
       />
 
       <div style={{ marginTop: "0.5rem" }}>
@@ -193,5 +280,25 @@ export function InputStep({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Inline label decorator that signals "this field is locked by the host
+ * app" with a tiny lock icon. Helps users understand the read-only state
+ * isn't a bug.
+ */
+function LockedLabel({ text }: { text: string }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.25rem",
+      }}
+    >
+      <Lock size={9} strokeWidth={2.5} style={{ opacity: 0.7 }} />
+      {text}
+    </span>
   );
 }
