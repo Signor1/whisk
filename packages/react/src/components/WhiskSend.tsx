@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Chain, Quote, WhiskState } from "@strimz/whisk-core";
 import { useWhisk } from "../hooks/useWhisk.js";
+import { AccountChip, NetworkPill } from "./ui/AccountChip.js";
 import { Card } from "./ui/Card.js";
 import { Footer } from "./ui/Footer.js";
 import {
@@ -152,6 +153,12 @@ export function WhiskSend({
         gap: "1rem",
       }}
     >
+      {connected && state.kind !== "disconnected" ? (
+        <div className="whisk-account-row">
+          <NetworkPill />
+          <AccountChip explorerChain={sourceChain} />
+        </div>
+      ) : null}
       {renderStep(state, actions, connected, {
         amount,
         recipient,

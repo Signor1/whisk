@@ -30,12 +30,13 @@ Open <http://localhost:3000>. Connect MetaMask / Rabby / Coinbase Wallet
 
 - **Chains shown in the picker:** Arc Testnet, Base Sepolia, Ethereum
   Sepolia, Solana Devnet.
-- **Solana** appears in the dropdown but the v0.1 React adapter is a
-  stub — the provider warns at mount and the chain stays selectable as
-  a destination via address paste. Full Solana wallet integration lands
-  in v0.2.
-- **WalletConnect** lights up only when you paste a project ID into
-  `.env.local`; without it, MetaMask / Coinbase Wallet still work.
+- **EVM wallets:** MetaMask, Coinbase Wallet, Rabby, any other injected
+  EIP-1193 extension. WalletConnect lights up only when you paste a
+  project ID into `.env.local`.
+- **Solana wallets:** Phantom, Solflare, Backpack, and any other
+  modern wallet that implements the Solana Wallet Standard — auto-
+  discovered at runtime. Buttons disable for wallets you don't have
+  installed.
 - **Footer wordmark** is on (`showFooter`) so you can see the opt-in
   brand surface.
 

@@ -5,16 +5,23 @@ import {
   WhiskProvider,
   createWhiskConfig,
   evm,
-  solana,
 } from "@strimz/whisk-react";
 
 /**
  * Client boundary holding the Whisk + wagmi + react-query provider stack.
  *
- * The Solana factory is included so the chain picker shows Solana Devnet
- * as a destination option; the engine still warns and ignores it at
- * mount time per the v0.1 stub. Once `solana()` is fully wired (v0.2)
- * this same call site keeps working without changes.
+ * Solana support is deferred to v0.2. App Kit's `adapter-solana-kit`
+ * factory wraps browser wallets as a `TransactionSendingSigner`, which
+ * `@solana/signers`' `partiallySignTransactionMessageWithSigners`
+ * explicitly excludes — so the fee-payer signature never gets attached
+ * and the transaction reverts on submission. Whisk has the workaround
+ * (a hand-built kit `TransactionPartialSigner` in `useWhiskAdapter.ts`),
+ * but the underlying flow still hits transient RPC issues on Devnet
+ * that are out of our control. We'll re-enable once App Kit ships a fix
+ * for the signer-kind mismatch.
+ *
+ * Re-enabling later only needs `solana()` added back to `wallets` and
+ * `Solana_Devnet` back into `chains` — no other code changes required.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   const config = useMemo(
@@ -25,14 +32,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
             appName: "Whisk Example",
           }),
-          solana(),
         ],
-        chains: [
-          "Arc_Testnet",
-          "Base_Sepolia",
-          "Ethereum_Sepolia",
-          "Solana_Devnet",
-        ],
+        chains: ["Arc_Testnet", "Base_Sepolia", "Ethereum_Sepolia"],
         defaultSourceChain: "Arc_Testnet",
         defaultDestinationChain: "Arc_Testnet",
         appLabel: "whisk-example-nextjs-basic",

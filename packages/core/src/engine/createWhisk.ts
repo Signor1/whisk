@@ -5,6 +5,8 @@ import {
   type BridgeStep,
   type EstimateResult,
   type SendParams as AppKitSendParams,
+  type SwapParams as AppKitSwapParams,
+  type SwapResult as AppKitSwapResult,
 } from "@circle-fin/app-kit";
 import type { WhiskConfig } from "../types/config.js";
 import type { ResolvedRecipient } from "../types/recipient.js";
@@ -19,7 +21,7 @@ import {
   fromAppKitFees,
   sumFees,
 } from "../fees/calculate.js";
-import { explorerTxUrl } from "../chains/registry.js";
+import { chainInfo, explorerTxUrl } from "../chains/registry.js";
 import {
   ConfigError,
   InvalidAddressError,
@@ -32,6 +34,9 @@ import type {
   SendListeners,
   SendParams,
   SendResult,
+  SwapEstimate,
+  SwapParams,
+  SwapResult,
   WhiskEngine,
 } from "./types.js";
 
@@ -108,16 +113,14 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
           };
         }
 
-        const appKitParams: BridgeParams = {
-          from: { adapter, chain: route.sourceChain },
-          to: {
-            adapter,
-            chain: route.destinationChain,
-            recipientAddress: params.recipient.address,
-            useForwarder: config.useForwarder ?? false,
-          },
-          amount: params.amount,
-        };
+        const appKitParams = buildBridgeParams(
+          adapter,
+          route.sourceChain,
+          route.destinationChain,
+          params.recipient.address,
+          params.amount,
+          config.useForwarder ?? false,
+        );
         const estimate: EstimateResult = await kit.estimateBridge(appKitParams);
         const protocolFees = fromAppKitFees(
           estimate.fees as ReadonlyArray<AppKitEstimateFee>,
@@ -174,6 +177,44 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
         };
       }
     },
+
+    /* ---------------------------------------------------------------- *
+     *  estimateSwap                                                     *
+     * ---------------------------------------------------------------- */
+
+    async estimateSwap(params: SwapParams): Promise<SwapEstimate> {
+      try {
+        const appKitParams = buildAppKitSwapParams(params);
+        // App Kit's `estimateSwap` is the safe pre-flight; output and
+        // fees come from the swap provider's quote API.
+        const estimate = await kit.estimateSwap(appKitParams);
+        return mapAppKitSwapEstimate(estimate, params);
+      } catch (err) {
+        throw toWhiskError(err, "Swap estimate failed");
+      }
+    },
+
+    /* ---------------------------------------------------------------- *
+     *  swap                                                             *
+     * ---------------------------------------------------------------- */
+
+    async swap(params: SwapParams): Promise<SwapResult> {
+      try {
+        const appKitParams = buildAppKitSwapParams(params);
+        const result = (await kit.swap(appKitParams)) as AppKitSwapResult;
+        return {
+          kind: "success",
+          txHash: result.txHash,
+          explorerUrl: result.explorerUrl,
+          amountOut: result.amountOut,
+        };
+      } catch (err) {
+        return {
+          kind: "failure",
+          error: toWhiskError(err, "Swap failed"),
+        };
+      }
+    },
   };
 
   return engine;
@@ -182,6 +223,106 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
 /* -------------------------------------------------------------------------- */
 /*  Internal helpers                                                          */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * Build the `BridgeParams` App Kit expects, choosing same-adapter mode for
+ * same-ecosystem hops (EVM → EVM) and the **Forwarder** pattern for cross-
+ * ecosystem hops (Solana ↔ EVM).
+ *
+ * Why: App Kit's adapters are ecosystem-scoped — a Viem adapter rejects
+ * Solana chains, a SolanaKit adapter rejects EVM chains. Cross-ecosystem
+ * estimates and sends therefore can't reuse the source adapter on the
+ * destination side. The forwarder pattern (`to: { recipientAddress, chain,
+ * useForwarder: true }`) lets Circle's Iris service do the destination mint
+ * — the user signs only the source-side burn. Same-ecosystem callers can
+ * still opt into the forwarder via `config.useForwarder` to skip the
+ * destination-side gas; cross-ecosystem callers always get it.
+ */
+function buildBridgeParams(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: any,
+  sourceChain: ReturnType<typeof chainInfo>["chain"],
+  destinationChain: ReturnType<typeof chainInfo>["chain"],
+  recipientAddress: string,
+  amount: string,
+  preferForwarder: boolean,
+): BridgeParams {
+  const sameEcosystem =
+    chainInfo(sourceChain).kind === chainInfo(destinationChain).kind;
+  const useForwarder = sameEcosystem ? preferForwarder : true;
+
+  if (sameEcosystem && !useForwarder) {
+    return {
+      from: { adapter, chain: sourceChain },
+      to: { adapter, chain: destinationChain, recipientAddress },
+      amount,
+    } as BridgeParams;
+  }
+
+  // Forwarder path — destination has no adapter.
+  return {
+    from: { adapter, chain: sourceChain },
+    to: { chain: destinationChain, recipientAddress, useForwarder: true },
+    amount,
+  } as BridgeParams;
+}
+
+/**
+ * Translate Whisk's `SwapParams` into App Kit's `SwapParams`. The
+ * shapes are 90% the same; we just pass through the adapter, chain,
+ * tokens, and slippage / stop-limit if set.
+ */
+function buildAppKitSwapParams(p: SwapParams): AppKitSwapParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cfg: any = { kitKey: p.kitKey };
+  if (p.slippageBps !== undefined) cfg.slippageBps = p.slippageBps;
+  if (p.stopLimit !== undefined) cfg.stopLimit = p.stopLimit;
+  return {
+    from: { adapter: p.adapter.appKitAdapter, chain: p.chain },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tokenIn: p.tokenIn as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tokenOut: p.tokenOut as any,
+    amountIn: p.amountIn,
+    config: cfg,
+  } as AppKitSwapParams;
+}
+
+/**
+ * Map App Kit's `SwapEstimate` into Whisk's normalised shape. App Kit
+ * returns `estimatedOutput` and `stopLimit` as `{ amount, token }` —
+ * we flatten so consumers see a string-only API.
+ */
+function mapAppKitSwapEstimate(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  estimate: any,
+  params: SwapParams,
+): SwapEstimate {
+  const fees = Array.isArray(estimate?.fees) ? estimate.fees : [];
+  const entries = fees.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (f: any) => ({
+      kind: typeof f.type === "string" ? f.type : "provider",
+      amount: typeof f.amount === "string" ? f.amount : "0",
+      token: typeof f.token === "string" ? f.token : params.tokenIn,
+    }),
+  );
+  const total = entries
+    .filter((e: { token: string }) => e.token === params.tokenIn)
+    .reduce(
+      (acc: number, e: { amount: string }) =>
+        acc + (Number.isFinite(parseFloat(e.amount)) ? parseFloat(e.amount) : 0),
+      0,
+    );
+  return {
+    amountIn: estimate?.amountIn ?? params.amountIn,
+    amountOut: estimate?.estimatedOutput?.amount ?? "0",
+    minOutput: estimate?.stopLimit?.amount ?? estimate?.estimatedOutput?.amount ?? "0",
+    tokenIn: params.tokenIn,
+    tokenOut: params.tokenOut,
+    fees: { total: total.toString(), entries },
+  };
+}
 
 function addCustomFee(amount: string, customFee?: string): string {
   if (!customFee) return amount;
@@ -271,16 +412,14 @@ async function runSend(
     }
 
     // Bridge route
-    const appKitParams: BridgeParams = {
-      from: { adapter, chain: route.sourceChain },
-      to: {
-        adapter,
-        chain: route.destinationChain,
-        recipientAddress: params.recipient.address,
-        useForwarder: config.useForwarder ?? false,
-      },
-      amount: params.amount,
-    };
+    const appKitParams = buildBridgeParams(
+      adapter,
+      route.sourceChain,
+      route.destinationChain,
+      params.recipient.address,
+      params.amount,
+      config.useForwarder ?? false,
+    );
     const result = await kit.bridge(appKitParams);
     return mapAppKitBridgeResult(result, listeners);
   } catch (err) {

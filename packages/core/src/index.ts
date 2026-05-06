@@ -49,6 +49,7 @@ export { DEFAULT_TOKEN, isBridgeRoute, isSendRoute } from "./types/index.js";
 // Chains
 export {
   chainInfo,
+  chainByEvmId,
   allChains,
   chainsByNetwork,
   chainsByKind,

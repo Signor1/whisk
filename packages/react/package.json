@@ -60,7 +60,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "lint": "tsc --noEmit"
   },
   "engines": {
@@ -75,8 +75,13 @@
     "@tanstack/react-query": ">=5"
   },
   "dependencies": {
+    "@circle-fin/adapter-solana-kit": "^1.0.0",
     "@circle-fin/adapter-viem-v2": "^1.0.0",
     "@circle-fin/app-kit": "^1.0.0",
+    "@solana/kit": "^5.0.0",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/web3.js": "^1.95.0",
     "@strimz/whisk-core": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",

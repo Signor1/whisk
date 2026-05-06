@@ -1,9 +1,15 @@
 import { createConfig, http } from "wagmi";
 import {
+  arbitrum,
   arbitrumSepolia,
+  avalanche,
   avalancheFuji,
+  base,
   baseSepolia,
+  mainnet,
+  optimism,
   optimismSepolia,
+  polygon,
   polygonAmoy,
   sepolia,
 } from "wagmi/chains";
@@ -12,7 +18,7 @@ import {
   injected,
   walletConnect,
 } from "wagmi/connectors";
-import type { Chain as ViemChain } from "viem";
+import { defineChain, type Chain as ViemChain } from "viem";
 import type { Chain } from "@strimz/whisk-core";
 import type { EvmAdapterFactory } from "../types.js";
 
@@ -20,68 +26,353 @@ import type { EvmAdapterFactory } from "../types.js";
  * Whisk → viem chain mapping. Every Whisk EVM chain has a viem `Chain`
  * counterpart so wagmi knows which RPCs to use, what the chain ID is, etc.
  *
- * Chains where Circle App Kit ships native support but viem does not have
- * a built-in entry (e.g. Arc Testnet, Monad Testnet, Unichain Sepolia)
- * get an inline `defineChain` declaration so devs can use them without
- * additional setup.
+ * For chains where viem ships a built-in entry whose `id` matches App
+ * Kit's chain ID, we reuse the viem export. For chains where there's a
+ * mismatch (e.g. Sonic Testnet — App Kit uses 14601, viem ships 57054)
+ * or no viem entry at all (Arc Testnet, HyperEVM Testnet, etc.) we
+ * `defineChain` inline. The chain IDs here MUST match App Kit's table —
+ * any drift breaks `useSwitchChain` / wallet-side network detection.
  */
-const ARC_TESTNET_CHAIN: ViemChain = {
-  id: 421_614, // placeholder — Arc Testnet chain ID confirmed at runtime by App Kit
+
+/* ─── Custom EVM chain definitions (App Kit-aligned) ─────────────────── */
+
+const ARC_TESTNET = defineChain({
+  id: 5_042_002,
   name: "Arc Testnet",
   nativeCurrency: { name: "Arc", symbol: "ARC", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://rpc.arc-testnet.network"] },
-  },
+  rpcUrls: { default: { http: ["https://rpc.testnet.arc.network"] } },
   blockExplorers: {
     default: { name: "Arc Explorer", url: "https://testnet.arcscan.app" },
   },
   testnet: true,
-};
+});
 
-const MONAD_TESTNET: ViemChain = {
+const ARC_MAINNET = defineChain({
+  id: 5_042_001,
+  name: "Arc",
+  nativeCurrency: { name: "Arc", symbol: "ARC", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.arc.network"] } },
+  blockExplorers: {
+    default: { name: "Arc Explorer", url: "https://arcscan.app" },
+  },
+});
+
+const CODEX_MAINNET = defineChain({
+  id: 81_224,
+  name: "Codex",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.codex.xyz"] } },
+  blockExplorers: {
+    default: { name: "Codex Explorer", url: "https://explorer.codex.xyz" },
+  },
+});
+
+const CODEX_TESTNET = defineChain({
+  id: 812_242,
+  name: "Codex Testnet",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.codex-stg.xyz"] } },
+  blockExplorers: {
+    default: { name: "Codex Explorer", url: "https://explorer.codex-stg.xyz" },
+  },
+  testnet: true,
+});
+
+const HYPER_EVM_MAINNET = defineChain({
+  id: 999,
+  name: "HyperEVM",
+  nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.hyperliquid.xyz/evm"] } },
+  blockExplorers: {
+    default: {
+      name: "Hyperliquid Explorer",
+      url: "https://app.hyperliquid.xyz/explorer",
+    },
+  },
+});
+
+const HYPER_EVM_TESTNET = defineChain({
+  id: 998,
+  name: "HyperEVM Testnet",
+  nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.hyperliquid-testnet.xyz/evm"] } },
+  blockExplorers: {
+    default: {
+      name: "Hyperliquid Explorer",
+      url: "https://app.hyperliquid-testnet.xyz/explorer",
+    },
+  },
+  testnet: true,
+});
+
+const INK_MAINNET = defineChain({
+  id: 57_073,
+  name: "Ink",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc-gel.inkonchain.com"] } },
+  blockExplorers: {
+    default: { name: "Ink Explorer", url: "https://explorer.inkonchain.com" },
+  },
+});
+
+const INK_TESTNET = defineChain({
+  id: 763_373,
+  name: "Ink Sepolia",
+  nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc-gel-sepolia.inkonchain.com"] } },
+  blockExplorers: {
+    default: {
+      name: "Ink Explorer",
+      url: "https://explorer-sepolia.inkonchain.com",
+    },
+  },
+  testnet: true,
+});
+
+const LINEA_MAINNET = defineChain({
+  id: 59_144,
+  name: "Linea",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.linea.build"] } },
+  blockExplorers: {
+    default: { name: "LineaScan", url: "https://lineascan.build" },
+  },
+});
+
+const LINEA_SEPOLIA = defineChain({
+  id: 59_141,
+  name: "Linea Sepolia",
+  nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.sepolia.linea.build"] } },
+  blockExplorers: {
+    default: { name: "LineaScan", url: "https://sepolia.lineascan.build" },
+  },
+  testnet: true,
+});
+
+const MONAD_MAINNET = defineChain({
+  id: 143,
+  name: "Monad",
+  nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.monad.xyz"] } },
+  blockExplorers: {
+    default: { name: "Monad Explorer", url: "https://monadexplorer.com" },
+  },
+});
+
+const MONAD_TESTNET = defineChain({
   id: 10_143,
   name: "Monad Testnet",
   nativeCurrency: { name: "Monad", symbol: "MON", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://testnet-rpc.monad.xyz"] },
-  },
+  rpcUrls: { default: { http: ["https://testnet-rpc.monad.xyz"] } },
   blockExplorers: {
-    default: { name: "Monad Explorer", url: "https://testnet.monadexplorer.com" },
+    default: {
+      name: "Monad Explorer",
+      url: "https://testnet.monadexplorer.com",
+    },
   },
   testnet: true,
-};
+});
 
-const UNICHAIN_SEPOLIA: ViemChain = {
+const PLUME_MAINNET = defineChain({
+  id: 98_866,
+  name: "Plume",
+  nativeCurrency: { name: "Plume", symbol: "PLUME", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.plume.org"] } },
+  blockExplorers: {
+    default: { name: "Plume Explorer", url: "https://explorer.plume.org" },
+  },
+});
+
+const PLUME_TESTNET = defineChain({
+  id: 98_867,
+  name: "Plume Testnet",
+  nativeCurrency: { name: "Plume", symbol: "PLUME", decimals: 18 },
+  rpcUrls: { default: { http: ["https://testnet-rpc.plume.org"] } },
+  blockExplorers: {
+    default: {
+      name: "Plume Explorer",
+      url: "https://testnet-explorer.plume.org",
+    },
+  },
+  testnet: true,
+});
+
+const SEI_MAINNET = defineChain({
+  id: 1_329,
+  name: "Sei",
+  nativeCurrency: { name: "Sei", symbol: "SEI", decimals: 18 },
+  rpcUrls: { default: { http: ["https://evm-rpc.sei-apis.com"] } },
+  blockExplorers: {
+    default: { name: "Seitrace", url: "https://seitrace.com" },
+  },
+});
+
+const SEI_TESTNET = defineChain({
+  id: 1_328,
+  name: "Sei Testnet",
+  nativeCurrency: { name: "Sei", symbol: "SEI", decimals: 18 },
+  rpcUrls: { default: { http: ["https://evm-rpc-testnet.sei-apis.com"] } },
+  blockExplorers: {
+    default: { name: "Seitrace", url: "https://seitrace.com" },
+  },
+  testnet: true,
+});
+
+const SONIC_MAINNET = defineChain({
+  id: 146,
+  name: "Sonic",
+  nativeCurrency: { name: "Sonic", symbol: "S", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.soniclabs.com"] } },
+  blockExplorers: {
+    default: { name: "Sonic Explorer", url: "https://sonicscan.org" },
+  },
+});
+
+const SONIC_TESTNET = defineChain({
+  id: 14_601,
+  name: "Sonic Testnet",
+  nativeCurrency: { name: "Sonic", symbol: "S", decimals: 18 },
+  rpcUrls: { default: { http: ["https://rpc.testnet.soniclabs.com"] } },
+  blockExplorers: {
+    default: { name: "Sonic Explorer", url: "https://testnet.sonicscan.org" },
+  },
+  testnet: true,
+});
+
+const UNICHAIN_MAINNET = defineChain({
+  id: 130,
+  name: "Unichain",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://mainnet.unichain.org"] } },
+  blockExplorers: {
+    default: { name: "Uniscan", url: "https://uniscan.xyz" },
+  },
+});
+
+const UNICHAIN_SEPOLIA = defineChain({
   id: 1_301,
   name: "Unichain Sepolia",
-  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: {
-    default: { http: ["https://sepolia.unichain.org"] },
-  },
+  nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://sepolia.unichain.org"] } },
   blockExplorers: {
-    default: { name: "Uniscan", url: "https://sepolia.uniscan.xyz" },
+    default: { name: "Uniscan", url: "https://unichain-sepolia.blockscout.com" },
   },
   testnet: true,
-};
+});
+
+const WORLD_CHAIN_MAINNET = defineChain({
+  id: 480,
+  name: "World Chain",
+  nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://worldchain-mainnet.g.alchemy.com/public"] } },
+  blockExplorers: {
+    default: { name: "Worldscan", url: "https://worldscan.org" },
+  },
+});
+
+const WORLD_CHAIN_SEPOLIA = defineChain({
+  id: 4_801,
+  name: "World Chain Sepolia",
+  nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
+  rpcUrls: { default: { http: ["https://worldchain-sepolia.g.alchemy.com/public"] } },
+  blockExplorers: {
+    default: { name: "Worldscan", url: "https://sepolia.worldscan.org" },
+  },
+  testnet: true,
+});
+
+const XDC_MAINNET = defineChain({
+  id: 50,
+  name: "XDC",
+  nativeCurrency: { name: "XDC", symbol: "XDC", decimals: 18 },
+  rpcUrls: { default: { http: ["https://erpc.xdcrpc.com"] } },
+  blockExplorers: {
+    default: { name: "XDC Explorer", url: "https://explorer.xdc.network" },
+  },
+});
+
+const XDC_APOTHEM = defineChain({
+  id: 51,
+  name: "XDC Apothem",
+  nativeCurrency: { name: "TXDC", symbol: "TXDC", decimals: 18 },
+  rpcUrls: { default: { http: ["https://erpc.apothem.network"] } },
+  blockExplorers: {
+    default: { name: "Apothem Explorer", url: "https://explorer.apothem.network" },
+  },
+  testnet: true,
+});
+
+/* ─── Whisk → viem mapping ────────────────────────────────────────────── */
 
 const VIEM_CHAIN_BY_WHISK: Partial<Record<Chain, ViemChain>> = {
+  // Mainnets
+  Arbitrum: arbitrum,
+  Avalanche: avalanche,
+  Base: base,
+  Codex: CODEX_MAINNET,
+  Ethereum: mainnet,
+  HyperEVM: HYPER_EVM_MAINNET,
+  Ink: INK_MAINNET,
+  Linea: LINEA_MAINNET,
+  Monad: MONAD_MAINNET,
+  Optimism: optimism,
+  Plume: PLUME_MAINNET,
+  Polygon: polygon,
+  Sei: SEI_MAINNET,
+  Sonic: SONIC_MAINNET,
+  Unichain: UNICHAIN_MAINNET,
+  World_Chain: WORLD_CHAIN_MAINNET,
+  XDC: XDC_MAINNET,
+  // Testnets
   Arbitrum_Sepolia: arbitrumSepolia,
-  Arc_Testnet: ARC_TESTNET_CHAIN,
+  Arc_Testnet: ARC_TESTNET,
   Avalanche_Fuji: avalancheFuji,
   Base_Sepolia: baseSepolia,
+  Codex_Testnet: CODEX_TESTNET,
   Ethereum_Sepolia: sepolia,
+  HyperEVM_Testnet: HYPER_EVM_TESTNET,
+  Ink_Testnet: INK_TESTNET,
+  Linea_Sepolia: LINEA_SEPOLIA,
   Monad_Testnet: MONAD_TESTNET,
   Optimism_Sepolia: optimismSepolia,
+  Plume_Testnet: PLUME_TESTNET,
   Polygon_Amoy_Testnet: polygonAmoy,
+  Sei_Testnet: SEI_TESTNET,
+  Sonic_Testnet: SONIC_TESTNET,
   Unichain_Sepolia: UNICHAIN_SEPOLIA,
+  World_Chain_Sepolia: WORLD_CHAIN_SEPOLIA,
+  XDC_Apothem: XDC_APOTHEM,
+  // Arc mainnet — also defined here in case devs opt in via createWhiskConfig
+  // even though no Whisk Chain literal currently exposes it; kept around so
+  // we can add an "Arc" Chain literal without re-touching this file.
+  // (referenced by `arcMainnet` but not bound to a Whisk Chain key yet)
 };
+
+// Suppress unused-variable warning for the Arc mainnet definition kept
+// for future re-binding. eslint-disable-next-line is intentional.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _arcMainnet = ARC_MAINNET;
+
+/**
+ * Look up the viem `Chain` definition for a Whisk chain.
+ *
+ * Used by `useWhiskAccount.switchChain` to build a
+ * `wallet_addEthereumChain` parameter so MetaMask offers to add the
+ * network when the user doesn't already have it configured. Without
+ * this, switching to a long-tail chain (Arc Testnet, Monad Testnet,
+ * HyperEVM Testnet, etc.) hard-fails on first use.
+ */
+export function viemChainForWhisk(chain: Chain): ViemChain | undefined {
+  return VIEM_CHAIN_BY_WHISK[chain];
+}
 
 export type EvmFactoryOptions = {
   /**
    * The Whisk chains this EVM adapter should be configured for. Only EVM
    * chains in this list get a viem chain entry in the wagmi config; non-
    * EVM chains (Solana) are silently ignored. If omitted, the wagmi
-   * config will include the most common testnets (Arc, Sepolia, Base).
+   * config will include a balanced set of common testnets.
    */
   chains?: Chain[];
 

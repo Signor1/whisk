@@ -24,9 +24,16 @@ export type {
 export {
   useWhisk,
   useWhiskAdapter,
+  useWhiskAccount,
   useWhiskContext,
+  useChainBalance,
 } from "./hooks/index.js";
-export type { UseWhiskResult, WhiskActions } from "./hooks/index.js";
+export type {
+  UseWhiskResult,
+  WhiskActions,
+  UseWhiskAccountResult,
+  ChainBalance,
+} from "./hooks/index.js";
 
 export type {
   Chain,
