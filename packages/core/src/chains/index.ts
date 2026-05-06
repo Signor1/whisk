@@ -1,5 +1,6 @@
 export {
   chainInfo,
+  chainByEvmId,
   allChains,
   chainsByNetwork,
   chainsByKind,

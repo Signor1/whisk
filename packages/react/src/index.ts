@@ -50,10 +50,16 @@ export {
   Button,
   Input,
   Field,
+  FieldBox,
+  FieldBoxSelect,
   Card,
   Badge,
   ChainPicker,
   StepRail,
+  AccountChip,
+  NetworkPill,
+  Banner,
+  BalanceLine,
 } from "./components/index.js";
 export type {
   WhiskSendProps,
@@ -62,18 +68,29 @@ export type {
   ButtonSize,
   InputProps,
   FieldProps,
+  FieldBoxProps,
+  FieldBoxSelectProps,
   BadgeProps,
   ChainPickerProps,
   StepRailProps,
+  BannerProps,
+  BalanceLineProps,
 } from "./components/index.js";
 
 // Hooks (also exposed in /headless for tree-shake-friendly imports)
 export {
   useWhisk,
   useWhiskAdapter,
+  useWhiskAccount,
   useWhiskContext,
+  useChainBalance,
 } from "./hooks/index.js";
-export type { UseWhiskResult, WhiskActions } from "./hooks/index.js";
+export type {
+  UseWhiskResult,
+  WhiskActions,
+  UseWhiskAccountResult,
+  ChainBalance,
+} from "./hooks/index.js";
 
 // Convenience re-exports of the most common core types so consumers don't
 // need a second import for things like `Chain` or `Quote`.

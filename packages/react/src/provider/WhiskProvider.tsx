@@ -1,10 +1,23 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider, type Config as WagmiConfig } from "wagmi";
+import { useContext, useMemo, type ReactNode } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  WagmiProvider,
+  WagmiContext,
+  type Config as WagmiConfig,
+} from "wagmi";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
 import { createWhisk, ConfigError } from "@strimz/whisk-core";
 import type { WhiskClientConfig } from "../config/types.js";
+import type { SolanaConfig } from "../config/adapters/solana.js";
 import { WhiskContext, type WhiskContextValue } from "./context.js";
 
 export type WhiskProviderProps = {
@@ -24,22 +37,33 @@ export type WhiskProviderProps = {
   /**
    * Reuse a host-app QueryClient instead of letting Whisk create its own.
    * Pass your existing client when Whisk is mounted inside an app that
-   * already runs `@tanstack/react-query`.
+   * already runs `@tanstack/react-query`. Whisk also auto-detects an
+   * outer `<QueryClientProvider>` and reuses its client — explicit pass
+   * is just clearer when you know the layout.
    */
   queryClient?: QueryClient;
   children: ReactNode;
 };
 
 /**
- * Mount Whisk's provider stack. From the inside out:
+ * Mount Whisk's provider stack.
  *
- * 1. `WhiskContext` — exposes the engine + resolved config to hooks.
- * 2. `WagmiProvider` — only mounted when an `evm()` factory is in
- *    `config.wallets`. Apps that omit `evm()` don't pay for wagmi here.
- * 3. `QueryClientProvider` — wagmi v2 requires a TanStack Query client.
+ * Whisk reads the surrounding tree and only mounts what's missing:
  *
- * The provider is the single attachment point — every Whisk component
- * (drop-in, modal, headless) renders inside this tree.
+ * - **Outer `<WagmiProvider>` detected** → reuse it, skip the inner one.
+ *   `evm()` becomes optional in this case; the host's wagmi config is
+ *   what drives EVM operations.
+ * - **Outer `<QueryClientProvider>` detected** → reuse its client.
+ * - **Otherwise** → mount our own using configs from `evm()` and the
+ *   optional `queryClient` prop.
+ *
+ * Solana's `<ConnectionProvider>` + `<WalletProvider>` is mounted only
+ * when `solana()` is in `config.wallets`. Apps that don't touch Solana
+ * pay nothing for it.
+ *
+ * Provider order from inside out: children → Solana wrappers (when
+ * `solana()` is present) → WagmiProvider (when no outer one) →
+ * QueryClientProvider (when no outer one) → WhiskContext.
  */
 export function WhiskProvider({
   config,
@@ -73,31 +97,43 @@ export function WhiskProvider({
     [engine, config],
   );
 
-  // Surface unsupported wallet adapters at mount rather than at first
-  // operation. The Solana factory is intentionally a stub in v0.1 — fail
-  // loud rather than silently.
   const evmFactory = config.wallets.find((w) => w.kind === "evm");
   const solanaFactory = config.wallets.find((w) => w.kind === "solana");
-  if (solanaFactory) {
-    if (typeof console !== "undefined") {
-      console.warn(
-        "[whisk] Solana wallet adapter is staged for v0.2; ignoring solana() factory for now.",
-      );
-    }
+  const solanaConfig = solanaFactory?.config as SolanaConfig | undefined;
+
+  /* ── Detect outer providers ───────────────────────────────────────
+   *
+   * `useContext(WagmiContext)` is null when not inside a `<WagmiProvider>`
+   * — that's the BYO signal.
+   *
+   * `useQueryClient()` throws when not inside `<QueryClientProvider>`,
+   * so we wrap it. The hook is still called unconditionally on every
+   * render, satisfying the rules of hooks.
+   */
+  const outerWagmiConfig = useContext(WagmiContext);
+  const hasOuterWagmi = !!outerWagmiConfig;
+
+  let outerQueryClient: QueryClient | undefined;
+  try {
+    outerQueryClient = useQueryClient();
+  } catch {
+    outerQueryClient = undefined;
   }
-  if (!evmFactory) {
+
+  if (!evmFactory && !hasOuterWagmi) {
     throw new ConfigError(
-      "WhiskProvider: no supported wallet adapter present. Add evm() to config.wallets.",
+      "WhiskProvider: include evm() in config.wallets, OR mount this provider inside an existing <WagmiProvider>. EVM hooks require a wagmi context to run.",
     );
   }
 
-  // wagmi config is opaque to the public type; the React layer narrows
-  // it here at the boundary where it's consumed.
-  const wagmiConfig = evmFactory.config as WagmiConfig;
+  // Only build our own wagmi tree if no outer one exists.
+  const ourWagmiConfig: WagmiConfig | undefined =
+    !hasOuterWagmi && evmFactory
+      ? (evmFactory.config as WagmiConfig)
+      : undefined;
 
-  // Reuse the host's QueryClient when supplied; otherwise spin up an
-  // isolated one whose lifetime tracks this provider mount.
-  const queryClient = useMemo(
+  // QueryClient: prefer outer, then host-supplied prop, then our own.
+  const ourQueryClient = useMemo(
     () => externalQueryClient ?? new QueryClient(),
     [externalQueryClient],
   );
@@ -110,19 +146,44 @@ export function WhiskProvider({
   // explicit `light`/`dark` here pins the colour scheme.
   const themeAttr = theme === "system" ? undefined : theme;
 
+  let inner: ReactNode = (
+    <div
+      data-whisk=""
+      data-whisk-theme={themeAttr}
+      className={theme === "dark" ? "dark" : undefined}
+    >
+      {children}
+    </div>
+  );
+
+  // Solana stack — innermost so EVM hooks above it can read wagmi state
+  // without traversing through Solana's context.
+  if (solanaConfig) {
+    inner = (
+      <ConnectionProvider endpoint={solanaConfig.endpoint}>
+        <WalletProvider
+          wallets={solanaConfig.wallets}
+          autoConnect={solanaConfig.autoConnect}
+        >
+          {inner}
+        </WalletProvider>
+      </ConnectionProvider>
+    );
+  }
+
+  // Mount our own WagmiProvider only when no outer one exists.
+  if (ourWagmiConfig) {
+    inner = <WagmiProvider config={ourWagmiConfig}>{inner}</WagmiProvider>;
+  }
+
+  // Mount our own QueryClientProvider only when no outer one exists.
+  if (!outerQueryClient) {
+    inner = (
+      <QueryClientProvider client={ourQueryClient}>{inner}</QueryClientProvider>
+    );
+  }
+
   return (
-    <WhiskContext.Provider value={contextValue}>
-      <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>
-          <div
-            data-whisk=""
-            data-whisk-theme={themeAttr}
-            className={theme === "dark" ? "dark" : undefined}
-          >
-            {children}
-          </div>
-        </WagmiProvider>
-      </QueryClientProvider>
-    </WhiskContext.Provider>
+    <WhiskContext.Provider value={contextValue}>{inner}</WhiskContext.Provider>
   );
 }

@@ -1,5 +1,6 @@
 import type { AdapterContext } from "@circle-fin/app-kit";
 import type { Chain } from "../types/chain.js";
+import type { Token } from "../types/token.js";
 
 /**
  * App Kit's `Adapter` class isn't exported as a named type. We derive it
@@ -89,6 +90,66 @@ export type RetryParams = {
 };
 
 /**
+ * Parameters for a same-chain swap. Matches App Kit's `SwapParams`
+ * shape, simplified to what Whisk's UI needs to expose.
+ *
+ * `kitKey` is required — Circle issues it free at console.circle.com.
+ * Without it, the swap provider rejects the request.
+ */
+export type SwapParams = {
+  /** Chain the swap executes on. */
+  chain: Chain;
+  /** Source token alias or contract address. */
+  tokenIn: Token | string;
+  /** Destination token alias or contract address. */
+  tokenOut: Token | string;
+  /** Human-readable amount of `tokenIn` to swap (e.g. "100.0"). */
+  amountIn: string;
+  /** Adapter that will sign the swap transaction. */
+  adapter: WhiskAdapter;
+  /** Slippage tolerance in basis points. Defaults to 300 (3%). */
+  slippageBps?: number;
+  /**
+   * Minimum amount of `tokenOut` the user is willing to receive. When
+   * present, takes precedence over `slippageBps`.
+   */
+  stopLimit?: string;
+  /** Required Circle Console kit key. */
+  kitKey: string;
+  /** Optional override recipient. Defaults to the signer's own address. */
+  recipientAddress?: string;
+};
+
+export type SwapEstimate = {
+  amountIn: string;
+  amountOut: string;
+  /** Minimum acceptable output after slippage / stop-limit are applied. */
+  minOutput: string;
+  tokenIn: Token | string;
+  tokenOut: Token | string;
+  fees: {
+    /** Total fee summed in `tokenIn`. */
+    total: string;
+    /** Itemised entries — provider, kit, etc. */
+    entries: Array<{ kind: string; amount: string; token: string }>;
+  };
+};
+
+export type SwapSuccess = {
+  kind: "success";
+  txHash?: string;
+  explorerUrl?: string;
+  amountOut?: string;
+};
+
+export type SwapFailure = {
+  kind: "failure";
+  error: WhiskError;
+};
+
+export type SwapResult = SwapSuccess | SwapFailure;
+
+/**
  * The single public interface every Whisk frontend (React, Solid, vanilla)
  * talks to. Stateless — each method is self-contained and the engine never
  * holds per-call state. State lives in the consumer (`useReducer` in the
@@ -100,4 +161,8 @@ export interface WhiskEngine {
   quote(params: QuoteParams): Promise<Quote>;
   send(params: SendParams, listeners?: SendListeners): Promise<SendResult>;
   retry(params: RetryParams, listeners?: SendListeners): Promise<SendResult>;
+  /** Get an estimate for a same-chain swap without executing it. */
+  estimateSwap(params: SwapParams): Promise<SwapEstimate>;
+  /** Execute a same-chain swap. */
+  swap(params: SwapParams): Promise<SwapResult>;
 }

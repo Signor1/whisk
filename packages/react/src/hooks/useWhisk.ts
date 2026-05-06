@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useReducer } from "react";
+import { useCallback, useReducer, useState } from "react";
 import {
   initialState,
   reduce,
@@ -13,6 +13,7 @@ import {
 } from "@strimz/whisk-core";
 import { useWhiskContext } from "./useWhiskContext.js";
 import { useWhiskAdapter } from "./useWhiskAdapter.js";
+import { useWhiskAccount } from "./useWhiskAccount.js";
 
 /**
  * Headless hook that exposes Whisk's full state machine + actions. Drop-in
@@ -27,7 +28,11 @@ export type WhiskActions = {
   /** Resolve a free-text recipient (address, ENS, …). */
   resolve: (input: string, chain: Chain) => Promise<void>;
   /** Build a quote for the resolved recipient + amount. */
-  quote: (recipient: ResolvedRecipient, amount: string) => Promise<void>;
+  quote: (
+    recipient: ResolvedRecipient,
+    amount: string,
+    sourceChain: Chain,
+  ) => Promise<void>;
   /** Go back to the input step from review. */
   back: () => void;
   /** Execute the send/bridge currently in `review` state. */
@@ -39,28 +44,39 @@ export type WhiskActions = {
 export type UseWhiskResult = {
   state: WhiskState;
   actions: WhiskActions;
-  /** Whether a wallet is connected. Drives the connect-CTA in UIs. */
+  /** Whether ANY wallet (EVM or Solana) is connected. */
   connected: boolean;
-  /** The address of the connected wallet, or undefined. */
+  /** Address of the currently primary wallet, if any. */
   address: string | undefined;
 };
 
 /**
- * The headless API. Consumed both by the drop-in components and by host
- * apps that want to render their own UI on top of Whisk's state machine.
+ * The headless API. Consumes both EVM and Solana account state through
+ * `useWhiskAccount`, picking the correct adapter for the active source
+ * chain at quote / send time.
  */
 export function useWhisk(): UseWhiskResult {
   const { engine, config } = useWhiskContext();
-  const adapter = useWhiskAdapter();
+  const account = useWhiskAccount();
   const [state, dispatch] = useReducer(reduce, initialState);
 
-  // Sync the connect/disconnect transitions with the wagmi adapter so the
-  // state machine never sees stale `disconnected` / `idle` values.
-  // The reducer is idempotent for these transitions.
-  if (adapter && state.kind === "disconnected") {
+  // Track the source chain the consumer is operating on so the adapter
+  // hook knows which ecosystem to bridge. This is set the first time
+  // `quote()` is called; before then the adapter hook has no source
+  // and returns null.
+  const [activeSource, setActiveSource] = useState<Chain | undefined>(
+    config.defaultSourceChain ?? config.chains[0],
+  );
+
+  const adapter = useWhiskAdapter(activeSource);
+
+  // Sync connect / disconnect transitions with the state machine.
+  // The reducer is idempotent so re-firing these is safe.
+  const connected = Boolean(account.primary?.isConnected);
+  if (connected && state.kind === "disconnected") {
     dispatch({ type: "CONNECTED" });
   }
-  if (!adapter && state.kind !== "disconnected") {
+  if (!connected && state.kind !== "disconnected") {
     dispatch({ type: "DISCONNECTED" });
   }
 
@@ -78,24 +94,27 @@ export function useWhisk(): UseWhiskResult {
   );
 
   const quote = useCallback<WhiskActions["quote"]>(
-    async (recipient, amount) => {
-      if (!adapter) return;
+    async (recipient, amount, sourceChain) => {
+      setActiveSource(sourceChain);
+      const adapterForSource = adapter; // captured reference; React ensures
+      // we re-render once the new adapter is built, so a quote attempt
+      // that arrives during the transition no-ops cleanly.
+      if (!adapterForSource) return;
       dispatch({ type: "QUOTE_START", recipient, amount });
       try {
-        const quote = await engine.quote({
-          sourceChain:
-            config.defaultSourceChain ?? config.chains[0]!,
+        const result = await engine.quote({
+          sourceChain,
           destinationChain: recipient.chain,
           recipient,
           amount,
-          adapter,
+          adapter: adapterForSource,
         });
-        dispatch({ type: "QUOTE_SUCCESS", quote });
+        dispatch({ type: "QUOTE_SUCCESS", quote: result });
       } catch (err) {
         dispatch({ type: "QUOTE_FAILURE", error: toWhiskError(err) });
       }
     },
-    [adapter, engine, config.chains, config.defaultSourceChain],
+    [adapter, engine],
   );
 
   const back = useCallback<WhiskActions["back"]>(() => {
@@ -104,22 +123,20 @@ export function useWhisk(): UseWhiskResult {
 
   const send = useCallback<WhiskActions["send"]>(async () => {
     if (state.kind !== "review" || !adapter) return;
-    const quote = state.quote;
+    const q = state.quote;
     dispatch({ type: "SEND_START" });
     const onStep = (step: Step) => dispatch({ type: "STEP_UPDATE", step });
     try {
       const result = await engine.send(
         {
-          sourceChain: quote.route.kind === "send"
-            ? quote.route.chain
-            : quote.route.sourceChain,
-          destinationChain: quote.route.kind === "send"
-            ? quote.route.chain
-            : quote.route.destinationChain,
-          recipient: quote.recipient,
-          amount: quote.amountOut,
+          sourceChain:
+            q.route.kind === "send" ? q.route.chain : q.route.sourceChain,
+          destinationChain:
+            q.route.kind === "send" ? q.route.chain : q.route.destinationChain,
+          recipient: q.recipient,
+          amount: q.amountOut,
           adapter,
-          quote,
+          quote: q,
         },
         { onStep },
       );
@@ -145,11 +162,9 @@ export function useWhisk(): UseWhiskResult {
   return {
     state,
     actions,
-    connected: Boolean(adapter),
-    address: adapter?.address,
+    connected,
+    address: account.primary?.address,
   };
 }
 
-// Re-export the action union for advanced consumers that want to dispatch
-// directly into the reducer (e.g. integration tests).
 export type { WhiskAction };
