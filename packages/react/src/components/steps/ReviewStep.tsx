@@ -129,6 +129,13 @@ export function ReviewStep({ quote, busy, onConfirm, onBack }: ReviewStepProps) 
         </dd>
       </dl>
 
+      {/*
+       * Fees + total. The dashed separator only renders when there are
+       * actual fee entries above the "You pay" line — same-chain sends
+       * with no custom fee return an empty `entries` array and the
+       * separator would otherwise look like an empty divider above a
+       * single value, which reads as a UI bug rather than a feature.
+       */}
       <div
         style={{
           borderTop: "1px solid var(--whisk-border)",
@@ -161,8 +168,12 @@ export function ReviewStep({ quote, busy, onConfirm, onBack }: ReviewStepProps) 
             display: "flex",
             justifyContent: "space-between",
             fontWeight: 600,
-            paddingTop: "0.5rem",
-            borderTop: "1px dashed var(--whisk-border)",
+            paddingTop:
+              quote.fees.entries.length > 0 ? "0.5rem" : 0,
+            borderTop:
+              quote.fees.entries.length > 0
+                ? "1px dashed var(--whisk-border)"
+                : undefined,
           }}
         >
           <span>You pay</span>

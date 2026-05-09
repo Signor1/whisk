@@ -1,5 +1,7 @@
 export { WhiskSend } from "./WhiskSend.js";
-export type { WhiskSendProps } from "./WhiskSend.js";
+export type { WhiskSendProps, WhiskSendTab } from "./WhiskSend.js";
+export { SwapTab } from "./swap/SwapTab.js";
+export type { SwapTabProps } from "./swap/SwapTab.js";
 
 // UI primitives (re-exported so consumers can compose their own UI on
 // top of Whisk's tokens without copying the components).
@@ -17,6 +19,7 @@ export {
   NetworkPill,
   Banner,
   BalanceLine,
+  ConnectModal,
 } from "./ui/index.js";
 export type {
   ButtonProps,
@@ -31,4 +34,5 @@ export type {
   StepRailProps,
   BannerProps,
   BalanceLineProps,
+  ConnectModalProps,
 } from "./ui/index.js";

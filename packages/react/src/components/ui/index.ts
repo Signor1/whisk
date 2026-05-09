@@ -21,3 +21,5 @@ export { Banner } from "./Banner.js";
 export type { BannerProps } from "./Banner.js";
 export { BalanceLine } from "./BalanceLine.js";
 export type { BalanceLineProps } from "./BalanceLine.js";
+export { ConnectModal } from "./ConnectModal.js";
+export type { ConnectModalProps } from "./ConnectModal.js";

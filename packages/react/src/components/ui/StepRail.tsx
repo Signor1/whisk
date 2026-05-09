@@ -12,12 +12,24 @@ import {
 import type { Step, StepName } from "@strimz/whisk-core";
 import { cn } from "../../lib/cn.js";
 
+/**
+ * User-facing labels for each lifecycle step.
+ *
+ * `approve` → "Authorize" rather than "Approve token". On EVM with
+ * USDC the underlying call IS an ERC-20 approve, but on Solana the
+ * step is a permit-style signature, and on permit-supporting chains
+ * the call may actually be `permit` not `approve`. "Authorize" is the
+ * neutral term that reads correctly for every backend path.
+ *
+ * `transfer` → "Submit" — generic, doesn't pretend the user is doing
+ * anything beyond confirming the on-chain submission.
+ */
 const STEP_LABELS: Record<StepName, string> = {
-  approve: "Approve token",
-  transfer: "Transferring",
-  burn: "Burning on source",
-  fetchAttestation: "Fetching attestation",
-  mint: "Minting on destination",
+  approve: "Authorize",
+  transfer: "Submit",
+  burn: "Burn on source",
+  fetchAttestation: "Wait for confirmation",
+  mint: "Mint on destination",
 };
 
 const STEP_ICONS: Record<StepName, typeof KeyRound> = {

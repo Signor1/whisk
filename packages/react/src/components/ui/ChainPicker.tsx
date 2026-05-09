@@ -1,8 +1,9 @@
 "use client";
 
+import * as Select from "@radix-ui/react-select";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import type { Chain } from "@strimz/whisk-core";
 import { chainInfo } from "@strimz/whisk-core";
-import { Field } from "./Field.js";
 
 export type ChainPickerProps = {
   id?: string;
@@ -14,11 +15,11 @@ export type ChainPickerProps = {
 };
 
 /**
- * Native `<select>` chain picker. We render the registry's `label` rather
- * than the raw chain code so users see "Arc Testnet" instead of
- * "Arc_Testnet". Native is intentional — it gets every browser's a11y
- * affordances (mobile sheet on iOS, search on desktop) for free, and it
- * keeps the bundle tiny.
+ * Chain picker on Radix Select — gives consistent styling across browsers,
+ * full keyboard navigation (arrow keys, type-to-select, escape, etc.),
+ * and proper focus management out of the box. The trigger blends with
+ * the rest of our `whisk-fieldbox` family so the form rhythm stays
+ * visually uniform.
  */
 export function ChainPicker({
   id,
@@ -29,20 +30,55 @@ export function ChainPicker({
   disabled,
 }: ChainPickerProps) {
   return (
-    <Field label={label} htmlFor={id}>
-      <select
-        id={id}
-        className="whisk-input"
-        value={value}
-        onChange={(e) => onChange(e.target.value as Chain)}
-        disabled={disabled}
-      >
-        {options.map((c) => (
-          <option key={c} value={c}>
-            {chainInfo(c).label}
-          </option>
-        ))}
-      </select>
-    </Field>
+    <label className="whisk-fieldbox" htmlFor={id}>
+      {label ? <span className="whisk-fieldbox__label">{label}</span> : null}
+      <Select.Root value={value} onValueChange={(v) => onChange(v as Chain)} disabled={disabled}>
+        <Select.Trigger
+          id={id}
+          className="whisk-fieldbox__control whisk-select-trigger"
+          aria-label={label ?? "Chain"}
+        >
+          <Select.Value placeholder="Select a chain" />
+          <Select.Icon asChild>
+            <ChevronDown size={14} strokeWidth={2.5} style={{ opacity: 0.6 }} />
+          </Select.Icon>
+        </Select.Trigger>
+
+        <Select.Portal>
+          {/* Re-establish Whisk theme scope inside the portal. */}
+          <div data-whisk="">
+            <Select.Content
+              className="whisk-select-content"
+              position="popper"
+              sideOffset={4}
+              collisionPadding={8}
+            >
+              <Select.ScrollUpButton className="whisk-select-scroll">
+                <ChevronUp size={14} strokeWidth={2.5} />
+              </Select.ScrollUpButton>
+
+              <Select.Viewport className="whisk-select-viewport">
+                {options.map((c) => (
+                  <Select.Item
+                    key={c}
+                    value={c}
+                    className="whisk-select-item"
+                  >
+                    <Select.ItemText>{chainInfo(c).label}</Select.ItemText>
+                    <Select.ItemIndicator className="whisk-select-item-indicator">
+                      <Check size={14} strokeWidth={2.5} />
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                ))}
+              </Select.Viewport>
+
+              <Select.ScrollDownButton className="whisk-select-scroll">
+                <ChevronDown size={14} strokeWidth={2.5} />
+              </Select.ScrollDownButton>
+            </Select.Content>
+          </div>
+        </Select.Portal>
+      </Select.Root>
+    </label>
   );
 }

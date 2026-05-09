@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import type { Chain, Quote, WhiskState } from "@strimz/whisk-core";
+import { useEffect, useRef, type ReactNode } from "react";
+import * as Tabs from "@radix-ui/react-tabs";
+import type { Chain, Quote, Token, WhiskState } from "@strimz/whisk-core";
 import { useWhisk } from "../hooks/useWhisk.js";
 import { AccountChip, NetworkPill } from "./ui/AccountChip.js";
 import { Card } from "./ui/Card.js";
@@ -13,6 +14,9 @@ import {
   SendingStep,
   ResultStep,
 } from "./steps/index.js";
+import { SwapTab } from "./swap/SwapTab.js";
+
+export type WhiskSendTab = "transfer" | "swap";
 
 export type WhiskSendProps = {
   /* ─── Lifecycle callbacks ─────────────────────────────────────────── */
@@ -58,6 +62,28 @@ export type WhiskSendProps = {
   onSourceChainChange?: (chain: Chain) => void;
   onDestinationChainChange?: (chain: Chain) => void;
 
+  /* ─── Tabs / Swap ─────────────────────────────────────────────────── */
+
+  /**
+   * Which tabs to render. Defaults to `["transfer", "swap"]` when
+   * `kitKey` is supplied, otherwise just `["transfer"]`.
+   */
+  tabs?: WhiskSendTab[];
+  /** Initial tab. Defaults to `"transfer"`. */
+  defaultTab?: WhiskSendTab;
+  /**
+   * Required Circle Console kit key for swap operations. When omitted,
+   * the Swap tab is hidden (or asks for a key inline if explicitly
+   * included via `tabs`).
+   */
+  kitKey?: string;
+  /** Pre-fill the swap chain. */
+  swapDefaultChain?: Chain;
+  /** Pre-fill the swap source token. */
+  swapDefaultTokenIn?: Token;
+  /** Pre-fill the swap destination token. */
+  swapDefaultTokenOut?: Token;
+
   /* ─── Layout / branding ───────────────────────────────────────────── */
 
   /**
@@ -72,7 +98,8 @@ export type WhiskSendProps = {
 };
 
 /**
- * Drop-in inline widget. Routes off the state machine in `useWhisk()`.
+ * Drop-in inline widget. Routes off the state machine in `useWhisk()`
+ * for the Transfer tab and `useWhiskSwap()` for the Swap tab.
  *
  * Supports four levels of host-app control over the input fields:
  *
@@ -99,6 +126,12 @@ export function WhiskSend({
   onRecipientChange,
   onSourceChainChange,
   onDestinationChainChange,
+  tabs,
+  defaultTab,
+  kitKey,
+  swapDefaultChain,
+  swapDefaultTokenIn,
+  swapDefaultTokenOut,
   showFooter = false,
   className,
 }: WhiskSendProps) {
@@ -135,12 +168,40 @@ export function WhiskSend({
       destinationChain ??
       sourceChain ??
       undefined;
-    // The `actions.resolve` signature requires a chain — fall back to
-    // the user's destination prop or the current source.
     if (target) {
       void actions.resolve(recipient, target);
     }
   }, [connected, state.kind, recipient, destinationChain, sourceChain, actions]);
+
+  // Tab visibility — gated on kitKey so apps that don't pay for swap
+  // never see a half-broken tab.
+  const visibleTabs: WhiskSendTab[] =
+    tabs ?? (kitKey ? ["transfer", "swap"] : ["transfer"]);
+  const showTabs = visibleTabs.length > 1;
+  const initialTab: WhiskSendTab =
+    defaultTab ?? (visibleTabs[0] ?? "transfer");
+
+  const transferContent = renderTransfer(state, actions, connected, {
+    amount,
+    recipient,
+    sourceChain,
+    destinationChain,
+    defaultAmount,
+    defaultRecipient,
+    onAmountChange,
+    onRecipientChange,
+    onSourceChainChange,
+    onDestinationChainChange,
+  });
+
+  const swapContent = (
+    <SwapTab
+      kitKey={kitKey}
+      defaultChain={swapDefaultChain}
+      defaultTokenIn={swapDefaultTokenIn}
+      defaultTokenOut={swapDefaultTokenOut}
+    />
+  );
 
   return (
     <Card
@@ -159,18 +220,38 @@ export function WhiskSend({
           <AccountChip explorerChain={sourceChain} />
         </div>
       ) : null}
-      {renderStep(state, actions, connected, {
-        amount,
-        recipient,
-        sourceChain,
-        destinationChain,
-        defaultAmount,
-        defaultRecipient,
-        onAmountChange,
-        onRecipientChange,
-        onSourceChainChange,
-        onDestinationChainChange,
-      })}
+
+      {showTabs ? (
+        <Tabs.Root defaultValue={initialTab} className="whisk-tabs">
+          <Tabs.List className="whisk-tabs__list" aria-label="Whisk operations">
+            {visibleTabs.includes("transfer") ? (
+              <Tabs.Trigger value="transfer" className="whisk-tabs__trigger">
+                Transfer
+              </Tabs.Trigger>
+            ) : null}
+            {visibleTabs.includes("swap") ? (
+              <Tabs.Trigger value="swap" className="whisk-tabs__trigger">
+                Swap
+              </Tabs.Trigger>
+            ) : null}
+          </Tabs.List>
+          {visibleTabs.includes("transfer") ? (
+            <Tabs.Content value="transfer" className="whisk-tabs__content">
+              {transferContent}
+            </Tabs.Content>
+          ) : null}
+          {visibleTabs.includes("swap") ? (
+            <Tabs.Content value="swap" className="whisk-tabs__content">
+              {swapContent}
+            </Tabs.Content>
+          ) : null}
+        </Tabs.Root>
+      ) : visibleTabs[0] === "swap" ? (
+        swapContent
+      ) : (
+        transferContent
+      )}
+
       {showFooter ? <Footer /> : null}
     </Card>
   );
@@ -190,12 +271,12 @@ type ControlledFieldProps = Pick<
   | "onDestinationChainChange"
 >;
 
-function renderStep(
+function renderTransfer(
   state: WhiskState,
   actions: ReturnType<typeof useWhisk>["actions"],
   connected: boolean,
   fields: ControlledFieldProps,
-) {
+): ReactNode {
   if (!connected || state.kind === "disconnected") {
     return <ConnectStep />;
   }
