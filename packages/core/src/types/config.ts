@@ -52,8 +52,22 @@ export type WhiskConfig = {
 
   /**
    * Use Circle's Forwarding Service to submit the destination mint on
-   * cross-chain bridges. Required when the host has no wallet on the
-   * destination chain. Default: `false`.
+   * cross-chain bridges.
+   *
+   * Default: `true`. With the forwarder on, the user signs only the
+   * source-side burn — Circle's Iris service fetches the attestation
+   * and submits the destination mint. No wallet chain switch, no
+   * second signature, much smoother UX in browser wallets. A small
+   * forwarding fee is deducted from the destination mint amount and
+   * surfaced in the fee breakdown.
+   *
+   * Set to `false` to keep the destination mint as a user-signed
+   * transaction (saves the forwarding fee but requires the user to
+   * approve a chain switch + a second signature).
+   *
+   * Cross-ecosystem bridges (e.g. Solana ↔ EVM) ignore this flag and
+   * always use the forwarder, since the source-side adapter can't
+   * sign on the destination ecosystem anyway.
    */
   useForwarder?: boolean;
 

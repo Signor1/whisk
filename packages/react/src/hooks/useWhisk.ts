@@ -8,6 +8,7 @@ import {
   type Chain,
   type ResolvedRecipient,
   type Step,
+  type Token,
   type WhiskAction,
   type WhiskState,
 } from "@strimz/whisk-core";
@@ -32,6 +33,8 @@ export type WhiskActions = {
     recipient: ResolvedRecipient,
     amount: string,
     sourceChain: Chain,
+    /** Token alias to send. Optional — defaults to engine config / USDC. */
+    token?: Token,
   ) => Promise<void>;
   /** Go back to the input step from review. */
   back: () => void;
@@ -94,7 +97,7 @@ export function useWhisk(): UseWhiskResult {
   );
 
   const quote = useCallback<WhiskActions["quote"]>(
-    async (recipient, amount, sourceChain) => {
+    async (recipient, amount, sourceChain, token) => {
       setActiveSource(sourceChain);
       const adapterForSource = adapter; // captured reference; React ensures
       // we re-render once the new adapter is built, so a quote attempt
@@ -108,6 +111,7 @@ export function useWhisk(): UseWhiskResult {
           recipient,
           amount,
           adapter: adapterForSource,
+          token,
         });
         dispatch({ type: "QUOTE_SUCCESS", quote: result });
       } catch (err) {

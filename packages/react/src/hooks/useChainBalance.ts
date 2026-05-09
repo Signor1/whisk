@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useBalance } from "wagmi";
-import { useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
-import { chainInfo, type Chain } from "@strimz/whisk-core";
+import {
+  chainInfo,
+  tokenAddressFor,
+  type Chain,
+  type SupportedTokenAlias,
+} from "@strimz/whisk-core";
+import { safeUseConnection } from "./internal/safeSolana.js";
 
 export type ChainBalance = {
   /**
@@ -13,10 +18,29 @@ export type ChainBalance = {
    * (e.g. Monad Testnet at v0.1).
    */
   usdc?: { value: bigint; formatted: string; decimals: number };
+  /**
+   * Balance for the user-selected token (USDC by default). When the
+   * picker switches to EURC / USDT, this updates while `usdc` stays
+   * pinned — the UI uses `selected` for the visible balance line and
+   * `usdc` for the gas check on Arc chains.
+   */
+  selected?: {
+    value: bigint;
+    formatted: string;
+    decimals: number;
+    symbol: SupportedTokenAlias;
+  };
   /** Native gas balance — used for the low-gas warning. */
   native?: { value: bigint; formatted: string; symbol: string };
   /**
-   * Heuristic: native balance below ~1e-4 of the chain's native unit.
+   * Symbol of the token actually used for gas on this chain. For most
+   * EVM chains this matches `native.symbol` (ETH, AVAX, MATIC, …). For
+   * Arc chains, gas is paid in USDC, so this returns `"USDC"` and the
+   * UI looks at the USDC balance for low-gas warnings.
+   */
+  gasSymbol?: string;
+  /**
+   * Heuristic: gas-token balance below the chain's safety threshold.
    * Not a precise gas estimate — just a "you'll probably fail to pay
    * gas" hint surfaced before the user clicks Send.
    */
@@ -26,19 +50,33 @@ export type ChainBalance = {
 
 const LOW_GAS_THRESHOLD = 1n * 10n ** 14n; // ~1e-4 of native unit (EVM)
 const SOL_LOW_GAS_LAMPORTS = 1_000_000n; // 0.001 SOL
+// Arc charges gas in USDC. 0.05 USDC is a generous "you can probably
+// land at least one tx" floor — actual cost depends on the operation.
+const ARC_LOW_GAS_USDC = 50_000n; // 0.05 USDC (6 decimals)
+const ARC_CHAINS = new Set<Chain>(["Arc_Testnet"]);
 
 /**
- * Read USDC + native balances for a wallet on a given Whisk chain.
- * Routes to wagmi for EVM chains and to `@solana/web3.js` for Solana,
- * returning the same normalised shape so consumers don't branch.
+ * Read USDC + native + selected-token balances for a wallet on a given
+ * Whisk chain. Routes to wagmi for EVM and to `@solana/web3.js` for
+ * Solana, returning the same normalised shape so consumers don't branch.
+ *
+ * `selectedToken` controls which token's balance lands in `result.selected`.
+ * Defaults to `"USDC"`; pass `"EURC"` / `"USDT"` to track the active
+ * token-picker selection. The `usdc` field stays pinned regardless —
+ * Arc's low-gas check still needs it even when the user is sending EURC.
  */
 export function useChainBalance(
   chain: Chain | undefined,
   address: string | undefined,
+  selectedToken: SupportedTokenAlias = "USDC",
 ): ChainBalance {
   const info = chain ? chainInfo(chain) : undefined;
   const isEvm = info?.kind === "evm";
   const isSolana = info?.kind === "solana";
+  const selectedAddress =
+    chain && info?.kind === "evm"
+      ? tokenAddressFor(chain, selectedToken)
+      : undefined;
 
   /* ── EVM via wagmi ──────────────────────────────────────────────── */
   const usdcQuery = useBalance({
@@ -47,6 +85,25 @@ export function useChainBalance(
     chainId: info?.evmChainId,
     query: {
       enabled: !!address && !!info?.usdcAddress && !!info?.evmChainId && isEvm,
+    },
+  });
+
+  // Second token query — the user-selected token. When it matches USDC
+  // (the default), we just reuse `usdcQuery` below to avoid a duplicate
+  // round-trip; otherwise we fire a parallel `useBalance` against the
+  // selected token's contract.
+  const isSelectedUsdc = selectedToken === "USDC";
+  const selectedQuery = useBalance({
+    address: address as `0x${string}` | undefined,
+    token: selectedAddress as `0x${string}` | undefined,
+    chainId: info?.evmChainId,
+    query: {
+      enabled:
+        !!address &&
+        !!selectedAddress &&
+        !!info?.evmChainId &&
+        isEvm &&
+        !isSelectedUsdc,
     },
   });
 
@@ -63,15 +120,9 @@ export function useChainBalance(
     isLoading: boolean;
   }>({ isLoading: false });
 
-  // useConnection is only available inside Solana's ConnectionProvider;
-  // try/catch lets us call it unconditionally without crashing in
-  // EVM-only setups.
-  let connection: ReturnType<typeof useConnection>["connection"] | undefined;
-  try {
-    connection = useConnection().connection;
-  } catch {
-    connection = undefined;
-  }
+  // Returns `undefined` when no `<ConnectionProvider>` is mounted (i.e.
+  // EVM-only configs). Avoids the wallet-adapter sentinel-error noise.
+  const connection = safeUseConnection();
 
   useEffect(() => {
     if (!isSolana || !address || !connection || !info) {
@@ -136,9 +187,17 @@ export function useChainBalance(
     const native = solanaState.native;
     const isLowGas =
       native !== undefined && native.value < SOL_LOW_GAS_LAMPORTS;
+    // Solana only ships USDC for now in the registry; selected mirrors
+    // usdc when the picker is on USDC, otherwise undefined.
+    const selected =
+      selectedToken === "USDC" && solanaState.usdc
+        ? { ...solanaState.usdc, symbol: "USDC" as const }
+        : undefined;
     return {
       usdc: solanaState.usdc,
+      selected,
       native,
+      gasSymbol: native?.symbol,
       isLowGas,
       isLoading: solanaState.isLoading,
     };
@@ -160,13 +219,41 @@ export function useChainBalance(
       }
     : undefined;
 
-  const isLowGas =
-    native !== undefined && native.value < LOW_GAS_THRESHOLD;
+  // Selected-token balance: reuses `usdc` when picker is on USDC, else
+  // pulls from the parallel `selectedQuery`. Returns undefined when the
+  // selected token isn't supported on this chain (no contract address
+  // in the registry) so the UI can hide the balance line cleanly.
+  const selected: ChainBalance["selected"] = isSelectedUsdc
+    ? usdc
+      ? { ...usdc, symbol: "USDC" }
+      : undefined
+    : selectedQuery.data
+      ? {
+          value: selectedQuery.data.value,
+          formatted: selectedQuery.data.formatted,
+          decimals: selectedQuery.data.decimals,
+          symbol: selectedToken,
+        }
+      : undefined;
+
+  // Arc chains pay gas in USDC, not in the native token. The low-gas
+  // signal needs to look at the right balance and the UI label needs
+  // to say "USDC" not "ARC".
+  const gasInUsdc = chain !== undefined && ARC_CHAINS.has(chain);
+  const gasSymbol = gasInUsdc ? "USDC" : native?.symbol;
+  const isLowGas = gasInUsdc
+    ? usdc !== undefined && usdc.value < ARC_LOW_GAS_USDC
+    : native !== undefined && native.value < LOW_GAS_THRESHOLD;
 
   return {
     usdc,
+    selected,
     native,
+    gasSymbol,
     isLowGas,
-    isLoading: usdcQuery.isLoading || nativeQuery.isLoading,
+    isLoading:
+      usdcQuery.isLoading ||
+      nativeQuery.isLoading ||
+      (!isSelectedUsdc && selectedQuery.isLoading),
   };
 }
