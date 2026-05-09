@@ -6,5 +6,7 @@ export {
   chainsByKind,
   explorerTxUrl,
   explorerAddressUrl,
+  supportedTokensFor,
+  tokenAddressFor,
 } from "./registry.js";
-export type { ChainInfo } from "./registry.js";
+export type { ChainInfo, SupportedTokenAlias } from "./registry.js";

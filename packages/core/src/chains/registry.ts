@@ -43,6 +43,10 @@ export type ChainInfo = {
    * the authoritative table; we mirror only what the UI shows.
    */
   usdcAddress?: string;
+  /** EURC contract / mint address, when the chain hosts EURC. */
+  eurcAddress?: string;
+  /** USDT contract / mint address, when the chain hosts USDT. */
+  usdtAddress?: string;
 };
 
 const EVM_RE = /^0x[a-fA-F0-9]{40}$/;
@@ -311,6 +315,7 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     addressHint: EVM_HINT,
     evmChainId: 5_042_002,
     usdcAddress: "0x3600000000000000000000000000000000000000",
+    eurcAddress: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
   },
   {
     chain: "Avalanche_Fuji",
@@ -324,6 +329,7 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     addressHint: EVM_HINT,
     evmChainId: 43_113,
     usdcAddress: "0x5425890298aed601595a70AB815c96711a31Bc65",
+    eurcAddress: "0x5e44db7996c682e92a960b65ac713a54ad815c6b",
   },
   {
     chain: "Base_Sepolia",
@@ -337,6 +343,7 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     addressHint: EVM_HINT,
     evmChainId: 84_532,
     usdcAddress: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    eurcAddress: "0x808456652fdb597867f38412077A9182bf77359F",
   },
   {
     chain: "Codex_Testnet",
@@ -363,6 +370,7 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     addressHint: EVM_HINT,
     evmChainId: 11_155_111,
     usdcAddress: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+    eurcAddress: "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4",
   },
   {
     chain: "HyperEVM_Testnet",
@@ -581,6 +589,43 @@ export function chainsByNetwork(
 /** Filter helper — by kind (EVM / Solana). */
 export function chainsByKind(kind: ChainKind): ReadonlyArray<ChainInfo> {
   return CHAINS.filter((c) => c.kind === kind);
+}
+
+/**
+ * Stablecoin token aliases the registry knows the mint / contract for
+ * on a given chain. App Kit's Send accepts any registered token alias;
+ * the picker only surfaces the ones we have addresses for so users
+ * can't pick something that fails at quote time.
+ *
+ * `USDC` is universal across the registered chains (it's the widget's
+ * native token). EURC and USDT are per-chain — App Kit ships addresses
+ * for a subset; we mirror the ones that matter for the UI.
+ */
+export type SupportedTokenAlias = "USDC" | "EURC" | "USDT";
+
+export function supportedTokensFor(chain: Chain): SupportedTokenAlias[] {
+  const info = chainInfo(chain);
+  const out: SupportedTokenAlias[] = [];
+  if (info.usdcAddress) out.push("USDC");
+  if (info.eurcAddress) out.push("EURC");
+  if (info.usdtAddress) out.push("USDT");
+  return out;
+}
+
+/** Resolve a stablecoin alias to its on-chain address for a given chain. */
+export function tokenAddressFor(
+  chain: Chain,
+  token: SupportedTokenAlias,
+): string | undefined {
+  const info = chainInfo(chain);
+  switch (token) {
+    case "USDC":
+      return info.usdcAddress;
+    case "EURC":
+      return info.eurcAddress;
+    case "USDT":
+      return info.usdtAddress;
+  }
 }
 
 /**
