@@ -18,6 +18,7 @@ import {
 import { createWhisk, ConfigError } from "@strimz/whisk-core";
 import type { WhiskClientConfig } from "../config/types.js";
 import type { SolanaConfig } from "../config/adapters/solana.js";
+import { defaultResolver } from "../resolvers/index.js";
 import { WhiskContext, type WhiskContextValue } from "./context.js";
 
 export type WhiskProviderProps = {
@@ -80,7 +81,10 @@ export function WhiskProvider({
         defaultSourceChain: config.defaultSourceChain,
         defaultDestinationChain: config.defaultDestinationChain,
         token: config.token,
-        resolver: config.resolver,
+        // Falls back to address + ENS composition when the dev hasn't
+        // passed a custom resolver. Lets users type `vitalik.eth` on
+        // any EVM destination chain without extra setup.
+        resolver: config.resolver ?? defaultResolver,
         feePolicy: config.feePolicy,
         rpcUrls: config.rpcUrls,
         useForwarder: config.useForwarder,
