@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import {
-  useConnection,
-  useWallet,
-  type WalletContextState,
-} from "@solana/wallet-adapter-react";
+import { type WalletContextState } from "@solana/wallet-adapter-react";
 import type { Connection } from "@solana/web3.js";
 import { VersionedTransaction, VersionedMessage } from "@solana/web3.js";
 import { createViemAdapterFromProvider } from "@circle-fin/adapter-viem-v2";
@@ -18,6 +14,7 @@ import {
   type Chain,
   type WhiskAdapter,
 } from "@strimz/whisk-core";
+import { safeUseConnection, safeUseWallet } from "./internal/safeSolana.js";
 
 /**
  * Bridge wagmi or Solana wallet-adapter into a `WhiskAdapter` the engine
@@ -41,18 +38,10 @@ export function useWhiskAdapter(
 
   const { address: evmAddress, connector, status } = useAccount();
 
-  let solanaWallet: WalletContextState | undefined;
-  let solanaConnection: Connection | undefined;
-  try {
-    solanaWallet = useWallet();
-  } catch {
-    solanaWallet = undefined;
-  }
-  try {
-    solanaConnection = useConnection().connection;
-  } catch {
-    solanaConnection = undefined;
-  }
+  // Safe wrappers — both return `undefined` instead of throwing when
+  // the dev didn't add `solana()` to their config (no provider mounted).
+  const solanaWallet: WalletContextState | undefined = safeUseWallet();
+  const solanaConnection: Connection | undefined = safeUseConnection();
 
   const [adapter, setAdapter] = useState<WhiskAdapter | null>(null);
 

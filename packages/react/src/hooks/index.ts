@@ -6,3 +6,5 @@ export { useWhiskAccount } from "./useWhiskAccount.js";
 export type { UseWhiskAccountResult } from "./useWhiskAccount.js";
 export { useChainBalance } from "./useChainBalance.js";
 export type { ChainBalance } from "./useChainBalance.js";
+export { useWhiskSwap } from "./useWhiskSwap.js";
+export type { UseWhiskSwapResult, SwapState, SwapInput } from "./useWhiskSwap.js";

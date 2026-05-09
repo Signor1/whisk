@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
 import type { Chain } from "@strimz/whisk-core";
+import { safeUseWallet } from "./internal/safeSolana.js";
 
 export type UseSolanaAccountResult = {
   isConnected: boolean;
@@ -26,15 +26,7 @@ export type UseSolanaAccountResult = {
  * `useWhiskAccount`.
  */
 export function useSolanaAccount(): UseSolanaAccountResult {
-  // useWallet returns a stable shape even when no provider is mounted —
-  // it falls back to the default context which has nullable values for
-  // every field. So this is safe in EVM-only configurations.
-  let walletCtx: ReturnType<typeof useWallet> | undefined;
-  try {
-    walletCtx = useWallet();
-  } catch {
-    walletCtx = undefined;
-  }
+  const walletCtx = safeUseWallet();
 
   return useMemo<UseSolanaAccountResult>(() => {
     if (!walletCtx) {
@@ -49,10 +41,6 @@ export function useSolanaAccount(): UseSolanaAccountResult {
       isConnecting: walletCtx.connecting,
       address: walletCtx.publicKey?.toBase58(),
       connectorName: walletCtx.wallet?.adapter.name,
-      // The widget doesn't currently know which Solana cluster is
-      // active without consulting the Connection — defer that to the
-      // chain picker. `currentChain` is undefined here; UI components
-      // pick from the source chain selector.
       disconnect: () => walletCtx.disconnect(),
     };
   }, [walletCtx]);
