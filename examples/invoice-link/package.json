@@ -1,0 +1,30 @@
+{
+  "name": "@strimz/whisk-example-invoice-link",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Invoice payment links. The merchant shares /pay?to=…&amount=…&chain=…; Whisk reads the params and pre-fills.",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3014",
+    "build": "next build",
+    "start": "next start -p 3014",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@strimz/whisk-core": "workspace:*",
+    "@strimz/whisk-react": "workspace:*",
+    "@tanstack/react-query": "^5.59.0",
+    "next": "^15.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.2"
+  }
+}

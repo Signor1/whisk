@@ -14,6 +14,8 @@
     "build": "pnpm -r --filter './packages/*' build",
     "dev": "pnpm -r --filter './packages/*' --parallel dev",
     "typecheck": "pnpm -r typecheck",
+    "typecheck:packages": "pnpm -r --filter './packages/*' typecheck",
+    "typecheck:examples": "pnpm -r --filter './examples/*' typecheck",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\" --ignore-path .gitignore",
@@ -29,5 +31,10 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "vitest": "^2.1.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "axios@<1.15.2": ">=1.15.2"
+    }
   }
 }

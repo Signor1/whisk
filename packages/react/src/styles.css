@@ -51,6 +51,7 @@
      ========================================================== */
   --whisk-radius: 0.625rem; /* fields, buttons */
   --whisk-radius-sm: 0.375rem; /* badges */
+  --whisk-radius-md: 0.625rem; /* alias for --whisk-radius (medium) */
   --whisk-radius-lg: 1rem; /* card */
   --whisk-border-w: 0.5px; /* refined hairline borders */
 
@@ -203,8 +204,7 @@
 
 [data-whisk] .whisk-fieldbox:focus-within {
   border-color: var(--whisk-ring);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--whisk-ring) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--whisk-ring) 18%, transparent);
 }
 
 [data-whisk] .whisk-fieldbox--invalid {
@@ -370,8 +370,7 @@
 
 [data-whisk] .whisk-input:focus {
   border-color: var(--whisk-ring);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--whisk-ring) 25%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--whisk-ring) 25%, transparent);
 }
 
 [data-whisk] .whisk-input--mono {
@@ -409,6 +408,105 @@
 }
 [data-whisk] .whisk-help--error {
   color: var(--whisk-destructive);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Banner (inline advisory — chain-mismatch, low-gas, info)
+   ============================================================
+   Three tone variants share layout (icon + message + optional
+   action) and differ only in colour mix. Background is a soft tint
+   of the variant colour so it reads "informational" rather than
+   alarming. Border picks up the same colour at higher alpha.
+*/
+
+[data-whisk] .whisk-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5625rem 0.75rem;
+  border-radius: var(--whisk-radius);
+  border: var(--whisk-border-w) solid var(--whisk-border);
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  font-family: var(--whisk-font);
+}
+
+[data-whisk] .whisk-banner > svg {
+  margin-top: 0.0625rem;
+  align-self: flex-start;
+}
+
+[data-whisk] .whisk-banner strong {
+  font-weight: 600;
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-banner--warning {
+  background: color-mix(in srgb, var(--whisk-warning) 10%, var(--whisk-bg));
+  border-color: color-mix(in srgb, var(--whisk-warning) 35%, var(--whisk-border));
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-banner--warning > svg {
+  color: var(--whisk-warning);
+}
+
+[data-whisk] .whisk-banner--info {
+  background: color-mix(in srgb, var(--whisk-fg) 4%, var(--whisk-bg));
+  border-color: var(--whisk-border);
+}
+
+[data-whisk] .whisk-banner--info > svg {
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-banner--error {
+  background: color-mix(in srgb, var(--whisk-destructive) 10%, var(--whisk-bg));
+  border-color: color-mix(
+    in srgb,
+    var(--whisk-destructive) 35%,
+    var(--whisk-border)
+  );
+}
+
+[data-whisk] .whisk-banner--error > svg {
+  color: var(--whisk-destructive);
+}
+
+[data-whisk] .whisk-banner__action {
+  appearance: none;
+  background: transparent;
+  border: var(--whisk-border-w) solid var(--whisk-border);
+  border-radius: 999px;
+  padding: 0.1875rem 0.625rem;
+  font-family: var(--whisk-font);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--whisk-fg);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+[data-whisk] .whisk-banner__action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-fg) 4%, var(--whisk-bg));
+  border-color: color-mix(in srgb, var(--whisk-fg) 22%, var(--whisk-border));
+}
+
+[data-whisk] .whisk-banner__action:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 1px;
+}
+
+[data-whisk] .whisk-banner__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* ============================================================
@@ -533,7 +631,8 @@
 @keyframes whisk-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--whisk-primary) 40%, transparent);
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--whisk-primary) 40%, transparent);
   }
   50% {
     box-shadow: 0 0 0 4px
@@ -571,8 +670,7 @@
   gap: 0.375rem;
   padding-top: 0.875rem;
   margin-top: 0.5rem;
-  border-top: 1px solid
-    color-mix(in srgb, var(--whisk-border) 50%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--whisk-border) 50%, transparent);
   font-size: 0.6875rem;
   color: var(--whisk-fg-muted);
   letter-spacing: 0.02em;
@@ -584,4 +682,706 @@
   letter-spacing: -0.01em;
   color: var(--whisk-fg);
   text-transform: lowercase;
+}
+
+/* ============================================================
+   Tabs (Radix UI)
+   ============================================================ */
+
+[data-whisk] .whisk-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+[data-whisk] .whisk-tabs__list {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border-radius: var(--whisk-radius-md);
+  background: color-mix(in srgb, var(--whisk-fg) 4%, transparent);
+  border: 1px solid var(--whisk-border);
+}
+
+[data-whisk] .whisk-tabs__trigger {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0.4375rem 0.875rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--whisk-fg-muted);
+  border-radius: calc(var(--whisk-radius-md) - 0.1875rem);
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+[data-whisk] .whisk-tabs__trigger:hover {
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-tabs__trigger[data-state="active"] {
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--whisk-fg) 8%, transparent);
+}
+
+[data-whisk] .whisk-tabs__trigger:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 1px;
+}
+
+[data-whisk] .whisk-tabs__content {
+  outline: none;
+}
+
+/* ============================================================
+   Swap UI
+   ============================================================ */
+
+[data-whisk] .whisk-swap-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+[data-whisk] .whisk-swap-row__amount {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-whisk] .whisk-swap-row__token {
+  flex: 0 0 auto;
+  min-width: 6.25rem;
+}
+
+[data-whisk] .whisk-swap-flip {
+  appearance: none;
+  border: 1px solid var(--whisk-border);
+  background: var(--whisk-bg);
+  border-radius: 999px;
+  width: 1.875rem;
+  height: 1.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--whisk-fg-muted);
+  transition:
+    color 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+[data-whisk] .whisk-swap-flip:hover {
+  color: var(--whisk-fg);
+  border-color: color-mix(in srgb, var(--whisk-fg) 18%, transparent);
+  transform: rotate(180deg);
+}
+
+[data-whisk] .whisk-swap-flip:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Summary (Review / Result rows — used by both Transfer + Swap)
+   ============================================================ */
+
+[data-whisk] .whisk-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  border: 1px solid var(--whisk-border);
+  border-radius: var(--whisk-radius-md);
+  background: color-mix(in srgb, var(--whisk-fg) 2%, transparent);
+}
+
+[data-whisk] .whisk-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.8125rem;
+}
+
+[data-whisk] .whisk-summary__label {
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-summary__value {
+  color: var(--whisk-fg);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* ============================================================
+   Dialog (Radix UI) — Connect modal + future modals
+   ============================================================ */
+
+[data-whisk] .whisk-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, #1a1410 56%, transparent);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+  animation: whisk-fade-in 140ms ease-out;
+}
+
+[data-whisk] .whisk-dialog__content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(26rem, calc(100vw - 2rem));
+  /* Cap the modal height; the wallet list inside scrolls when the host
+     has many connectors configured. The header and intro sit above the
+     scroll region so they always stay visible. */
+  max-height: min(34rem, calc(100vh - 2rem));
+  display: flex;
+  flex-direction: column;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  border: 1px solid var(--whisk-border);
+  border-radius: var(--whisk-radius-lg);
+  padding: 1.25rem;
+  box-shadow:
+    0 16px 32px -8px color-mix(in srgb, #1a1410 32%, transparent),
+    0 4px 8px -2px color-mix(in srgb, #1a1410 16%, transparent);
+  z-index: 51;
+  animation: whisk-dialog-in 160ms cubic-bezier(0.2, 0.85, 0.25, 1);
+  font-family: var(--whisk-font);
+}
+
+[data-whisk] .whisk-dialog__content:focus {
+  outline: none;
+}
+
+[data-whisk] .whisk-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.375rem;
+}
+
+[data-whisk] .whisk-dialog__title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+[data-whisk] .whisk-dialog__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-dialog__close {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--whisk-fg-muted);
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+[data-whisk] .whisk-dialog__close:hover {
+  background: color-mix(in srgb, var(--whisk-fg) 6%, transparent);
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-dialog__close:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 1px;
+}
+
+[data-whisk] .whisk-dialog__lede {
+  margin: 0 0 0.875rem 0;
+}
+
+[data-whisk] .whisk-dialog__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* Scrolls when the host configures many connectors; the header above
+     stays fixed so the user always knows what they're choosing from.
+     The scrollbar itself is hidden — Firefox uses `scrollbar-width:none`,
+     WebKit / Blink use the pseudo-element. Wheel + drag still work. */
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 -0.25rem;
+  padding: 0.0625rem 0.25rem;
+  scrollbar-width: none;
+}
+
+[data-whisk] .whisk-dialog__list::-webkit-scrollbar {
+  display: none;
+}
+
+[data-whisk] .whisk-dialog__row {
+  justify-content: space-between !important;
+  height: auto !important;
+  padding: 0.75rem 0.875rem !important;
+}
+
+[data-whisk] .whisk-dialog__row-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+[data-whisk] .whisk-dialog__row-icon {
+  border-radius: 0.375rem;
+  flex-shrink: 0;
+}
+
+[data-whisk] .whisk-dialog__row-name {
+  font-weight: 600;
+  color: var(--whisk-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-whisk] .whisk-dialog__row-tag {
+  font-size: 0.625rem;
+  color: var(--whisk-fg-muted);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--whisk-border);
+  padding: 0.0625rem 0.3125rem;
+  border-radius: 999px;
+}
+
+[data-whisk] .whisk-dialog__row-meta {
+  font-size: 0.6875rem;
+  color: var(--whisk-fg-muted);
+}
+
+@keyframes whisk-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes whisk-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* ============================================================
+   Account row, chip, network pill
+   ============================================================ */
+
+[data-whisk] .whisk-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+[data-whisk] .whisk-account-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem 0.375rem 0.4375rem;
+  border: 1px solid var(--whisk-border);
+  border-radius: 999px;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  font-family: var(--whisk-font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+[data-whisk] .whisk-account-chip:hover {
+  border-color: color-mix(in srgb, var(--whisk-fg) 20%, transparent);
+  background: color-mix(in srgb, var(--whisk-fg) 3%, var(--whisk-bg));
+}
+
+[data-whisk] .whisk-account-chip:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 2px;
+}
+
+[data-whisk] .whisk-account-chip__avatar {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    var(--whisk-primary) 0%,
+    color-mix(in srgb, var(--whisk-primary) 60%, var(--whisk-bg)) 100%
+  );
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--whisk-fg) 8%, transparent);
+}
+
+[data-whisk] .whisk-account-chip__address {
+  font-family: var(--whisk-font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-network-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.3125rem 0.6875rem;
+  border: 1px solid var(--whisk-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--whisk-fg) 3%, var(--whisk-bg));
+  font-family: var(--whisk-font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--whisk-fg);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+[data-whisk] .whisk-network-pill__dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 999px;
+  background: var(--whisk-success);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--whisk-success) 25%, transparent);
+}
+
+/* ============================================================
+   Account dropdown (Radix DropdownMenu)
+   ============================================================ */
+
+[data-whisk] .whisk-account-menu {
+  min-width: 10.5rem;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  border: 1px solid var(--whisk-border);
+  border-radius: var(--whisk-radius-md);
+  padding: 0.3125rem;
+  box-shadow:
+    0 8px 24px -4px color-mix(in srgb, #1a1410 24%, transparent),
+    0 2px 6px -1px color-mix(in srgb, #1a1410 12%, transparent);
+  font-family: var(--whisk-font);
+  z-index: 60;
+  animation: whisk-fade-in 120ms ease-out;
+}
+
+[data-whisk] .whisk-account-menu:focus,
+[data-whisk] .whisk-account-menu:focus-visible {
+  outline: none;
+}
+
+[data-whisk] .whisk-account-menu__meta {
+  padding: 0.5rem 0.625rem 0.4375rem;
+  font-size: 0.6875rem;
+  color: var(--whisk-fg-muted);
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--whisk-border);
+  margin-bottom: 0.25rem;
+}
+
+[data-whisk] .whisk-account-menu__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--whisk-fg);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--whisk-radius-md) - 0.3125rem);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background 120ms ease;
+}
+
+[data-whisk] .whisk-account-menu__row[data-highlighted],
+[data-whisk] .whisk-account-menu__row:focus-visible {
+  background: color-mix(in srgb, var(--whisk-fg) 6%, transparent);
+  outline: none;
+}
+
+[data-whisk] .whisk-account-menu__row--danger {
+  color: var(--whisk-destructive);
+}
+
+[data-whisk] .whisk-account-menu__row--danger[data-highlighted] {
+  background: color-mix(in srgb, var(--whisk-destructive) 8%, transparent);
+}
+
+[data-whisk] .whisk-account-menu__separator {
+  height: 1px;
+  background: var(--whisk-border);
+  margin: 0.3125rem 0;
+}
+
+/* ============================================================
+   Balance line (under the amount input)
+   ============================================================ */
+
+[data-whisk] .whisk-balance-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--whisk-fg-muted);
+  margin-top: 0.375rem;
+  padding: 0 0.125rem;
+  font-family: var(--whisk-font);
+}
+
+[data-whisk] .whisk-balance-line__amount {
+  font-family: var(--whisk-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--whisk-fg);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+[data-whisk] .whisk-balance-line__max {
+  appearance: none;
+  border: 1px solid var(--whisk-border);
+  background: var(--whisk-bg);
+  color: var(--whisk-primary);
+  font-family: var(--whisk-font);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.1875rem 0.5625rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+[data-whisk] .whisk-balance-line__max:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--whisk-primary) 8%, var(--whisk-bg));
+  border-color: color-mix(
+    in srgb,
+    var(--whisk-primary) 35%,
+    var(--whisk-border)
+  );
+}
+
+[data-whisk] .whisk-balance-line__max:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 2px;
+}
+
+[data-whisk] .whisk-balance-line__max:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Token picker (Radix Select pill)
+   ============================================================ */
+
+[data-whisk] .whisk-token-picker {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.4375rem 0.625rem 0.4375rem 0.75rem;
+  /* Match `whisk-fieldbox` so the token pill reads as a peer of the
+     amount input — same border + background tokens, same hairline
+     weight. The radius differs (pill vs rounded-rect) on purpose so
+     the token picker still scans as a "select" rather than a field. */
+  border: var(--whisk-border-w) solid var(--whisk-border);
+  border-radius: 999px;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  font-family: var(--whisk-font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  height: 2.125rem;
+  white-space: nowrap;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+[data-whisk] .whisk-token-picker:hover {
+  border-color: color-mix(in srgb, var(--whisk-fg) 22%, transparent);
+}
+
+[data-whisk] .whisk-token-picker:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 2px;
+}
+
+[data-whisk] .whisk-token-picker[data-state="open"] {
+  border-color: color-mix(in srgb, var(--whisk-primary) 50%, transparent);
+}
+
+[data-whisk] .whisk-token-picker[data-disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+[data-whisk] .whisk-token-picker__menu {
+  min-width: 8rem;
+}
+
+/* Hide the native number-input spin buttons inside the amount field.
+   They look noisy in compact widget UIs and most apps don't want users
+   nudging amounts by 1 — paste / type / Max are the real entry paths. */
+[data-whisk] .whisk-fieldbox input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+[data-whisk] .whisk-fieldbox input[type="number"]::-webkit-outer-spin-button,
+[data-whisk] .whisk-fieldbox input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* ============================================================
+   Amount + token row (Transfer)
+   ============================================================ */
+
+[data-whisk] .whisk-amount-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+[data-whisk] .whisk-amount-row__input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-whisk] .whisk-amount-row > .whisk-token-picker {
+  align-self: stretch;
+  height: auto;
+  border-radius: var(--whisk-radius-md);
+}
+
+/* ============================================================
+   Select (Radix Select) — Chain picker
+   ============================================================ */
+
+[data-whisk] .whisk-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--whisk-fg);
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+[data-whisk] .whisk-select-trigger:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 2px;
+  border-radius: var(--whisk-radius-sm);
+}
+
+[data-whisk] .whisk-select-content {
+  background: var(--whisk-bg);
+  color: var(--whisk-fg);
+  border: 1px solid var(--whisk-border);
+  border-radius: var(--whisk-radius-md);
+  padding: 0.25rem;
+  box-shadow: 0 8px 24px -4px color-mix(in srgb, #1a1410 24%, transparent);
+  z-index: 60;
+  min-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height);
+  font-family: var(--whisk-font);
+}
+
+[data-whisk] .whisk-select-viewport {
+  padding: 0.125rem;
+}
+
+[data-whisk] .whisk-select-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  background: var(--whisk-bg);
+  color: var(--whisk-fg-muted);
+  cursor: default;
+}
+
+[data-whisk] .whisk-select-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1.5rem 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  border-radius: calc(var(--whisk-radius-md) - 0.25rem);
+  color: var(--whisk-fg);
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+[data-whisk] .whisk-select-item[data-highlighted] {
+  background: color-mix(in srgb, var(--whisk-fg) 6%, transparent);
+  outline: none;
+}
+
+[data-whisk] .whisk-select-item[data-state="checked"] {
+  font-weight: 600;
+}
+
+[data-whisk] .whisk-select-item-indicator {
+  position: absolute;
+  right: 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  color: var(--whisk-primary);
 }

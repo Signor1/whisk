@@ -26,10 +26,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      # No `with: version` here — `pnpm/action-setup@v6` reads the version
+      # from the root `package.json`'s `packageManager` field, and passing
+      # both is a hard error (ERR_PNPM_BAD_PM_VERSION).
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 10
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v6
@@ -40,18 +41,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Build first — `packages/react`'s typecheck resolves
+      # `@strimz/whisk-core` via the workspace package.json's
+      # `types: ./dist/index.d.ts`, which doesn't exist on a fresh
+      # checkout. Without the build step running first, every import
+      # of `@strimz/whisk-core` errors with TS2307 and a wave of
+      # cascading "implicit any" errors fall out of it.
+      - name: Build
+        run: pnpm build
+
       - name: Type-check
         run: pnpm typecheck
 
       - name: Test
         run: pnpm test
-
-      # Build packages first so the example consumes their dist/, mirroring
-      # how a downstream consumer installs Whisk from npm. Catches drift
-      # between package source and the published artefact (missing exports,
-      # type-only re-exports that don't survive the build, etc.).
-      - name: Build
-        run: pnpm build
 
       - name: Build example app
         run: pnpm --filter @strimz/whisk-example-nextjs-basic build
@@ -66,10 +69,11 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      # No `with: version` here — `pnpm/action-setup@v6` reads the version
+      # from the root `package.json`'s `packageManager` field, and passing
+      # both is a hard error (ERR_PNPM_BAD_PM_VERSION).
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 10
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v6

@@ -1,0 +1,351 @@
+:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
+  background: #f5f3e8;
+  color: #2a1d21;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background: #1a1115;
+    color: #e4e2d4;
+  }
+}
+
+main {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 1.5rem;
+  gap: 1.5rem;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.page__brand-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: #d65c3c;
+}
+
+.page__tag {
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  border: 0.5px solid currentColor;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.page__stage {
+  display: grid;
+  place-items: center;
+}
+
+.page__footer {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.55;
+}
+
+.page__footer code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+}
+
+/* ============================================================
+   Invoice card
+   ============================================================ */
+
+.invoice {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.invoice__head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.invoice__from {
+  font-size: 0.75rem;
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.invoice__head h1 {
+  margin: 0;
+  font-size: 1.375rem;
+  letter-spacing: -0.02em;
+}
+
+.invoice__total {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  opacity: 0.7;
+}
+
+.invoice__total strong {
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.invoice__note {
+  text-align: center;
+  font-size: 0.75rem;
+  opacity: 0.55;
+  margin: 0;
+}
+
+/* ============================================================
+   Empty / sample state
+   ============================================================ */
+
+.invoice--empty {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px dashed rgba(110, 77, 84, 0.3);
+  border-radius: 0.875rem;
+  padding: 1.5rem;
+  align-items: center;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .invoice--empty {
+    background: rgba(42, 29, 33, 0.4);
+    border-color: rgba(228, 226, 212, 0.18);
+  }
+}
+
+.invoice--empty h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.invoice--empty p {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  opacity: 0.7;
+}
+
+.invoice__samples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.invoice__samples a {
+  color: #b04f3e;
+}
+
+/* ============================================================
+   Create link form
+   ============================================================ */
+
+.create {
+  width: 100%;
+  max-width: 56rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.create__head {
+  text-align: center;
+}
+
+.create__eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.create__head h1 {
+  margin: 0.5rem 0 0.5rem;
+  font-size: 1.625rem;
+  letter-spacing: -0.02em;
+}
+
+.create__head p {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.9375rem;
+  max-width: 36rem;
+  margin-inline: auto;
+  line-height: 1.55;
+}
+
+.create__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 760px) {
+  .create__grid { grid-template-columns: 1fr; }
+}
+
+.create__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(110, 77, 84, 0.18);
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .create__form { background: rgba(42, 29, 33, 0.5); border-color: rgba(228, 226, 212, 0.12); }
+}
+
+.create__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.625rem;
+}
+
+.create__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.create__field span {
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.create__field input,
+.create__field select {
+  appearance: none;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(110, 77, 84, 0.25);
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+}
+
+.create__field input:focus,
+.create__field select:focus {
+  outline: 2px solid #d65c3c;
+  outline-offset: 1px;
+  border-color: #d65c3c;
+}
+
+.create__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(110, 77, 84, 0.18);
+  border-radius: 0.875rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  .create__preview { background: rgba(42, 29, 33, 0.5); border-color: rgba(228, 226, 212, 0.12); }
+}
+
+.create__url {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  background: rgba(110, 77, 84, 0.08);
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  word-break: break-all;
+}
+
+@media (prefers-color-scheme: dark) {
+  .create__url { background: rgba(228, 226, 212, 0.08); }
+}
+
+.create__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid rgba(110, 77, 84, 0.3);
+  background: transparent;
+  color: inherit;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 9999px;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.chip--primary {
+  background: #d65c3c;
+  color: #fbf8ee;
+  border-color: #d65c3c;
+}
+
+.create__hint {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.create__placeholder {
+  font-size: 0.8125rem;
+  opacity: 0.6;
+  text-align: center;
+  padding: 1.5rem;
+  border: 1px dashed rgba(110, 77, 84, 0.3);
+  border-radius: 0.5rem;
+}
