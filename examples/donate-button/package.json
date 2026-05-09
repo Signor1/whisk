@@ -1,0 +1,30 @@
+{
+  "name": "@strimz/whisk-example-donate-button",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vite + React donation page. Recipient locked, amount free — donor picks how generous they feel today.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3011",
+    "build": "vite build",
+    "preview": "vite preview --port 3011",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@strimz/whisk-core": "workspace:*",
+    "@strimz/whisk-react": "workspace:*",
+    "@tanstack/react-query": "^5.59.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.0"
+  }
+}
