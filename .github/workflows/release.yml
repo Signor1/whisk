@@ -31,10 +31,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      # Version is read from the root `package.json`'s `packageManager`
+      # field. Passing `with: version` alongside `packageManager` is a
+      # hard error in `pnpm/action-setup@v6` (ERR_PNPM_BAD_PM_VERSION).
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 10
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v6
