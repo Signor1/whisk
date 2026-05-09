@@ -1,10 +1,37 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
     "outDir": "./dist",
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    /*
+     * Source-to-source resolution for the sibling `@strimz/whisk-core`
+     * package. Without this, TypeScript follows the workspace symlink
+     * to `packages/core/package.json` and reads its `types` field
+     * (`./dist/index.d.ts`) — meaning `pnpm typecheck` on a fresh
+     * checkout fails with TS2307 until `packages/core` has been built
+     * at least once. With these path mappings, react's typecheck reads
+     * core's source directly, no dist required, and changes inside
+     * `core/src` are picked up immediately.
+     *
+     * `rootDir` is intentionally NOT set: with path mappings dragging
+     * files in from `../core/src`, an "rootDir: ./src" constraint would
+     * fire TS6059 for every imported core file. Since this tsconfig is
+     * `noEmit`, rootDir's only effect is the cross-rootDir error — we
+     * don't need it at all.
+     *
+     * The runtime build (tsup) is unaffected: `@strimz/whisk-core` is
+     * declared as a dependency, so tsup treats it as external and the
+     * compiled bundle still imports the published package the normal
+     * way.
+     */
+    "baseUrl": ".",
+    "paths": {
+      "@strimz/whisk-core": ["../core/src/index.ts"],
+      "@strimz/whisk-core/errors": ["../core/src/errors/index.ts"],
+      "@strimz/whisk-core/resolvers": ["../core/src/resolvers/index.ts"],
+      "@strimz/whisk-core/types": ["../core/src/types/index.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx"]
