@@ -41,10 +41,17 @@ export type QuoteParams = {
   destinationChain: Chain;
   /** Resolved recipient on the destination chain. */
   recipient: ResolvedRecipient;
-  /** Amount in human-readable USDC (e.g. `"1.50"`). */
+  /** Amount in human-readable units (e.g. `"1.50"`). */
   amount: string;
   /** Adapter that will sign the source-side transaction. */
   adapter: WhiskAdapter;
+  /**
+   * Token to send. Defaults to the engine's configured token (or `USDC`
+   * when none is set). Same-chain sends accept any App Kit alias or a
+   * contract address; cross-chain bridges always use USDC regardless of
+   * what's passed here (App Kit Bridge is USDC-only).
+   */
+  token?: Token;
 };
 
 export type SendParams = QuoteParams & {

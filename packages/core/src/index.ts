@@ -20,6 +20,11 @@ export type {
   SendSuccess,
   SendFailure,
   RetryParams,
+  SwapParams,
+  SwapEstimate,
+  SwapResult,
+  SwapSuccess,
+  SwapFailure,
 } from "./engine/types.js";
 
 // Types
@@ -55,8 +60,10 @@ export {
   chainsByKind,
   explorerTxUrl,
   explorerAddressUrl,
+  supportedTokensFor,
+  tokenAddressFor,
 } from "./chains/index.js";
-export type { ChainInfo } from "./chains/index.js";
+export type { ChainInfo, SupportedTokenAlias } from "./chains/index.js";
 
 // Resolvers
 export { addressResolver, composeResolvers } from "./resolvers/index.js";

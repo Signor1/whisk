@@ -56,7 +56,7 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
   }
 
   const kit = new AppKit();
-  const token = config.token ?? DEFAULT_TOKEN;
+  const defaultToken = config.token ?? DEFAULT_TOKEN;
   const resolver = config.resolver ?? addressResolver;
 
   const engine: WhiskEngine = {
@@ -87,7 +87,16 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
     async quote(params: QuoteParams): Promise<Quote> {
       const route = decideRoute(params.sourceChain, params.destinationChain);
       const adapter = params.adapter.appKitAdapter;
-      const customFees = buildCustomFeeEntries(config.feePolicy, token);
+      // Same-chain sends honour the user's token choice; cross-chain
+      // bridges always use USDC (App Kit Bridge is USDC-only). The
+      // `effectiveToken` we surface in the Quote reflects what's
+      // actually being moved on-chain.
+      const requested = params.token ?? defaultToken;
+      const effectiveToken = route.kind === "bridge" ? "USDC" : requested;
+      const customFees = buildCustomFeeEntries(
+        config.feePolicy,
+        effectiveToken,
+      );
       const amountIn = addCustomFee(params.amount, config.feePolicy?.value);
 
       try {
@@ -96,18 +105,18 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
             from: { adapter, chain: route.chain },
             to: params.recipient.address,
             amount: params.amount,
-            token,
+            token: effectiveToken,
           };
           // estimateSend returns gas-only (`EstimatedGas`); same-chain
           // sends carry no protocol fees worth surfacing in the breakdown.
           await kit.estimateSend(appKitParams);
-          const breakdown = sumFees([...customFees], token);
+          const breakdown = sumFees([...customFees], effectiveToken);
           return {
             route,
             recipient: params.recipient,
             amountIn,
             amountOut: params.amount,
-            token,
+            token: effectiveToken,
             fees: breakdown,
             estimatedDurationMs: 15_000,
           };
@@ -119,20 +128,23 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
           route.destinationChain,
           params.recipient.address,
           params.amount,
-          config.useForwarder ?? false,
+          config.useForwarder ?? true,
         );
         const estimate: EstimateResult = await kit.estimateBridge(appKitParams);
         const protocolFees = fromAppKitFees(
           estimate.fees as ReadonlyArray<AppKitEstimateFee>,
-          token,
+          effectiveToken,
         );
-        const breakdown = sumFees([...customFees, ...protocolFees], token);
+        const breakdown = sumFees(
+          [...customFees, ...protocolFees],
+          effectiveToken,
+        );
         return {
           route,
           recipient: params.recipient,
           amountIn,
           amountOut: params.amount,
-          token,
+          token: effectiveToken,
           fees: breakdown,
           // CCTP fast-burn typically completes in <30s, varies in practice.
           // The UI shows this as a hint, not a guarantee.
@@ -357,7 +369,12 @@ async function runSend(
   listeners?: SendListeners,
 ): Promise<SendResult> {
   const route = params.quote.route;
-  const token = config.token ?? DEFAULT_TOKEN;
+  // Bridge always operates on USDC; sends honour the user's token choice
+  // (params.token) and fall back to the engine default when omitted.
+  const token =
+    route.kind === "bridge"
+      ? "USDC"
+      : (params.token ?? params.quote.token ?? config.token ?? DEFAULT_TOKEN);
   const adapter = params.adapter.appKitAdapter;
   const onStep = listeners?.onStep;
 
@@ -418,7 +435,7 @@ async function runSend(
       route.destinationChain,
       params.recipient.address,
       params.amount,
-      config.useForwarder ?? false,
+      config.useForwarder ?? true,
     );
     const result = await kit.bridge(appKitParams);
     return mapAppKitBridgeResult(result, listeners);
@@ -434,17 +451,37 @@ async function runSend(
 }
 
 /**
- * Narrow shape we extract from App Kit's bridge event payload. The SDK
- * doesn't publish a per-action schema (`(payload: any) => void`), so we
- * pick out the fields documented in the source events.
+ * Narrow shape we extract from App Kit's bridge event payload.
+ *
+ * The SDK dispatches each step event with this envelope:
+ *
+ *   {
+ *     protocol: 'cctp',
+ *     version: 'v2',
+ *     traceId?: string,
+ *     method: 'approve' | 'burn' | 'fetchAttestation' | 'mint',
+ *     values: BridgeStep   // ← the actual step (state, txHash, etc.)
+ *   }
+ *
+ * Events fire **once the step lands** — `values.state` is `'success'` or
+ * `'error'`, not `'pending'`. The previous version of this function
+ * defaulted to `'pending'` which is why the rail never flipped green
+ * mid-flow. Now we pull the state straight off `payload.values`.
  */
 type AppKitBridgeEventPayload = {
-  state?: Step["state"];
-  txHash?: string;
-  explorerUrl?: string;
-  forwarded?: boolean;
-  values?: { txHash?: string; explorerUrl?: string };
-  error?: { message?: string };
+  protocol?: string;
+  version?: string;
+  traceId?: string;
+  method?: string;
+  values?: {
+    name?: string;
+    state?: Step["state"];
+    txHash?: string;
+    explorerUrl?: string;
+    forwarded?: boolean;
+    errorMessage?: string;
+    error?: { message?: string };
+  };
 };
 
 function translateAppKitEvent(
@@ -452,13 +489,14 @@ function translateAppKitEvent(
   payload: unknown,
 ): Step {
   const p = (payload ?? {}) as AppKitBridgeEventPayload;
+  const v = p.values ?? {};
   return {
     name: name as StepName,
-    state: p.state ?? "pending",
-    txHash: p.txHash ?? p.values?.txHash,
-    explorerUrl: p.explorerUrl ?? p.values?.explorerUrl,
-    errorMessage: p.error?.message,
-    forwarded: p.forwarded,
+    state: v.state ?? "success",
+    txHash: v.txHash,
+    explorerUrl: v.explorerUrl,
+    errorMessage: v.errorMessage ?? v.error?.message,
+    forwarded: v.forwarded,
   };
 }
 
