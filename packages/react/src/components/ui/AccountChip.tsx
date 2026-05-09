@@ -1,11 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react";
-import {
-  explorerAddressUrl,
-  type Chain,
-} from "@strimz/whisk-core";
+import { explorerAddressUrl, type Chain } from "@strimz/whisk-core";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 
 function shorten(address: string): string {
@@ -14,9 +11,11 @@ function shorten(address: string): string {
 }
 
 /**
- * Connected-wallet chip rendered at the top of the card. Click opens a
- * small menu with the connector name, "copy address", "view on explorer",
- * and "disconnect."
+ * Connected-wallet chip. Click opens a Radix DropdownMenu with the
+ * connector name, "copy address", "view on explorer", and "disconnect."
+ *
+ * Radix gives us focus management, keyboard nav (arrow keys / type-to-
+ * select), and proper ARIA wiring for free.
  */
 export function AccountChip({
   /** Chain used for the explorer link in the menu. Defaults to current. */
@@ -30,20 +29,6 @@ export function AccountChip({
   const connectorName = primary?.connectorName;
   const currentChain = primary?.currentChain;
   const disconnect = primary?.disconnect ?? (async () => {});
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Click-outside dismiss.
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, [open]);
 
   if (!address) return null;
 
@@ -61,70 +46,64 @@ export function AccountChip({
   };
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <button
-        type="button"
-        className="whisk-account-chip"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="whisk-account-chip__avatar" aria-hidden="true" />
-        <span className="whisk-account-chip__address">{shorten(address)}</span>
-        <ChevronDown size={12} strokeWidth={2.5} style={{ opacity: 0.6 }} />
-      </button>
-      {open ? (
-        <div className="whisk-account-menu" role="menu">
-          {connectorName ? (
-            <div className="whisk-account-menu__meta">
-              Connected via {connectorName}
-            </div>
-          ) : null}
-          <button
-            type="button"
-            className="whisk-account-menu__row"
-            onClick={() => {
-              void onCopy();
-              setOpen(false);
-            }}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button type="button" className="whisk-account-chip">
+          <span className="whisk-account-chip__avatar" aria-hidden="true" />
+          <span className="whisk-account-chip__address">
+            {shorten(address)}
+          </span>
+          <ChevronDown size={12} strokeWidth={2.5} style={{ opacity: 0.6 }} />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <DropdownMenu.Portal>
+        {/* Re-establish the Whisk theme scope inside the portal so the
+            CSS variables and component rules reach our menu. */}
+        <div data-whisk="">
+          <DropdownMenu.Content
+            className="whisk-account-menu"
+            align="end"
+            sideOffset={4}
+            collisionPadding={8}
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+            {connectorName ? (
+              <div className="whisk-account-menu__meta">
+                Connected via {connectorName}
+              </div>
+            ) : null}
+
+            <DropdownMenu.Item
+              className="whisk-account-menu__row"
+              onSelect={() => void onCopy()}
+            >
               <Copy size={12} strokeWidth={2} />
               Copy address
-            </span>
-          </button>
-          {explorer ? (
-            <a
-              className="whisk-account-menu__row"
-              role="menuitem"
-              href={explorer}
-              target="_blank"
-              rel="noreferrer"
-              style={{ textDecoration: "none" }}
-              onClick={() => setOpen(false)}
-            >
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem" }}>
+            </DropdownMenu.Item>
+
+            {explorer ? (
+              <DropdownMenu.Item
+                className="whisk-account-menu__row"
+                onSelect={() => window.open(explorer, "_blank", "noopener,noreferrer")}
+              >
                 <ExternalLink size={12} strokeWidth={2} />
                 View on explorer
-              </span>
-            </a>
-          ) : null}
-          <button
-            type="button"
-            className="whisk-account-menu__row"
-            onClick={() => {
-              void disconnect();
-              setOpen(false);
-            }}
-          >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", color: "var(--whisk-destructive)" }}>
+              </DropdownMenu.Item>
+            ) : null}
+
+            <DropdownMenu.Separator className="whisk-account-menu__separator" />
+
+            <DropdownMenu.Item
+              className="whisk-account-menu__row whisk-account-menu__row--danger"
+              onSelect={() => void disconnect()}
+            >
               <LogOut size={12} strokeWidth={2} />
               Disconnect
-            </span>
-          </button>
+            </DropdownMenu.Item>
+          </DropdownMenu.Content>
         </div>
-      ) : null}
-    </div>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
