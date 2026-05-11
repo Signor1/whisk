@@ -15,7 +15,7 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { createWhisk, ConfigError } from "@strimz/whisk-core";
+import { createWhisk, ConfigError } from "@signordev/whisk-core";
 import type { WhiskClientConfig } from "../config/types.js";
 import type { SolanaConfig } from "../config/adapters/solana.js";
 import { defaultResolver } from "../resolvers/index.js";

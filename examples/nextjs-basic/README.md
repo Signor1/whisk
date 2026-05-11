@@ -1,11 +1,11 @@
 # whisk-example-nextjs-basic
 
-A 5-file showcase of `@strimz/whisk-react` running on Next.js 15.
+A 5-file showcase of `@signordev/whisk-react` running on Next.js 15.
 
 ```
 src/app/
 ├── layout.tsx     # Self-hosts Inter + Geist Mono via next/font/google,
-│                   # imports `@strimz/whisk-react/styles.css`.
+│                   # imports `@signordev/whisk-react/styles.css`.
 ├── providers.tsx  # Client boundary — createWhiskConfig + WhiskProvider.
 ├── page.tsx       # Server component — page chrome.
 ├── widget.tsx     # Client component — <WhiskSend /> with callbacks.
@@ -17,10 +17,10 @@ src/app/
 ```bash
 # from the repo root
 pnpm install
-pnpm --filter @strimz/whisk-core build       # one-time, for the workspace dep
+pnpm --filter @signordev/whisk-core build       # one-time, for the workspace dep
 cp examples/nextjs-basic/.env.example examples/nextjs-basic/.env.local
 # (optional) paste a WalletConnect Cloud project ID into .env.local
-pnpm --filter @strimz/whisk-example-nextjs-basic dev
+pnpm --filter @signordev/whisk-example-nextjs-basic dev
 ```
 
 Open <http://localhost:3000>. Connect MetaMask / Rabby / Coinbase Wallet

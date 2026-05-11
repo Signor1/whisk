@@ -42,4 +42,4 @@ export type {
   Step,
   WhiskState,
   WhiskError,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";

@@ -1,7 +1,7 @@
-# @strimz/whisk-core
+# @signordev/whisk-core
 
 Framework-agnostic engine that powers the Whisk USDC widget. Most apps
-should consume [`@strimz/whisk-react`](../react) instead — reach for this
+should consume [`@signordev/whisk-react`](../react) instead — reach for this
 package directly only when:
 
 - You're building a Whisk frontend in something other than React (Vue,
@@ -20,7 +20,7 @@ machine.
 ## Install
 
 ```bash
-pnpm add @strimz/whisk-core
+pnpm add @signordev/whisk-core
 # or: npm install / yarn add
 ```
 
@@ -37,7 +37,7 @@ import {
   reduce,
   initialState,
   toWhiskError,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 
 const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia", "Solana_Devnet"],
@@ -81,7 +81,7 @@ The state machine is exposed separately for UIs that want their own
 reducer wiring:
 
 ```ts
-import { reduce, initialState } from "@strimz/whisk-core";
+import { reduce, initialState } from "@signordev/whisk-core";
 
 let state = initialState; // { kind: "disconnected" }
 state = reduce(state, { type: "CONNECTED" });          // { kind: "idle" }
@@ -98,7 +98,7 @@ adapters expect, then pass it to `engine.quote` / `engine.send`.
 
 ```ts
 import { createViemAdapterFromProvider } from "@circle-fin/adapter-viem-v2";
-import type { WhiskAdapter } from "@strimz/whisk-core";
+import type { WhiskAdapter } from "@signordev/whisk-core";
 
 const provider = await wagmiConnector.getProvider();
 const appKitAdapter = await createViemAdapterFromProvider({ provider });
@@ -119,7 +119,7 @@ The engine resolves free-text recipient input through a chain of
 (EVM hex + Solana base58). Add ENS, email, handle resolvers by composing:
 
 ```ts
-import { addressResolver, composeResolvers } from "@strimz/whisk-core";
+import { addressResolver, composeResolvers } from "@signordev/whisk-core";
 
 const ensResolver = {
   name: "ens",
@@ -164,7 +164,7 @@ import {
   chainsByNetwork,
   explorerTxUrl,
   explorerAddressUrl,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 
 chainInfo("Arc_Testnet").label;            // "Arc Testnet"
 chainsByNetwork("testnet").length;          // every supported testnet
@@ -175,7 +175,7 @@ explorerTxUrl("Solana_Devnet", "sig123");  // includes ?cluster=devnet
 ## Testing
 
 ```bash
-pnpm --filter @strimz/whisk-core test
+pnpm --filter @signordev/whisk-core test
 ```
 
 The suite covers the state machine, resolver chain, address resolver,

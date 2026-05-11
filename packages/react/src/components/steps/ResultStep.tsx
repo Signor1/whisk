@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, XCircle, RotateCcw, ExternalLink } from "lucide-react";
-import type { Quote, Step, WhiskError } from "@strimz/whisk-core";
+import type { Quote, Step, WhiskError } from "@signordev/whisk-core";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 import { StepRail } from "../ui/StepRail.js";

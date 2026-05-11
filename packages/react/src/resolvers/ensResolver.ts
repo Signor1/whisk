@@ -7,7 +7,7 @@ import {
   ResolverError,
   chainInfo,
   type Resolver,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 
 export type EnsResolverOptions = {
   /**

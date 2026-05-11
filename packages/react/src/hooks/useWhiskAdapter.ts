@@ -13,7 +13,7 @@ import {
   chainInfo,
   type Chain,
   type WhiskAdapter,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 import { safeUseConnection, safeUseWallet } from "./internal/safeSolana.js";
 
 /**

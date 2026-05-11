@@ -3,9 +3,9 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [["@strimz/whisk-core", "@strimz/whisk-react"]],
+  "linked": [["@signordev/whisk-core", "@signordev/whisk-react"]],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@strimz/whisk-example-nextjs-basic"]
+  "ignore": ["@signordev/whisk-example-nextjs-basic"]
 }

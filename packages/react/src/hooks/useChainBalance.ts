@@ -8,7 +8,7 @@ import {
   tokenAddressFor,
   type Chain,
   type SupportedTokenAlias,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 import { safeUseConnection } from "./internal/safeSolana.js";
 
 export type ChainBalance = {

@@ -1,8 +1,8 @@
 /**
- * `@strimz/whisk-core` — framework-agnostic engine, types, errors, and
+ * `@signordev/whisk-core` — framework-agnostic engine, types, errors, and
  * helpers for the Whisk USDC widget.
  *
- * Most apps will consume `@strimz/whisk-react` instead. Reach for this
+ * Most apps will consume `@signordev/whisk-react` instead. Reach for this
  * package directly only when building a Whisk frontend in something other
  * than React, or when running engine logic on a server.
  */

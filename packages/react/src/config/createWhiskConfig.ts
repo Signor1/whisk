@@ -1,4 +1,4 @@
-import { ConfigError } from "@strimz/whisk-core";
+import { ConfigError } from "@signordev/whisk-core";
 import type {
   CreateWhiskConfigOptions,
   WhiskClientConfig,

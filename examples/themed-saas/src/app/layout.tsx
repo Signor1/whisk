@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
-import "@strimz/whisk-react/styles.css";
+import "@signordev/whisk-react/styles.css";
 import "./globals.css";
 
 const inter = Inter({

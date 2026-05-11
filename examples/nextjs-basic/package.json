@@ -1,5 +1,5 @@
 {
-  "name": "@strimz/whisk-example-nextjs-basic",
+  "name": "@signordev/whisk-example-nextjs-basic",
   "version": "0.0.0",
   "private": true,
   "description": "Drop-in showcase: Next.js 15 + Whisk's <WhiskSend /> widget on Arc Testnet, Base Sepolia, and Solana Devnet.",
@@ -15,8 +15,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@strimz/whisk-core": "workspace:*",
-    "@strimz/whisk-react": "workspace:*",
+    "@signordev/whisk-core": "workspace:*",
+    "@signordev/whisk-react": "workspace:*",
     "@tanstack/react-query": "^5.59.0",
     "next": "^15.0.3",
     "react": "^19.0.0",

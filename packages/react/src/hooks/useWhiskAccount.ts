@@ -7,7 +7,7 @@ import {
   useDisconnect,
   useSwitchChain,
 } from "wagmi";
-import { chainByEvmId, chainInfo, type Chain } from "@strimz/whisk-core";
+import { chainByEvmId, chainInfo, type Chain } from "@signordev/whisk-core";
 import { viemChainForWhisk } from "../config/adapters/evm.js";
 import { useSolanaAccount } from "./useSolanaAccount.js";
 

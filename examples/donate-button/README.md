@@ -18,7 +18,7 @@ treasury); the donor picks the chain and the amount.
 
 ```bash
 pnpm install
-pnpm --filter @strimz/whisk-example-donate-button dev
+pnpm --filter @signordev/whisk-example-donate-button dev
 ```
 
 Open <http://localhost:3011>.

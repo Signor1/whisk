@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-import type { Chain, Quote, Token, WhiskState } from "@strimz/whisk-core";
+import type { Chain, Quote, Token, WhiskState } from "@signordev/whisk-core";
 import { useWhisk } from "../hooks/useWhisk.js";
 import { AccountChip, NetworkPill } from "./ui/AccountChip.js";
 import { Card } from "./ui/Card.js";
