@@ -5,7 +5,7 @@ import {
   WhiskProvider,
   createWhiskConfig,
   evm,
-} from "@strimz/whisk-react";
+} from "@signordev/whisk-react";
 
 /**
  * The merchant fixes a single chain (Arc Testnet here). The `chains`

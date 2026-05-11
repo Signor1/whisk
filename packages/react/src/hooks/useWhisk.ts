@@ -11,7 +11,7 @@ import {
   type Token,
   type WhiskAction,
   type WhiskState,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 import { useWhiskContext } from "./useWhiskContext.js";
 import { useWhiskAdapter } from "./useWhiskAdapter.js";
 import { useWhiskAccount } from "./useWhiskAccount.js";

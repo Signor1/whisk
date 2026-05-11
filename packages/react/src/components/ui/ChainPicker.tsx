@@ -2,8 +2,8 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import type { Chain } from "@strimz/whisk-core";
-import { chainInfo } from "@strimz/whisk-core";
+import type { Chain } from "@signordev/whisk-core";
+import { chainInfo } from "@signordev/whisk-core";
 
 export type ChainPickerProps = {
   id?: string;

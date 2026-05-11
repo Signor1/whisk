@@ -1,6 +1,6 @@
 "use client";
 
-import { WhiskSend } from "@strimz/whisk-react";
+import { WhiskSend } from "@signordev/whisk-react";
 
 const STATS = [
   { label: "Total transferred", value: "$48,210", delta: "+12.4%" },

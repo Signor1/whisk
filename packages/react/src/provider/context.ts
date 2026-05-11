@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { WhiskEngine } from "@strimz/whisk-core";
+import type { WhiskEngine } from "@signordev/whisk-core";
 import type { WhiskClientConfig } from "../config/types.js";
 
 /**

@@ -1,5 +1,5 @@
 {
-  "name": "@strimz/whisk-react",
+  "name": "@signordev/whisk-react",
   "version": "0.0.1",
   "description": "Whisk React — embeddable USDC send & bridge widget components, hooks, and providers built on Circle App Kit.",
   "license": "MIT",
@@ -86,7 +86,7 @@
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/web3.js": "^1.95.0",
-    "@strimz/whisk-core": "workspace:*",
+    "@signordev/whisk-core": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",
     "viem": "^2.21.0",

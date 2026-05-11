@@ -6,7 +6,7 @@ import {
   createWhiskConfig,
   evm,
   type Chain,
-} from "@strimz/whisk-react";
+} from "@signordev/whisk-react";
 
 /**
  * The full set of EVM testnets App Kit supports. Listed explicitly so it

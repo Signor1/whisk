@@ -12,7 +12,7 @@
  * @example
  *   // tailwind.config.ts
  *   import type { Config } from "tailwindcss";
- *   import { whiskTheme } from "@strimz/whisk-react/tailwind";
+ *   import { whiskTheme } from "@signordev/whisk-react/tailwind";
  *
  *   export default {
  *     presets: [whiskTheme()],

@@ -6,11 +6,11 @@
 
 Drop-in React component. Same interface for same-chain sends and cross-chain bridges. Multi-chain. Pluggable recipient resolution. MIT-licensed.
 
-[![npm @strimz/whisk-react](https://img.shields.io/npm/v/@strimz/whisk-react?label=%40strimz%2Fwhisk-react&style=flat-square&color=10b981)](https://www.npmjs.com/package/@strimz/whisk-react)
-[![npm @strimz/whisk-core](https://img.shields.io/npm/v/@strimz/whisk-core?label=%40strimz%2Fwhisk-core&style=flat-square&color=059669)](https://www.npmjs.com/package/@strimz/whisk-core)
+[![npm @signordev/whisk-react](https://img.shields.io/npm/v/@signordev/whisk-react?label=%40strimz%2Fwhisk-react&style=flat-square&color=10b981)](https://www.npmjs.com/package/@signordev/whisk-react)
+[![npm @signordev/whisk-core](https://img.shields.io/npm/v/@signordev/whisk-core?label=%40strimz%2Fwhisk-core&style=flat-square&color=059669)](https://www.npmjs.com/package/@signordev/whisk-core)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/Signor1/whisk/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Signor1/whisk/actions/workflows/ci.yml)
-[![Bundle size](https://img.shields.io/bundlephobia/minzip/@strimz/whisk-react?style=flat-square&label=bundle)](https://bundlephobia.com/package/@strimz/whisk-react)
+[![Bundle size](https://img.shields.io/bundlephobia/minzip/@signordev/whisk-react?style=flat-square&label=bundle)](https://bundlephobia.com/package/@signordev/whisk-react)
 [![Types](https://img.shields.io/badge/types-TypeScript-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 [![Built with Circle App Kit](https://img.shields.io/badge/built%20on-Circle%20App%20Kit-0052FF?style=flat-square)](https://docs.arc.network/app-kit)
@@ -63,13 +63,13 @@ That's the work Whisk does once, well, and ships as a widget so you can spend yo
 
 ```bash
 # pnpm
-pnpm add @strimz/whisk-react
+pnpm add @signordev/whisk-react
 
 # npm
-npm install @strimz/whisk-react
+npm install @signordev/whisk-react
 
 # yarn
-yarn add @strimz/whisk-react
+yarn add @signordev/whisk-react
 ```
 
 ### Drop it in
@@ -80,8 +80,8 @@ import {
   WhiskSend,
   createWhiskConfig,
   evm,
-} from "@strimz/whisk-react";
-import "@strimz/whisk-react/styles.css";
+} from "@signordev/whisk-react";
+import "@signordev/whisk-react/styles.css";
 
 const config = createWhiskConfig({
   wallets: [evm({ projectId: process.env.WALLETCONNECT_PROJECT_ID! })],
@@ -105,7 +105,7 @@ That's the entire integration.
 Just add the `solana()` adapter. Tree-shakeable — Solana code only enters your bundle when imported.
 
 ```tsx
-import { evm, solana } from "@strimz/whisk-react";
+import { evm, solana } from "@signordev/whisk-react";
 
 const config = createWhiskConfig({
   wallets: [evm(), solana()],
@@ -127,7 +127,7 @@ const config = createWhiskConfig({
 
 ```js
 // tailwind.config.js
-import { whiskTheme } from "@strimz/whisk-react/tailwind";
+import { whiskTheme } from "@signordev/whisk-react/tailwind";
 
 export default {
   presets: [whiskTheme()],
@@ -163,15 +163,15 @@ Whisk is a small monorepo. Each package has one job.
 ```
 whisk/
 ├── packages/
-│   ├── core/            # @strimz/whisk-core — framework-agnostic engine
-│   └── react/           # @strimz/whisk-react — components, hooks, provider
+│   ├── core/            # @signordev/whisk-core — framework-agnostic engine
+│   └── react/           # @signordev/whisk-react — components, hooks, provider
 ├── examples/
 │   └── nextjs-basic/    # Drop-in showcase app
 └── apps/
     └── docs/            # Live documentation site
 ```
 
-### `@strimz/whisk-core`
+### `@signordev/whisk-core`
 
 The engine. Pure logic. No React, no DOM, no wallet.
 
@@ -189,7 +189,7 @@ core/src/
 
 The engine is **stateless** — `createWhisk()` returns an interface with four methods. State machine lives in the consumer (`useReducer` in React, signal store in Solid, etc.). This is what lets us add Vue/Solid/vanilla layers later without rewriting core.
 
-### `@strimz/whisk-react`
+### `@signordev/whisk-react`
 
 The default frontend. Three composition surfaces:
 
@@ -367,7 +367,7 @@ Tailwind users can opt into the preset for first-class token mapping:
 
 ```js
 // tailwind.config.js
-import { whiskTheme } from "@strimz/whisk-react/tailwind";
+import { whiskTheme } from "@signordev/whisk-react/tailwind";
 
 export default {
   presets: [whiskTheme()],
@@ -392,8 +392,8 @@ export default {
 
 | Module                       | Status        |
 | ---------------------------- | ------------- |
-| `@strimz/whisk-core`      | ✅ ready (v0.0.1) |
-| `@strimz/whisk-react`     | 🚧 in progress |
+| `@signordev/whisk-core`      | ✅ ready (v0.0.1) |
+| `@signordev/whisk-react`     | 🚧 in progress |
 | Default theme + components   | 🚧 in progress |
 | Next.js example              | ⏳ planned    |
 | Documentation site           | ⏳ planned    |

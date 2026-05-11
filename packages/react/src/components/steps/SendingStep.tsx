@@ -1,6 +1,6 @@
 "use client";
 
-import type { Step } from "@strimz/whisk-core";
+import type { Step } from "@signordev/whisk-core";
 import { StepRail } from "../ui/StepRail.js";
 
 export type SendingStepProps = {

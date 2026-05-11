@@ -1,5 +1,5 @@
 /**
- * `@strimz/whisk-react` — embeddable USDC send & bridge widget.
+ * `@signordev/whisk-react` — embeddable USDC send & bridge widget.
  *
  * The drop-in entry point. Most apps:
  *
@@ -9,8 +9,8 @@
  *   WhiskSend,
  *   createWhiskConfig,
  *   evm,
- * } from "@strimz/whisk-react";
- * import "@strimz/whisk-react/styles.css";
+ * } from "@signordev/whisk-react";
+ * import "@signordev/whisk-react/styles.css";
  *
  * const config = createWhiskConfig({
  *   wallets: [evm({ projectId: process.env.WALLETCONNECT_PROJECT_ID })],
@@ -21,7 +21,7 @@
  * ```
  *
  * For headless control (custom UI on top of the engine + state machine),
- * import from `@strimz/whisk-react/headless`.
+ * import from `@signordev/whisk-react/headless`.
  */
 
 // Provider
@@ -95,10 +95,10 @@ export {
 export type { EnsResolverOptions } from "./resolvers/index.js";
 // Re-export core's address resolver and `composeResolvers` helper so
 // host apps don't need a second import to wire a custom chain.
-export { addressResolver, composeResolvers } from "@strimz/whisk-core";
+export { addressResolver, composeResolvers } from "@signordev/whisk-core";
 
 // Chain registry helpers — same reason: avoid forcing apps to depend
-// on `@strimz/whisk-core` for routine lookups.
+// on `@signordev/whisk-core` for routine lookups.
 export {
   allChains,
   chainInfo,
@@ -107,11 +107,11 @@ export {
   chainByEvmId,
   supportedTokensFor,
   tokenAddressFor,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 export type {
   ChainInfo,
   SupportedTokenAlias,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 
 // Hooks (also exposed in /headless for tree-shake-friendly imports)
 export {
@@ -148,4 +148,4 @@ export type {
   Resolver,
   WhiskState,
   WhiskError,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";

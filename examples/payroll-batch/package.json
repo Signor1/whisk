@@ -1,5 +1,5 @@
 {
-  "name": "@strimz/whisk-example-payroll-batch",
+  "name": "@signordev/whisk-example-payroll-batch",
   "version": "0.0.0",
   "private": true,
   "description": "Vite + React admin tool. A list of payees, click one, the same Whisk widget repopulates with their address + amount.",
@@ -14,8 +14,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@strimz/whisk-core": "workspace:*",
-    "@strimz/whisk-react": "workspace:*",
+    "@signordev/whisk-core": "workspace:*",
+    "@signordev/whisk-react": "workspace:*",
     "@tanstack/react-query": "^5.59.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

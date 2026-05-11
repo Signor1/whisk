@@ -6,7 +6,7 @@ import {
   createWhiskConfig,
   evm,
   type Chain,
-} from "@strimz/whisk-react";
+} from "@signordev/whisk-react";
 
 const SUPPORTED: Chain[] = [
   "Arc_Testnet",

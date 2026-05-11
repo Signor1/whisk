@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Chain } from "@strimz/whisk-core";
+import type { Chain } from "@signordev/whisk-core";
 import { safeUseWallet } from "./internal/safeSolana.js";
 
 export type UseSolanaAccountResult = {

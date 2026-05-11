@@ -2,7 +2,7 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react";
-import { explorerAddressUrl, type Chain } from "@strimz/whisk-core";
+import { explorerAddressUrl, type Chain } from "@signordev/whisk-core";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 
 function shorten(address: string): string {

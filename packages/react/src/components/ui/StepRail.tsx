@@ -9,7 +9,7 @@ import {
   ScrollText,
   Sparkles,
 } from "lucide-react";
-import type { Step, StepName } from "@strimz/whisk-core";
+import type { Step, StepName } from "@signordev/whisk-core";
 import { cn } from "../../lib/cn.js";
 
 /**

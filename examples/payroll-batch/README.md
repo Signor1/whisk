@@ -18,7 +18,7 @@ payee's address + amount as you click rows.
 
 ```bash
 pnpm install
-pnpm --filter @strimz/whisk-example-payroll-batch dev
+pnpm --filter @signordev/whisk-example-payroll-batch dev
 ```
 
 Open <http://localhost:3013>.

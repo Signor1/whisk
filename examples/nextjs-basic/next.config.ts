@@ -6,7 +6,7 @@ const config: NextConfig = {
   // Transpile our workspace packages so the example can run from source
   // (no need to build dist before `pnpm dev`). Production `next build`
   // still resolves the published exports cleanly.
-  transpilePackages: ["@strimz/whisk-core", "@strimz/whisk-react"],
+  transpilePackages: ["@signordev/whisk-core", "@signordev/whisk-react"],
 
   webpack: (config) => {
     // wagmi v2's connector barrel transitively pulls a couple of optional

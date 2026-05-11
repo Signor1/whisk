@@ -9,7 +9,7 @@ import {
   type ResolvedRecipient,
   type SupportedTokenAlias,
   type Token,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 import { useWhiskContext } from "../../hooks/useWhiskContext.js";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 import { useChainBalance } from "../../hooks/useChainBalance.js";

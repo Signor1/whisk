@@ -2,7 +2,7 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import type { Token } from "@strimz/whisk-core";
+import type { Token } from "@signordev/whisk-core";
 
 export type TokenPickerProps = {
   value: Token;

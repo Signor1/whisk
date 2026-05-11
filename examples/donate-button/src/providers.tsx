@@ -3,7 +3,7 @@ import {
   WhiskProvider,
   createWhiskConfig,
   evm,
-} from "@strimz/whisk-react";
+} from "@signordev/whisk-react";
 
 /**
  * The donor picks the chain — donations are accepted on every CCTP

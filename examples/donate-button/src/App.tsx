@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WhiskSend } from "@strimz/whisk-react";
+import { WhiskSend } from "@signordev/whisk-react";
 import { Providers } from "./providers";
 
 const TREASURY_ADDRESS = "0x5B8ecaB7096F8aBED873D246629ef9f05f467605";

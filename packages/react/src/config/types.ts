@@ -1,4 +1,4 @@
-import type { Chain, FeePolicy, Resolver, Token } from "@strimz/whisk-core";
+import type { Chain, FeePolicy, Resolver, Token } from "@signordev/whisk-core";
 
 /**
  * Discriminator on the wallet-adapter factories that `createWhiskConfig`

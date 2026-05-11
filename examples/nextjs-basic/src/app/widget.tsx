@@ -1,6 +1,6 @@
 "use client";
 
-import { WhiskSend } from "@strimz/whisk-react";
+import { WhiskSend } from "@signordev/whisk-react";
 
 /**
  * Pure showcase widget. Client component because `<WhiskSend />` uses

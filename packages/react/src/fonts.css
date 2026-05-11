@@ -10,8 +10,8 @@
  * Inter / Geist Mono and you want Whisk to render in its intended type:
  *
  * ```ts
- * import "@strimz/whisk-react/styles.css";
- * import "@strimz/whisk-react/fonts.css";
+ * import "@signordev/whisk-react/styles.css";
+ * import "@signordev/whisk-react/fonts.css";
  * ```
  *
  * Both fonts ship variable-weight files from the official Vercel /

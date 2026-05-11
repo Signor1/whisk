@@ -4,7 +4,7 @@ import {
   addressResolver,
   composeResolvers,
   type Resolver,
-} from "@strimz/whisk-core";
+} from "@signordev/whisk-core";
 import {
   createEnsResolver,
   ensResolver,
@@ -33,7 +33,7 @@ export type { EnsResolverOptions };
  *   composeResolvers,
  *   ensResolver,
  *   myCustomResolver,
- * } from "@strimz/whisk-react";
+ * } from "@signordev/whisk-react";
  *
  * createWhiskConfig({
  *   resolver: composeResolvers([

@@ -19,7 +19,7 @@ import {
   walletConnect,
 } from "wagmi/connectors";
 import { defineChain, type Chain as ViemChain } from "viem";
-import type { Chain } from "@strimz/whisk-core";
+import type { Chain } from "@signordev/whisk-core";
 import type { EvmAdapterFactory } from "../types.js";
 
 /**

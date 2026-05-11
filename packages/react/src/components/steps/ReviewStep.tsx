@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, ArrowLeftRight, Clock3 } from "lucide-react";
-import { chainInfo, type Quote } from "@strimz/whisk-core";
+import { chainInfo, type Quote } from "@signordev/whisk-core";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 

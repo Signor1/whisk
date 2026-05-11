@@ -17,7 +17,7 @@ surface, not a transfer composer.
 
 ```bash
 pnpm install
-pnpm --filter @strimz/whisk-example-ecommerce-checkout dev
+pnpm --filter @signordev/whisk-example-ecommerce-checkout dev
 ```
 
 Open <http://localhost:3010>.
