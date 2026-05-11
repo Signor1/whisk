@@ -1,36 +1,63 @@
+import {
+  DocsPage,
+  DocsBody,
+  DocsDescription,
+  DocsTitle,
+} from "fumadocs-ui/page";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { source } from "@/lib/source";
+import { getMDXComponents } from "@/../mdx-components";
+
 /**
- * Fumadocs slug-driven page renderer. Phase 1 ships a placeholder
- * that confirms the route is wired; Phase 3 swaps this for the full
- * fumadocs `<DocsPage>` shell with sidebar, search, and TOC, reading
- * from `source.config.ts`.
+ * Slug-driven MDX renderer. Every page tree node resolves through
+ * `source.getPage(...)`; if the slug doesn't match a file we 404.
+ *
+ * `editOnGithub` adds the "Edit this page" link on the article footer
+ * pointing at the canonical source path in the monorepo.
  */
-export default function DocsPlaceholder() {
+export default async function Page(props: {
+  params: Promise<{ slug?: string[] }>;
+}) {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+  if (!page) notFound();
+
+  const MDX = page.data.body;
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <div className="rounded-lg border border-border bg-card p-8 text-center">
-        <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          Phase 1 scaffold
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-          Docs route, wired
-        </h1>
-        <p className="mt-3 text-muted-foreground">
-          The fumadocs shell + brand-themed sidebar + search land in
-          Phase 3, and the content pages (Getting Started, Concepts,
-          Components, Hooks, Theming, Recipes, API reference) land in
-          Phase 4. The MDX source files already live under{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm">
-            src/content/docs/
-          </code>
-          .
-        </p>
-        <a
-          href="/"
-          className="mt-6 inline-flex h-9 items-center rounded-md border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          ← Back to landing
-        </a>
-      </div>
-    </div>
+    <DocsPage
+      toc={page.data.toc}
+      full={page.data.full}
+      editOnGithub={{
+        owner: "Signor1",
+        repo: "whisk",
+        sha: "main",
+        path: `apps/docs/src/content/docs/${page.path}`,
+      }}
+    >
+      <DocsTitle>{page.data.title}</DocsTitle>
+      <DocsDescription>{page.data.description}</DocsDescription>
+      <DocsBody>
+        <MDX components={getMDXComponents()} />
+      </DocsBody>
+    </DocsPage>
   );
+}
+
+export function generateStaticParams() {
+  return source.generateParams();
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ slug?: string[] }>;
+}): Promise<Metadata> {
+  const params = await props.params;
+  const page = source.getPage(params.slug);
+  if (!page) notFound();
+
+  return {
+    title: page.data.title,
+    description: page.data.description,
+  };
 }

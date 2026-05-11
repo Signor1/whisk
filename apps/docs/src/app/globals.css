@@ -1,20 +1,21 @@
 @import "tailwindcss";
+@import "fumadocs-ui/style.css";
 
 /* ============================================================
    Whisk brand tokens — earth-tone palette
    ============================================================
-   These are the single source of truth for the entire site. Both
-   the marketing surfaces (shadcn / magic-ui / aceternity-ui) and
-   the fumadocs documentation shell read from the same CSS
-   variables, so the next-themes toggle flips both in lockstep.
+   Single source of truth for the entire site. Both the marketing
+   surfaces and the fumadocs documentation shell read from the same
+   variables — `--background` / `--foreground` etc. for our own
+   components, and `--color-fd-*` for fumadocs-ui internals — so the
+   next-themes toggle flips both in lockstep.
 
-   Hue / saturation / lightness rather than hex so that
-   `color-mix(in oklch, var(--primary) 50%, transparent)` works
-   cleanly in both light and dark.
+   HSL channels (not hex) so `color-mix(in oklch, hsl(var(--primary)) 50%, transparent)`
+   works cleanly in both modes.
 */
 
 :root {
-  /* Brand surfaces */
+  /* Whisk brand tokens — consumed by our own marketing components */
   --background: 39 36% 91%;         /* cream  #e4e2d4 */
   --foreground: 354 18% 37%;        /* wine   #6e4d54 */
   --muted: 39 28% 86%;
@@ -27,7 +28,6 @@
   --input: 14 36% 67%;
   --ring: 14 64% 54%;
 
-  /* Brand accent */
   --primary: 14 64% 54%;             /* terracotta #d65c3c */
   --primary-foreground: 39 36% 96%;
   --secondary: 39 28% 86%;
@@ -37,8 +37,27 @@
   --destructive: 0 62% 47%;
   --destructive-foreground: 39 36% 96%;
 
-  /* Shape */
   --radius: 0.625rem;
+
+  /* Fumadocs-ui overrides — same earth-tone palette, mapped to the
+     `--color-fd-*` contract used by the docs shell, sidebar, search
+     dialog, code blocks, etc. */
+  --color-fd-background: hsl(39 36% 91%);
+  --color-fd-foreground: hsl(354 18% 37%);
+  --color-fd-muted: hsl(39 28% 86%);
+  --color-fd-muted-foreground: hsl(354 14% 47%);
+  --color-fd-popover: hsl(0 0% 100%);
+  --color-fd-popover-foreground: hsl(354 18% 37%);
+  --color-fd-card: hsl(0 0% 100%);
+  --color-fd-card-foreground: hsl(354 18% 37%);
+  --color-fd-border: hsl(14 36% 67% / 0.7);
+  --color-fd-primary: hsl(14 64% 54%);
+  --color-fd-primary-foreground: hsl(39 36% 96%);
+  --color-fd-secondary: hsl(39 28% 86%);
+  --color-fd-secondary-foreground: hsl(354 18% 37%);
+  --color-fd-accent: hsl(14 64% 54% / 0.12);
+  --color-fd-accent-foreground: hsl(14 64% 40%);
+  --color-fd-ring: hsl(14 64% 54%);
 }
 
 .dark {
@@ -62,13 +81,24 @@
   --accent-foreground: 354 21% 14%;
   --destructive: 0 62% 52%;
   --destructive-foreground: 39 36% 96%;
-}
 
-/* ============================================================
-   Tailwind v4 `@theme` — exposes every brand token as a Tailwind
-   utility (`bg-background`, `text-foreground`, `border-border`,
-   `text-primary`, etc.). No `tailwind.config.js` required.
-*/
+  --color-fd-background: hsl(354 21% 14%);
+  --color-fd-foreground: hsl(39 36% 86%);
+  --color-fd-muted: hsl(354 18% 22%);
+  --color-fd-muted-foreground: hsl(39 18% 60%);
+  --color-fd-popover: hsl(354 19% 18%);
+  --color-fd-popover-foreground: hsl(39 36% 86%);
+  --color-fd-card: hsl(354 19% 18%);
+  --color-fd-card-foreground: hsl(39 36% 86%);
+  --color-fd-border: hsl(354 21% 27% / 0.7);
+  --color-fd-primary: hsl(14 64% 58%);
+  --color-fd-primary-foreground: hsl(354 21% 14%);
+  --color-fd-secondary: hsl(354 18% 22%);
+  --color-fd-secondary-foreground: hsl(39 36% 86%);
+  --color-fd-accent: hsl(14 64% 58% / 0.18);
+  --color-fd-accent-foreground: hsl(14 64% 70%);
+  --color-fd-ring: hsl(14 64% 58%);
+}
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -103,10 +133,6 @@
     monospace;
 }
 
-/* ============================================================
-   Base layer
-*/
-
 @layer base {
   * {
     border-color: hsl(var(--border));
@@ -122,11 +148,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Prevent the dreaded white flash on theme toggle */
     transition: background-color 200ms ease;
   }
 
-  /* Selection in brand colour */
   ::selection {
     background: hsl(var(--primary) / 0.25);
     color: hsl(var(--foreground));

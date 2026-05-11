@@ -5,10 +5,13 @@
   "description": "Whisk marketing landing + fumadocs documentation. Served at whisk.vercel.app (marketing) and whisk.vercel.app/docs (docs).",
   "type": "module",
   "scripts": {
+    "postinstall": "fumadocs-mdx",
+    "predev": "fumadocs-mdx",
     "dev": "next dev --turbopack -p 3030",
+    "prebuild": "fumadocs-mdx",
     "build": "next build",
     "start": "next start -p 3030",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
     "lint": "next lint"
   },
   "engines": {
