@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Whisk brand tokens — earth-tone palette
+   ============================================================
+   These are the single source of truth for the entire site. Both
+   the marketing surfaces (shadcn / magic-ui / aceternity-ui) and
+   the fumadocs documentation shell read from the same CSS
+   variables, so the next-themes toggle flips both in lockstep.
+
+   Hue / saturation / lightness rather than hex so that
+   `color-mix(in oklch, var(--primary) 50%, transparent)` works
+   cleanly in both light and dark.
+*/
+
+:root {
+  /* Brand surfaces */
+  --background: 39 36% 91%;         /* cream  #e4e2d4 */
+  --foreground: 354 18% 37%;        /* wine   #6e4d54 */
+  --muted: 39 28% 86%;
+  --muted-foreground: 354 14% 47%;
+  --card: 0 0% 100%;
+  --card-foreground: 354 18% 37%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 354 18% 37%;
+  --border: 14 36% 67%;              /* rose   #ca9b8f */
+  --input: 14 36% 67%;
+  --ring: 14 64% 54%;
+
+  /* Brand accent */
+  --primary: 14 64% 54%;             /* terracotta #d65c3c */
+  --primary-foreground: 39 36% 96%;
+  --secondary: 39 28% 86%;
+  --secondary-foreground: 354 18% 37%;
+  --accent: 14 64% 54%;
+  --accent-foreground: 39 36% 96%;
+  --destructive: 0 62% 47%;
+  --destructive-foreground: 39 36% 96%;
+
+  /* Shape */
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: 354 21% 14%;         /* deep wine #2a1d21 */
+  --foreground: 39 36% 86%;          /* cream */
+  --muted: 354 18% 22%;
+  --muted-foreground: 39 18% 60%;
+  --card: 354 19% 18%;
+  --card-foreground: 39 36% 86%;
+  --popover: 354 19% 18%;
+  --popover-foreground: 39 36% 86%;
+  --border: 354 21% 27%;
+  --input: 354 21% 27%;
+  --ring: 14 64% 58%;
+
+  --primary: 14 64% 58%;
+  --primary-foreground: 354 21% 14%;
+  --secondary: 354 18% 22%;
+  --secondary-foreground: 39 36% 86%;
+  --accent: 14 64% 58%;
+  --accent-foreground: 354 21% 14%;
+  --destructive: 0 62% 52%;
+  --destructive-foreground: 39 36% 96%;
+}
+
+/* ============================================================
+   Tailwind v4 `@theme` — exposes every brand token as a Tailwind
+   utility (`bg-background`, `text-foreground`, `border-border`,
+   `text-primary`, etc.). No `tailwind.config.js` required.
+*/
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono:
+    "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+}
+
+/* ============================================================
+   Base layer
+*/
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent the dreaded white flash on theme toggle */
+    transition: background-color 200ms ease;
+  }
+
+  /* Selection in brand colour */
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+}
