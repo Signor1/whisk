@@ -1,17 +1,56 @@
 ---
-title: Welcome to Whisk
-description: Embeddable USDC send & bridge widget for React.
+title: Introduction
+description: An embeddable USDC send & bridge widget for React, built on Circle App Kit.
 ---
 
-This is the Whisk documentation scaffold — Phase&nbsp;1.
+Whisk is a drop-in React component for sending and bridging USDC
+across any chain App Kit ships with. It handles wallet connection,
+recipient resolution, quote computation, gas estimation, signature
+collection, transaction submission, and bridge confirmation — so you
+can ship a stablecoin payment experience in your app in an afternoon.
 
-The full docs land in Phase&nbsp;4. Once shipped you'll find Getting
-Started, Concepts, Components, Hooks, Theming, Recipes, and the
-API reference, each with copy-able code blocks and "Try in playground"
-links pointing at the deployed `examples/nextjs-basic`.
+## Install
 
-For now, head back to the [marketing landing](/) — or read the
-package READMEs on GitHub:
+<InstallCommand packages={["@signordev/whisk-react", "@signordev/whisk-core"]} />
 
-- [@signordev/whisk-react](https://github.com/Signor1/whisk/tree/main/packages/react)
-- [@signordev/whisk-core](https://github.com/Signor1/whisk/tree/main/packages/core)
+## Quick start
+
+```tsx
+import { WhiskProvider, WhiskSend } from "@signordev/whisk-react";
+
+export default function App() {
+  return (
+    <WhiskProvider projectId="your-app-kit-project-id">
+      <WhiskSend />
+    </WhiskProvider>
+  );
+}
+```
+
+That's the full integration. Drop it into a page, point the
+`projectId` at your Circle App Kit project, and you're live.
+
+## What's in this monorepo
+
+- **`@signordev/whisk-core`** — chain-agnostic engine. State machine,
+  CCTP routing, ENS resolution, quote computation. No React
+  dependency.
+- **`@signordev/whisk-react`** — the components and hooks. Styled
+  `<WhiskSend />`, `<WhiskSwap />`, plus headless `useWhisk`,
+  `useWhiskSwap`, `useWhiskAccount` for custom UI.
+- **Five example apps** — e-commerce checkout, donate button, themed
+  SaaS dashboard, payroll batch, invoice payment link. All under
+  `examples/` in the repo.
+
+## Next steps
+
+The full guides (Getting Started, Concepts, Components, Hooks,
+Theming, Recipes, API reference) ship in the next docs release. Until
+then:
+
+- Read the source on
+  [GitHub](https://github.com/Signor1/whisk).
+- Try the deployed
+  [playground](https://whisk-playground.vercel.app).
+- Open an [issue](https://github.com/Signor1/whisk/issues) for
+  anything that surprises you.

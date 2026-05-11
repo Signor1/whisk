@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/shared/theme-provider";
+import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -54,10 +54,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout. Shared by both route groups — `(marketing)` and
- * `(docs)`. The `ThemeProvider` lives here so a single toggle drives
- * the entire app: marketing hero, fumadocs sidebar, code blocks, the
- * lot.
+ * Root layout shared by both route groups — `(marketing)` and
+ * `(docs)`. Fumadocs's `RootProvider` wraps next-themes (so a single
+ * toggle drives both surfaces), the Radix direction context, and the
+ * search dialog provider used by the docs sidebar.
  */
 export default function RootLayout({
   children,
@@ -71,7 +71,16 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <RootProvider
+          theme={{
+            attribute: "class",
+            defaultTheme: "system",
+            enableSystem: true,
+            disableTransitionOnChange: true,
+          }}
+        >
+          {children}
+        </RootProvider>
       </body>
     </html>
   );
