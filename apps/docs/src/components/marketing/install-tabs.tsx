@@ -5,17 +5,29 @@ import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Per-package-manager install command renderer with copy-to-clipboard.
- * Mirrors what we'll wire as a fumadocs MDX component in Phase 3 so
- * the marketing CTA and the docs share a single visual contract.
+ * Per-manager install command renderer with copy-to-clipboard.
+ *
+ * The displayed command is colourised the way a real terminal with
+ * syntax highlighting (oh-my-zsh, fish, starship + bash-it) would
+ * render an install line:
+ *
+ *   - `$` prompt          → muted
+ *   - command verb        → lime / lemon-green (`pnpm`, `npm`, `yarn`)
+ *   - subcommand          → sky blue (`add`, `install`)
+ *   - package args        → near-white in dark mode, near-black in
+ *                           light mode — i.e. default code text
+ *
+ * The copy action puts the plain (uncoloured) command on the
+ * clipboard. Same component is reused by `<InstallCommand>` in docs
+ * MDX pages and the closing CTA on the landing.
  */
 
 type Manager = "npm" | "pnpm" | "yarn";
 
-const MANAGER_PREFIX: Record<Manager, string> = {
-  npm: "npm install",
-  pnpm: "pnpm add",
-  yarn: "yarn add",
+const MANAGER_PREFIX: Record<Manager, [verb: string, subcommand: string]> = {
+  npm: ["npm", "install"],
+  pnpm: ["pnpm", "add"],
+  yarn: ["yarn", "add"],
 };
 
 export function InstallTabs({
@@ -28,20 +40,26 @@ export function InstallTabs({
   const [manager, setManager] = useState<Manager>("pnpm");
   const [copied, setCopied] = useState(false);
 
-  const command = `${MANAGER_PREFIX[manager]} ${packages.join(" ")}`;
+  const [verb, subcommand] = MANAGER_PREFIX[manager];
+  const plainCommand = `${verb} ${subcommand} ${packages.join(" ")}`;
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(command);
+      await navigator.clipboard.writeText(plainCommand);
       setCopied(true);
       setTimeout(() => setCopied(false), 1400);
     } catch {
-      /* swallow — host browser denied clipboard */
+      /* host denied clipboard — swallow */
     }
   };
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-border bg-card", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-card",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
         <nav role="tablist" aria-label="Package manager" className="flex gap-1">
           {(Object.keys(MANAGER_PREFIX) as Manager[]).map((m) => (
@@ -75,9 +93,18 @@ export function InstallTabs({
           )}
         </button>
       </div>
-      <pre className="overflow-x-auto px-4 py-3 text-left font-mono text-sm text-foreground">
-        <span className="text-muted-foreground">$ </span>
-        {command}
+      <pre className="overflow-x-auto px-4 py-3 text-left font-mono text-sm leading-relaxed">
+        <span className="select-none text-muted-foreground">$ </span>
+        <span className="font-semibold text-lime-600 dark:text-lime-400">
+          {verb}
+        </span>
+        <span className="text-sky-600 dark:text-sky-400"> {subcommand}</span>
+        {packages.map((pkg) => (
+          <span key={pkg}>
+            <span> </span>
+            <span className="text-foreground">{pkg}</span>
+          </span>
+        ))}
       </pre>
     </div>
   );

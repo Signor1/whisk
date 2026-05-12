@@ -2,19 +2,15 @@ import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Recipes section — five cards, each mirroring one of the example
- * apps in `examples/`. Hover lifts the gradient + nudges the card
- * up; uses pure CSS transforms (no client JS needed).
- *
- * Cards are server-rendered links; the actual demo apps live in
- * `examples/*` and would be deployed alongside the playground.
+ * Recipes section — five cards mirroring the example apps in
+ * `examples/`. Pure CSS hover transforms, no client JS.
  */
 
 const RECIPES = [
   {
     name: "E-commerce checkout",
     summary:
-      "Pinned amount + merchant address. Widget collapses to a \"confirm and pay\" surface.",
+      "Pin the cart total and merchant address. The widget collapses to a confirm-and-pay surface so the buyer can't fat-finger it.",
     gradient: "from-primary/60 to-foreground/60",
     glyph: "$",
     href: "https://github.com/Signor1/whisk/tree/main/examples/ecommerce-checkout",
@@ -22,7 +18,7 @@ const RECIPES = [
   {
     name: "Donate button",
     summary:
-      "Recipient locked, amount free. Multi-chain donor flow with a public ledger of donations.",
+      "Lock the treasury address, let donors pick their amount. Surface recent donations to nudge social proof.",
     gradient: "from-emerald-500/60 to-primary/60",
     glyph: "♥",
     href: "https://github.com/Signor1/whisk/tree/main/examples/donate-button",
@@ -30,7 +26,7 @@ const RECIPES = [
   {
     name: "Themed SaaS dashboard",
     summary:
-      "Full CSS-token override. Earth-tone palette swapped for corporate navy + teal. No fork.",
+      "One CSS rule swaps the earth-tone palette for corporate navy and teal. No fork, no override file, no Tailwind plugin.",
     gradient: "from-sky-500/60 to-primary/40",
     glyph: "◐",
     href: "https://github.com/Signor1/whisk/tree/main/examples/themed-saas",
@@ -38,7 +34,7 @@ const RECIPES = [
   {
     name: "Payroll batch",
     summary:
-      "Admin tool. Single widget re-renders per-payee as the operator works down a list.",
+      "An admin tool that walks a list of payees. The widget remounts per row, so each payment runs clean against the next vendor.",
     gradient: "from-amber-500/60 to-primary/60",
     glyph: "≡",
     href: "https://github.com/Signor1/whisk/tree/main/examples/payroll-batch",
@@ -46,7 +42,7 @@ const RECIPES = [
   {
     name: "Invoice payment link",
     summary:
-      "URL-param pre-fill. Merchant shares /pay?to=&amount=&chain=; customer clicks and pays.",
+      "A shareable URL that opens a pre-filled checkout. The merchant sends it; the customer clicks, signs once, and the invoice clears.",
     gradient: "from-primary/60 to-rose-500/40",
     glyph: "✉",
     href: "https://github.com/Signor1/whisk/tree/main/examples/invoice-link",
@@ -57,22 +53,20 @@ export function Recipes({ className }: { className?: string }) {
   return (
     <section
       id="examples"
-      className={cn(
-        "border-b border-border/60 py-20 sm:py-24",
-        className,
-      )}
+      className={cn("border-b border-border/60 py-20 sm:py-24", className)}
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <header className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-wider text-primary">
             Recipes
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Real shapes, real codebases.
+            Five shapes you can ship today.
           </h2>
           <p className="mt-4 text-balance text-base text-muted-foreground">
-            Five fully-runnable example apps in the monorepo. Clone one,
-            point it at your treasury, ship.
+            Each example is a runnable Next.js app in the monorepo. Clone
+            one, swap the addresses, and you have a working payment flow
+            by lunch.
           </p>
         </header>
 
@@ -114,7 +108,6 @@ export function Recipes({ className }: { className?: string }) {
             </a>
           ))}
 
-          {/* Last cell — "see all" CTA filling the gap on lg */}
           <a
             href="https://github.com/Signor1/whisk/tree/main/examples"
             target="_blank"
@@ -123,10 +116,10 @@ export function Recipes({ className }: { className?: string }) {
           >
             <span className="text-3xl text-muted-foreground/60">+</span>
             <span className="text-sm font-medium text-foreground">
-              See every example on GitHub
+              Browse every example
             </span>
             <span className="text-xs text-muted-foreground">
-              Nine apps, every chain, every pattern.
+              On GitHub. Patterns, integrations, full apps.
             </span>
           </a>
         </div>
