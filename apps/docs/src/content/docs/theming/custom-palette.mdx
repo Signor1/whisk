@@ -1,0 +1,105 @@
+---
+title: Custom palette
+description: A worked example — swap Whisk's earth tones for corporate navy and teal.
+---
+
+This page walks through a full rebrand: replacing the default
+terracotta-on-cream palette with corporate navy and teal. The same
+shape works for any brand you'd want to apply.
+
+## Before
+
+Default Whisk: terracotta accent, cream surface, wine text.
+
+## After
+
+Deep navy surface, teal accent, near-white text.
+
+## The override
+
+A single CSS block, applied at `:root` (or anywhere upstream of the
+widget):
+
+```css title="app/whisk-theme.css"
+:root {
+  /* Brand surfaces */
+  --whisk-bg: #0a1729;
+  --whisk-fg: #e7eef7;
+  --whisk-fg-muted: #8a9bb3;
+  --whisk-border: #1d3556;
+
+  /* Accent */
+  --whisk-primary: #14b8a6;
+  --whisk-primary-fg: #06292a;
+
+  /* Derived */
+  --whisk-card: #102239;
+  --whisk-input: #1d3556;
+  --whisk-ring: #14b8a6;
+
+  /* Corporate semantic tones */
+  --whisk-success: #22c55e;
+  --whisk-warning: #f59e0b;
+  --whisk-destructive: #ef4444;
+  --whisk-destructive-fg: #ffffff;
+
+  /* Tighter shape for a fintech feel */
+  --whisk-radius: 0.375rem;
+  --whisk-radius-sm: 0.25rem;
+  --whisk-radius-lg: 0.625rem;
+
+  /* Type */
+  --whisk-font: "Inter", system-ui, sans-serif;
+}
+```
+
+That's it. The card, input, button, chips, step rail, banner, badge
+— all of them — switch to the new palette. No component overrides,
+no `!important`, no Tailwind plugin.
+
+## Scoping the override
+
+If you want the override to apply to one section of the app only —
+say, a corporate portal that has its own brand inside a larger
+consumer app — wrap that section with an extra selector:
+
+```css
+.corporate-portal [data-whisk] {
+  --whisk-bg: #0a1729;
+  /* … rest of the palette */
+}
+```
+
+Then:
+
+```tsx
+<div className="corporate-portal">
+  <WhiskProvider config={config}>
+    <WhiskSend />
+  </WhiskProvider>
+</div>
+```
+
+Everywhere else in your app, Whisk keeps the default palette.
+
+## Dark mode for a custom palette
+
+If your custom palette has its own dark variant, declare it under
+both selectors (see [Dark mode](/docs/theming/dark-mode)):
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --whisk-bg: #050d18;
+    --whisk-primary: #2dd4bf;
+  }
+}
+
+[data-whisk][data-whisk-theme="dark"] {
+  --whisk-bg: #050d18;
+  --whisk-primary: #2dd4bf;
+}
+```
+
+For a complete worked example, see
+[the themed SaaS recipe](/docs/recipes/themed-saas).

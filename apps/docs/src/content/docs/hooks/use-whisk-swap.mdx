@@ -1,0 +1,79 @@
+---
+title: useWhiskSwap
+description: Same-chain swap state machine, in hook form.
+---
+
+The hook behind `<SwapTab>`. Use it when you want a same-chain swap
+without the bundled card.
+
+```tsx
+import { useWhiskSwap } from "@signordev/whisk-react";
+```
+
+## Returns
+
+```ts
+type UseWhiskSwapResult = {
+  state: SwapState;
+  input: SwapInput;
+  setInput: (input: Partial<SwapInput>) => void;
+  estimate: () => Promise<void>;
+  swap: () => Promise<void>;
+  reset: () => void;
+};
+
+type SwapInput = {
+  chain: Chain;
+  tokenIn: Token;
+  tokenOut: Token;
+  amountIn: string;
+};
+
+type SwapState =
+  | { kind: "idle" }
+  | { kind: "estimating" }
+  | { kind: "review"; estimate: SwapEstimate }
+  | { kind: "swapping" }
+  | { kind: "success"; result: SwapSuccess }
+  | { kind: "error"; error: WhiskError };
+```
+
+## A minimal swap UI
+
+```tsx
+export function MySwap() {
+  const { state, input, setInput, estimate, swap } = useWhiskSwap();
+
+  return (
+    <div>
+      <input
+        value={input.amountIn}
+        onChange={(e) => setInput({ amountIn: e.target.value })}
+      />
+
+      {state.kind === "idle" && (
+        <button onClick={estimate}>Get estimate</button>
+      )}
+
+      {state.kind === "review" && (
+        <>
+          <p>You'll receive {state.estimate.amountOut}</p>
+          <button onClick={swap}>Swap</button>
+        </>
+      )}
+
+      {state.kind === "swapping" && <p>Swapping…</p>}
+
+      {state.kind === "success" && (
+        <p>Done. Tx: {state.result.txHash}</p>
+      )}
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  `useWhiskSwap` needs a `kitKey` on `createWhiskConfig`. Without
+  one, `estimate()` resolves to a typed `ConfigError` — surface it
+  through `state.kind === "error"` and tell the user to set the key.
+</Callout>

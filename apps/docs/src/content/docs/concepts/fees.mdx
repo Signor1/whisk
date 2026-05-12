@@ -1,0 +1,102 @@
+---
+title: Fees and quotes
+description: What's in a Quote, how fees are calculated, and how to charge your own platform fee.
+---
+
+A `Quote` is the engine's answer to "if I send X to Y, what
+happens?". It's pure data — until the user clicks confirm, no
+transaction is submitted. You can build a quote, throw it away,
+build another one, do whatever you want with it before the user
+commits.
+
+## What a Quote contains
+
+```ts
+type Quote = {
+  route: Route;             // same-chain "send" or cross-chain "bridge"
+  sourceChain: Chain;
+  destinationChain: Chain;
+  amountIn: string;         // what the user types
+  amountOut: string;        // what the recipient receives
+  fees: FeeBreakdown;       // every line item
+  expiresAt: number;        // ms-epoch — quotes get stale
+  recipient: ResolvedRecipient;
+  token: Token;
+};
+```
+
+`amountIn - amountOut === sumFees(fees)`. Whisk never sneaks in a
+fee that isn't enumerated in the breakdown. If the math doesn't add
+up, that's a bug — file it.
+
+## Where fees come from
+
+Two sources contribute:
+
+- **App Kit fees.** Gas, the bridge protocol fee, the forwarder fee
+  when applicable. These come from Circle's quote API; Whisk passes
+  them through.
+- **Your platform fee.** Optional. If you've configured a `feePolicy`
+  on the config, Whisk adds your line item and (if you've set a
+  recipient) routes the cut to your treasury.
+
+The review step renders each line so the user can see what they're
+paying before they sign.
+
+## Adding a platform fee
+
+Pass `feePolicy` to `createWhiskConfig`:
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId })],
+  chains: ["Base"],
+  feePolicy: {
+    flat: "0.05",                 // 5¢ flat
+    percent: 0.001,               // plus 0.1%
+    recipient: "0xYourTreasury…", // your fee wallet
+    label: "Platform fee",        // shown in the review UI
+  },
+});
+```
+
+Every field is optional. Mix flat + percent, leave `recipient` off
+to display the fee without collecting (useful when you're staging a
+rollout), or skip `feePolicy` entirely if you don't charge.
+
+## Building a quote without rendering
+
+Want a fee preview on a checkout summary before the widget mounts?
+Call the engine directly. The engine doesn't render, so this works
+on the server or in a button click handler:
+
+```ts
+const quote = await engine.quote({
+  recipient,
+  amount: "100",
+  sourceChain: "Base",
+  adapter,
+});
+
+console.log(quote.amountOut);      // "99.92"
+console.log(quote.fees);
+// → [
+//     { kind: "gas",      label: "Gas",          amount: "0.04"  },
+//     { kind: "platform", label: "Platform fee", amount: "0.04"  },
+//   ]
+```
+
+## Stale quotes
+
+`expiresAt` is in milliseconds since epoch. Quotes go stale fast
+because gas prices and bridge availability shift. If a user lingers
+on a confirmation screen for a few minutes, re-quote before they
+sign — `engine.quote(...)` is idempotent, and the new quote will
+have a fresh `expiresAt`.
+
+The bundled `<WhiskSend>` handles this automatically. The check
+matters when you're driving the engine yourself.
+
+## Next
+
+[Browse the components](/docs/components/whisk-provider).

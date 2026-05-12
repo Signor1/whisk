@@ -1,0 +1,62 @@
+---
+title: Overview
+description: How Whisk styles itself, why nothing leaks, and how to override the brand.
+---
+
+Every visible property of every Whisk component routes through a
+CSS variable. The variables are scoped to a `[data-whisk]`
+attribute selector, so Whisk's styles can't bleed into the rest of
+your app and your app's styles can't bleed into Whisk.
+
+If you want to rebrand the widget, you don't fork it. You override
+the variables.
+
+## The model
+
+Whisk's root element renders with `data-whisk` set:
+
+```html
+<div data-whisk class="…">…</div>
+```
+
+Every CSS rule that styles a Whisk component is namespaced with
+that attribute selector. To override a variable, write a rule that
+out-specifies the default — a `:root` declaration, a class on
+`<html>`, or a wrapping `[data-whisk-theme="custom"]` selector.
+
+## A one-block override
+
+```css title="app.css"
+:root {
+  --whisk-bg: #0a0a0a;
+  --whisk-fg: #ffffff;
+  --whisk-primary: #00d4ff;
+  --whisk-primary-fg: #001020;
+}
+```
+
+That's all. The card, the inputs, the buttons, the chips, the step
+rail, the banner — every surface picks up the new palette. You
+don't have to touch a component file.
+
+## Why we did it this way
+
+Three competing approaches we evaluated:
+
+- **CSS-in-JS.** Forces every consumer to install the runtime.
+  Causes hydration mismatches with React Server Components. Doesn't
+  work in MDX without a renderer.
+- **Inline styles.** Wins on isolation but loses every other styling
+  affordance — no media queries, no dark mode without JS, no theme
+  override without a prop.
+- **Variables on an attribute selector.** No runtime, no extra
+  bundle, no JS, no leakage. Works in RSC, MDX, Vite, Webpack, every
+  stack we tested.
+
+So that's what we built.
+
+## Next
+
+- [Every token and what it does](/docs/theming/tokens)
+- [Dark mode + `prefers-color-scheme`](/docs/theming/dark-mode)
+- [Building a full custom palette](/docs/theming/custom-palette)

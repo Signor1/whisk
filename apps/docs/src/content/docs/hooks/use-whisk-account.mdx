@@ -1,0 +1,75 @@
+---
+title: useWhiskAccount
+description: Connection state for both EVM and Solana, plus connect / disconnect.
+---
+
+One hook, both ecosystems. `useWhiskAccount()` returns the connected
+EVM account, the connected Solana account, and a `primary` shortcut
+for whichever one was connected most recently.
+
+```tsx
+import { useWhiskAccount } from "@signordev/whisk-react";
+```
+
+## Returns
+
+```ts
+type UseWhiskAccountResult = {
+  evm: { address: string; isConnected: boolean; chainId?: number } | null;
+  solana: { address: string; isConnected: boolean } | null;
+  primary: {
+    kind: "evm" | "solana";
+    address: string;
+    isConnected: boolean;
+  } | null;
+
+  connectEvm: () => Promise<void>;
+  connectSolana: () => Promise<void>;
+  disconnect: () => Promise<void>;
+};
+```
+
+## A nav-bar account chip
+
+```tsx
+export function AccountChip() {
+  const { primary, connectEvm, disconnect } = useWhiskAccount();
+
+  if (!primary) {
+    return <button onClick={connectEvm}>Connect</button>;
+  }
+
+  return (
+    <button onClick={disconnect}>
+      {primary.address.slice(0, 6)}…{primary.address.slice(-4)}
+    </button>
+  );
+}
+```
+
+## Showing both ecosystems
+
+When you support both EVM and Solana, surface both connect buttons.
+The widget itself will route to the right adapter based on the
+selected source chain.
+
+```tsx
+const { evm, solana, connectEvm, connectSolana } = useWhiskAccount();
+
+return (
+  <>
+    {!evm?.isConnected && (
+      <button onClick={connectEvm}>Connect EVM</button>
+    )}
+    {!solana?.isConnected && (
+      <button onClick={connectSolana}>Connect Solana</button>
+    )}
+  </>
+);
+```
+
+<Callout type="info">
+  `disconnect()` disconnects whichever ecosystem is currently
+  primary. To disconnect both, call it twice — or call the underlying
+  wagmi / Solana adapter hooks directly if you need finer control.
+</Callout>

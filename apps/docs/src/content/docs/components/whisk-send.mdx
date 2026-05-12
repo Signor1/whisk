@@ -1,0 +1,107 @@
+---
+title: WhiskSend
+description: The styled send + bridge widget. The fastest way to ship a USDC payment surface.
+---
+
+`<WhiskSend>` is the default Whisk surface. It walks the user
+through connect → input → review → send → success, and renders the
+swap tab next to it when a `kitKey` is supplied.
+
+```tsx
+import { WhiskSend } from "@signordev/whisk-react";
+```
+
+## Minimum usage
+
+```tsx
+<WhiskSend />
+```
+
+No required props. Everything is sourced from the surrounding
+`<WhiskProvider>`. Past this point, the rest of the props are
+opt-in.
+
+## Lifecycle callbacks
+
+| Prop             | Type                                                      |
+| ---------------- | --------------------------------------------------------- |
+| `onSuccess`      | `(result: { quote: Quote; finalTxHash?: string }) => void` |
+| `onError`        | `(error: Error) => void`                                  |
+| `onStateChange`  | `(state: WhiskState) => void`                             |
+
+`onSuccess` fires once per completed flow. `onError` fires on
+terminal failures. `onStateChange` fires on every transition,
+including the noisy ones (`resolving`, `quoting`) — filter inside
+the callback if you only care about a subset.
+
+## Controlled inputs (locked)
+
+| Prop                | Type      | Effect |
+| ------------------- | --------- | ------ |
+| `amount`            | `string`  | Lock the amount field. |
+| `recipient`         | `string`  | Lock the recipient field. |
+| `sourceChain`       | `Chain`   | Lock the source chain. |
+| `destinationChain`  | `Chain`   | Lock the destination chain. |
+
+## Default inputs (seeded but editable)
+
+| Prop                | Type      |
+| ------------------- | --------- |
+| `defaultAmount`     | `string`  |
+| `defaultRecipient`  | `string`  |
+
+## Change callbacks
+
+`onAmountChange`, `onRecipientChange`, `onSourceChainChange`,
+`onDestinationChainChange`. Each receives the new value.
+
+## Tabs & Swap
+
+| Prop                  | Type             | Default                                |
+| --------------------- | ---------------- | -------------------------------------- |
+| `tabs`                | `WhiskSendTab[]` | `["transfer", "swap"]` when `kitKey` is supplied, else `["transfer"]` |
+| `defaultTab`          | `WhiskSendTab`   | `"transfer"`                           |
+| `kitKey`              | `string`         | required for swap                      |
+| `swapDefaultChain`    | `Chain`          | —                                      |
+| `swapDefaultTokenIn`  | `Token`          | —                                      |
+| `swapDefaultTokenOut` | `Token`          | —                                      |
+
+## Layout
+
+| Prop           | Type      | Notes                                                       |
+| -------------- | --------- | ----------------------------------------------------------- |
+| `showWordmark` | `boolean` | Show the "powered by Whisk" footer wordmark. Off by default. |
+| `className`    | `string`  | Forwarded to the outer card. Use to tweak width or spacing. |
+
+## A checkout
+
+```tsx
+<WhiskSend
+  amount="49.99"
+  recipient="0xMerchantTreasury…"
+  destinationChain="Base"
+  onSuccess={({ finalTxHash }) => {
+    router.push(`/order/confirmed?tx=${finalTxHash}`);
+  }}
+/>
+```
+
+## A donate button
+
+```tsx
+<WhiskSend
+  recipient="0xDAOTreasury…"
+  defaultAmount="10"
+  onSuccess={() => analytics.track("donation.complete")}
+/>
+```
+
+## Transfer + swap, side by side
+
+```tsx
+<WhiskSend
+  kitKey={process.env.NEXT_PUBLIC_CIRCLE_KIT_KEY!}
+  tabs={["transfer", "swap"]}
+  defaultTab="transfer"
+/>
+```

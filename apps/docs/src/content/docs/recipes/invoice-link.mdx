@@ -1,0 +1,118 @@
+---
+title: Invoice payment link
+description: A shareable URL that opens a pre-filled checkout. Send it; the customer clicks and pays.
+---
+
+The payment-link shape works like a Stripe checkout link, but for
+USDC. A merchant generates a URL with the invoice details baked into
+the query string, sends it to the customer (email, SMS, chat), and
+the customer clicks once to land on a pre-filled checkout.
+
+A finished link looks like this:
+
+```
+https://example.com/pay?to=0xMerchant…&amount=49.99&chain=Base
+```
+
+The customer doesn't have to know the amount, the merchant, or the
+chain. They just click, connect, and confirm.
+
+## The page
+
+```tsx title="app/pay/page.tsx"
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { WhiskSend, type Chain } from "@signordev/whisk-react";
+
+const ACCEPTED_CHAINS = new Set<Chain>(["Base", "Arbitrum", "Optimism"]);
+
+export default function PayPage() {
+  const params = useSearchParams();
+  const to = params.get("to");
+  const amount = params.get("amount");
+  const chain = params.get("chain") as Chain | null;
+
+  if (!to || !amount || !chain || !ACCEPTED_CHAINS.has(chain)) {
+    return <InvalidLink />;
+  }
+
+  return (
+    <main className="mx-auto max-w-md py-16">
+      <h1 className="text-2xl font-semibold mb-2">Pay {amount} USDC</h1>
+      <p className="text-muted-foreground mb-6">
+        To {to.slice(0, 6)}…{to.slice(-4)} on {chain}
+      </p>
+
+      <WhiskSend
+        amount={amount}
+        recipient={to}
+        destinationChain={chain}
+        onSuccess={({ finalTxHash }) => {
+          /* mark this invoice paid server-side */
+        }}
+      />
+    </main>
+  );
+}
+
+function InvalidLink() {
+  return (
+    <main className="mx-auto max-w-md py-16">
+      <h1 className="text-xl font-semibold mb-2">
+        Invalid payment link
+      </h1>
+      <p className="text-muted-foreground">
+        Ask the sender to share a fresh link.
+      </p>
+    </main>
+  );
+}
+```
+
+## The three things you can't skip
+
+- **Validate every param.** Don't trust the URL. The example above
+  refuses to mount the widget when any field is missing or
+  malformed. A bad link should never land the customer in front of a
+  half-filled checkout.
+- **Whitelist accepted chains.** `ACCEPTED_CHAINS` is the allowlist.
+  Without it, a hand-crafted URL could route funds through a chain
+  you don't actually accept payments on.
+- **Sign the link.** In production, HMAC-sign the query string so
+  the customer (and you) can verify the link came from you. A
+  signed payment link can't be forged by anyone who guesses the URL
+  shape.
+
+## Generating links server-side
+
+The merchant side is a small route handler. Build the URL, sign it,
+hand it back to whatever surface needs to display or share it:
+
+```ts title="app/api/pay-link/route.ts"
+import { createHmac } from "node:crypto";
+
+export async function POST(req: Request) {
+  const { to, amount, chain } = await req.json();
+
+  const params = new URLSearchParams({ to, amount, chain });
+  const sig = createHmac("sha256", process.env.PAY_LINK_SECRET!)
+    .update(params.toString())
+    .digest("hex");
+  params.set("sig", sig);
+
+  return Response.json({
+    url: `https://example.com/pay?${params.toString()}`,
+  });
+}
+```
+
+Then the page verifies the signature before mounting the widget. If
+the sig doesn't match, show the invalid-link page.
+
+## Full source
+
+[`examples/invoice-link`](https://github.com/Signor1/whisk/tree/main/examples/invoice-link)
+ships the signing + verification, a thank-you page after the
+transfer settles, and an admin dashboard that lists outstanding
+invoices.

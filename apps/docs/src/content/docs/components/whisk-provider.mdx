@@ -1,0 +1,77 @@
+---
+title: WhiskProvider
+description: Mounts the engine, wires the wallet stack, and exposes everything to the hooks and components below it.
+---
+
+`<WhiskProvider>` is the only Whisk thing you have to wire up by
+hand. Everything else is a child of it.
+
+```tsx
+import { WhiskProvider } from "@signordev/whisk-react";
+```
+
+## Props
+
+| Prop          | Type                                | Default     | What it does |
+| ------------- | ----------------------------------- | ----------- | ------------ |
+| `config`      | `WhiskClientConfig`                 | required    | The frozen config from `createWhiskConfig(...)`. |
+| `theme`       | `"light" \| "dark" \| "system"`     | `"system"`  | Pin a theme. `"system"` defers to OS via media query. |
+| `queryClient` | `QueryClient`                       | auto        | Reuse a host-app `QueryClient`. Auto-detected when omitted. |
+| `children`    | `ReactNode`                         | required    | Anything that reads Whisk hooks or renders Whisk components. |
+
+## How it decides what to mount
+
+The provider reads the surrounding tree and only mounts what's
+missing:
+
+- **Outer `<WagmiProvider>` present** → it gets reused. The `evm()`
+  adapter becomes optional; your host wagmi config drives EVM.
+- **Outer `<QueryClientProvider>` present** → its client gets reused.
+- **Neither present** → Whisk mounts both, using `evm()` config and
+  the optional `queryClient` prop.
+
+Solana's `<ConnectionProvider>` and `<WalletProvider>` are mounted
+only when `solana()` is in `config.wallets`. EVM-only apps never
+load the Solana SDK.
+
+## Standalone
+
+```tsx
+<WhiskProvider config={config}>
+  <WhiskSend />
+</WhiskProvider>
+```
+
+## Reusing host wagmi
+
+```tsx
+<WagmiProvider config={myWagmi}>
+  <QueryClientProvider client={myClient}>
+    <WhiskProvider config={createWhiskConfig({ chains: ["Base"] })}>
+      <WhiskSend />
+    </WhiskProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+## Pinned dark
+
+```tsx
+<WhiskProvider config={config} theme="dark">
+  <WhiskSend />
+</WhiskProvider>
+```
+
+The widget root will render `data-whisk-theme="dark"`, which beats
+the `prefers-color-scheme` media query.
+
+## Anti-patterns
+
+- **Mounting per-route.** Don't put the provider inside a route
+  layout. The engine should be a singleton for the app's lifetime —
+  re-mounting it discards App Kit's internal caches and forces
+  another wallet reconnection.
+- **Recreating the config on every render.** Pass a constant
+  reference to `config`. Calling `createWhiskConfig(...)` inline in
+  the render path causes the engine to re-key. Put the config
+  outside the component (top-level module) or wrap it in `useMemo`.

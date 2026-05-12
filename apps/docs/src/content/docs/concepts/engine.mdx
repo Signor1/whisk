@@ -1,0 +1,92 @@
+---
+title: The engine
+description: The pure, framework-agnostic core that the React layer wraps.
+---
+
+The engine is the part of Whisk that decides things: how to resolve
+a recipient, what route to take, what the quote looks like, and how
+to walk a CCTP bridge from burn to mint. It lives in
+`@signordev/whisk-core` and has zero React dependencies. The React
+package wraps it; that's all.
+
+Most apps never import the engine directly. You'll reach for it when:
+
+- You need to build a quote on the server (a route handler, a
+  background worker, an OG image).
+- You're building a Whisk surface in something other than React.
+- You're writing tests and want the engine without the React
+  reconciler in the way.
+
+## What `createWhisk` returns
+
+```ts
+import { createWhisk } from "@signordev/whisk-core";
+
+const engine = createWhisk({
+  chains: ["Arc_Testnet", "Base_Sepolia"],
+  resolver: /* defaultResolver or your own */,
+  feePolicy: /* optional fee config */,
+});
+```
+
+The returned engine exposes three async methods:
+
+```ts
+await engine.resolve("vitalik.eth", "Base_Sepolia");
+// → ResolvedRecipient { chain, address, display }
+
+await engine.quote({
+  recipient,
+  amount: "10",
+  sourceChain: "Arc_Testnet",
+  adapter,
+});
+// → Quote { route, fees, amountIn, amountOut, expiresAt, ... }
+
+await engine.send({
+  quote,
+  adapter,
+  listeners: { onStep: (step) => console.log(step) },
+});
+// → SendResult { quote, finalTxHash } | { error }
+```
+
+The `adapter` argument is what tells the engine which wallet to use.
+In React, the hooks pull the right adapter out of the provider stack
+automatically. In a Node context, you bring your own — typically a
+viem `Account` or a Solana keypair.
+
+## How the React side maps onto it
+
+Every action you call from `useWhisk` ends up calling a method on
+the same `engine` object:
+
+| React action                    | Engine call                        |
+| ------------------------------- | ---------------------------------- |
+| `useWhisk().actions.resolve()`  | `engine.resolve(input, chain)`     |
+| `useWhisk().actions.quote()`    | `engine.quote(params)`             |
+| `useWhisk().actions.send()`     | `engine.send(params)`              |
+
+The React `state` you read from `useWhisk` is driven by the
+[state machine](/docs/concepts/state-machine), not the engine. The
+engine doesn't keep state — it returns data and lets the caller
+manage transitions.
+
+## Why this split exists
+
+We tried mixing engine logic into the React layer in an early
+prototype. Two things went wrong:
+
+1. **Server use became painful.** The OG image generator needed a
+   quote, which needed the engine, which (in the merged version)
+   needed a fake React tree. Splitting them undid the workaround.
+2. **Testing got slow.** Every engine test had to render. Pulling
+   the engine out means we can drive it from plain async/await
+   tests and only test the React glue inside React tests.
+
+Keep your own apps on the same split if you find yourself reaching
+for the engine from anywhere outside a component tree.
+
+## Next
+
+[How the state machine drives the UI](/docs/concepts/state-machine).

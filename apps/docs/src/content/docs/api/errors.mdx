@@ -1,0 +1,94 @@
+---
+title: Errors
+description: Typed errors thrown by the engine and surfaced through useWhisk.
+---
+
+Every recoverable failure in Whisk is a `WhiskError` (or a
+subclass). They carry a stable `name` — a string-literal type —
+so you can branch on it instead of parsing messages.
+
+## The base class
+
+```ts
+class WhiskError extends Error {
+  name: WhiskErrorCode; // string literal type
+  cause?: unknown;
+}
+```
+
+## Subclasses
+
+| Class                       | `name`                       | When                                                    |
+| --------------------------- | ---------------------------- | ------------------------------------------------------- |
+| `NoAdapterError`            | `"NoAdapterError"`           | The source chain has no matching wallet adapter mounted.|
+| `WrongChainError`           | `"WrongChainError"`          | The wallet is on a different chain than the quote needs.|
+| `InsufficientBalanceError`  | `"InsufficientBalanceError"` | Balance < `amountIn + fees`.                            |
+| `InvalidAddressError`       | `"InvalidAddressError"`      | Recipient is malformed or fails checksum.               |
+| `ResolverError`             | `"ResolverError"`            | The resolver chain returned no match.                   |
+| `BridgeStepError`           | `"BridgeStepError"`          | A specific bridge step failed. Carries the `step` name. |
+| `UserRejectedError`         | `"UserRejectedError"`        | The user declined the wallet prompt.                    |
+| `NetworkError`              | `"NetworkError"`             | RPC timeout, fetch failure, or other transient.         |
+| `ConfigError`               | `"ConfigError"`              | The config passed to `createWhiskConfig` is invalid.    |
+
+## Branching by class
+
+```tsx
+import {
+  useWhisk,
+  WhiskError,
+  UserRejectedError,
+  InsufficientBalanceError,
+} from "@signordev/whisk-react";
+
+const { state } = useWhisk();
+
+if (state.kind === "error") {
+  const err = state.error;
+
+  if (err instanceof UserRejectedError) {
+    // The user already knows they cancelled. Don't yell at them.
+    return null;
+  }
+
+  if (err instanceof InsufficientBalanceError) {
+    return <p>Top up your USDC and try again.</p>;
+  }
+
+  if (err instanceof WhiskError) {
+    return <Banner tone="destructive">{err.message}</Banner>;
+  }
+
+  // Shouldn't happen — the engine wraps unknowns into a WhiskError.
+  // Capture so we hear about it.
+  Sentry.captureException(err);
+  return <p>Something went wrong.</p>;
+}
+```
+
+## Normalising unknown throws
+
+If you're calling engine methods directly (not through hooks),
+`toWhiskError(...)` converts anything thrown into a `WhiskError`,
+preserving the original on `error.cause`:
+
+```ts
+import { toWhiskError } from "@signordev/whisk-core";
+
+try {
+  await engine.send({ quote, adapter });
+} catch (raw) {
+  throw toWhiskError(raw); // always a WhiskError after this point
+}
+```
+
+## Reading the underlying cause
+
+The original RPC throw, wagmi rejection, or whatever else is on
+`error.cause`. Useful when you want to log the raw error to Sentry
+but show the typed one to the user:
+
+```ts
+if (err instanceof NetworkError && err.cause) {
+  console.error("Underlying RPC failure:", err.cause);
+}
+```

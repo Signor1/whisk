@@ -1,0 +1,117 @@
+---
+title: Mount the provider
+description: Wrap your app with WhiskProvider and configure the wallet adapters it needs.
+---
+
+`<WhiskProvider>` is the only part of Whisk you have to set up by
+hand. It builds the engine, mounts the wallet stack, and exposes
+everything to the hooks and components below it. Once it's in place,
+the rest of Whisk is just children of it.
+
+## The shortest version
+
+```tsx title="app/providers.tsx"
+"use client";
+
+import {
+  WhiskProvider,
+  createWhiskConfig,
+  evm,
+} from "@signordev/whisk-react";
+
+const config = createWhiskConfig({
+  wallets: [
+    evm({
+      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+    }),
+  ],
+  chains: ["Arc_Testnet", "Base_Sepolia"],
+});
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <WhiskProvider config={config}>{children}</WhiskProvider>;
+}
+```
+
+Then use it at the root of your tree:
+
+```tsx title="app/layout.tsx"
+import { Providers } from "./providers";
+import "@signordev/whisk-react/styles.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+Wrap once, at the root. Don't sprinkle `WhiskProvider` around the
+tree — the engine should be a singleton per app.
+
+## Adding Solana
+
+Drop the `solana()` adapter into the `wallets` array. Whisk only
+mounts the Solana provider stack when this adapter is present, so
+EVM-only apps don't pay for code they won't run.
+
+```tsx
+import { createWhiskConfig, evm, solana } from "@signordev/whisk-react";
+
+const config = createWhiskConfig({
+  wallets: [
+    evm({ projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID! }),
+    solana({ network: "devnet" }),
+  ],
+  chains: ["Arc_Testnet", "Base_Sepolia", "Solana_Devnet"],
+});
+```
+
+## Reusing your existing wagmi setup
+
+If your app already mounts `<WagmiProvider>`, Whisk detects it and
+reuses your config. In that case the `evm()` adapter becomes
+optional — the host wagmi config is what drives EVM operations:
+
+```tsx
+<WagmiProvider config={yourWagmiConfig}>
+  <QueryClientProvider client={yourQueryClient}>
+    <WhiskProvider config={createWhiskConfig({ chains: ["Base"] })}>
+      {children}
+    </WhiskProvider>
+  </QueryClientProvider>
+</WagmiProvider>
+```
+
+The same logic applies to `@tanstack/react-query`. An outer
+`<QueryClientProvider>` gets reused; pass `queryClient` explicitly
+to `<WhiskProvider>` only when you want to override the detection.
+
+## Pinning the theme
+
+The default mode is `"system"` — Whisk follows the OS via
+`prefers-color-scheme`. To pin it instead, pass `theme`:
+
+```tsx
+<WhiskProvider config={config} theme="dark">
+  {children}
+</WhiskProvider>
+```
+
+When pinned, the widget root renders `data-whisk-theme="dark"`. The
+selector lives at the bottom of the cascade so it beats the media
+query.
+
+See [Theming](/docs/theming/overview) for the full token contract.
+
+## Next
+
+[Drop in your first widget](/docs/getting-started/first-widget).

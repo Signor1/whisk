@@ -1,0 +1,83 @@
+---
+title: Donate button
+description: Lock the recipient, let donors pick their amount, surface a public ledger.
+---
+
+A donate button is one of the easiest Whisk surfaces to ship. The
+treasury address is fixed; everything else stays free.
+
+## The shape
+
+```tsx title="app/donate/page.tsx"
+"use client";
+
+import { useState } from "react";
+import { WhiskSend } from "@signordev/whisk-react";
+
+const TREASURY = "0xDAOTreasury…";
+
+export default function DonatePage() {
+  const [recent, setRecent] = useState<string[]>([]);
+
+  return (
+    <main className="mx-auto max-w-md py-16">
+      <h1 className="text-3xl font-semibold mb-4">
+        Support the project
+      </h1>
+      <p className="mb-8 text-muted-foreground">
+        Every contribution goes directly to our multisig. The ledger
+        is public — see what others have given below.
+      </p>
+
+      <WhiskSend
+        recipient={TREASURY}
+        defaultAmount="10"
+        destinationChain="Base"
+        onSuccess={({ quote }) => {
+          setRecent((prev) => [`${quote.amountIn} USDC`, ...prev]);
+        }}
+      />
+
+      <h2 className="mt-12 text-sm font-semibold uppercase tracking-wider">
+        Recent donations
+      </h2>
+      <ul className="mt-4 space-y-1 text-sm">
+        {recent.map((d, i) => (
+          <li key={i}>{d}</li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+## What's locked, what's free
+
+- **Locked:** `recipient` (the treasury).
+- **Seeded but editable:** `defaultAmount="10"` — a starting nudge.
+- **Free:** source chain, exact amount, everything else.
+
+## Why surface the ledger
+
+Visible recent donations work. They're the lightest possible form of
+social proof, and they cost you nothing to render — `onSuccess`
+already hands you the amount. Don't overengineer it; even a
+client-side list (the example above) gets you most of the benefit.
+
+For a real ledger, persist the events server-side so they survive
+reloads:
+
+```ts
+onSuccess={async ({ quote, finalTxHash }) => {
+  await fetch("/api/donations", {
+    method: "POST",
+    body: JSON.stringify({ amount: quote.amountIn, tx: finalTxHash }),
+  });
+}}
+```
+
+## Full source
+
+[`examples/donate-button`](https://github.com/Signor1/whisk/tree/main/examples/donate-button)
+adds a Postgres-backed ledger, on-chain verification of every entry,
+and a leaderboard.

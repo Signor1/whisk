@@ -1,0 +1,4 @@
+{
+  "title": "Components",
+  "pages": ["whisk-provider", "whisk-send", "swap-tab", "connect-modal", "primitives"]
+}

@@ -1,0 +1,107 @@
+---
+title: Chains
+description: The Chain literal, lookup helpers, and explorer URL builders.
+---
+
+Whisk ships with the chains App Kit supports. The `Chain` type is
+the string-literal union of every supported chain identifier — so
+it narrows in your editor, gives you autocomplete, and refuses bad
+input at compile time.
+
+```ts
+import type { Chain } from "@signordev/whisk-react";
+
+const ok: Chain = "Base_Sepolia"; // ✓
+// @ts-expect-error
+const bad: Chain = "ethereum";    // ✗ — not in the union
+```
+
+The shape is `"Network_Variant"` for clarity:
+
+```ts
+"Arc" | "Arc_Testnet"
+| "Base" | "Base_Sepolia"
+| "Solana" | "Solana_Devnet"
+// …and so on
+```
+
+## The full set
+
+<SupportedChainsGrid />
+
+## Helpers
+
+All re-exported from `@signordev/whisk-react`. Import from there
+unless you're working inside core itself.
+
+### `allChains(): ChainInfo[]`
+
+Every supported chain as a `ChainInfo` record. Use this to populate
+chain pickers in custom UIs.
+
+### `chainInfo(chain: Chain): ChainInfo`
+
+Look up info for a specific chain — name, kind (EVM or Solana),
+network (mainnet or testnet), `evmChainId` when applicable.
+
+### `chainByEvmId(id: number): ChainInfo | undefined`
+
+Reverse lookup by EVM chain ID. Useful when integrating with wagmi,
+which speaks chain IDs.
+
+### `chainsByNetwork(network: ChainNetwork): ChainInfo[]`
+
+All testnets, or all mainnets. Good for filtering chain pickers
+during development.
+
+```ts
+import { chainsByNetwork } from "@signordev/whisk-react";
+
+const testnets = chainsByNetwork("testnet");
+```
+
+### `chainsByKind(kind: ChainKind): ChainInfo[]`
+
+`"evm"` or `"solana"`.
+
+### `supportedTokensFor(chain: Chain): SupportedTokenAlias[]`
+
+Which token aliases the chain supports. Today every chain returns
+`["USDC"]`; the enumeration exists so future stablecoins land
+without an API break.
+
+### `tokenAddressFor(chain: Chain, alias: SupportedTokenAlias): string`
+
+The contract address for the given token on the given chain.
+Returns the canonical USDC mint on Solana, the USDC ERC-20 contract
+on EVM.
+
+### `explorerTxUrl(chain: Chain, txHash: string): string`
+
+Build the block-explorer URL for a transaction hash.
+
+### `explorerAddressUrl(chain: Chain, address: string): string`
+
+Build the block-explorer URL for an address.
+
+## Putting them together
+
+```tsx
+import {
+  useWhisk,
+  chainInfo,
+  explorerTxUrl,
+} from "@signordev/whisk-react";
+
+function SuccessLink() {
+  const { state } = useWhisk();
+  if (state.kind !== "success") return null;
+
+  const info = chainInfo(state.result.quote.destinationChain);
+  return (
+    <a href={explorerTxUrl(info.id, state.result.finalTxHash!)}>
+      View on {info.name}
+    </a>
+  );
+}
+```

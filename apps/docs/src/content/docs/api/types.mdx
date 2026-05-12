@@ -1,0 +1,142 @@
+---
+title: Types
+description: The shape of every value Whisk hands you.
+---
+
+All types are exported from `@signordev/whisk-react`. The
+engine-level ones (`Chain`, `Quote`, `WhiskState`, etc.) are
+re-exports of the same types from `@signordev/whisk-core`.
+
+## `Chain`, `ChainKind`, `ChainNetwork`
+
+```ts
+type ChainKind = "evm" | "solana";
+type ChainNetwork = "mainnet" | "testnet";
+
+/** The string-literal union of supported chain identifiers. */
+type Chain =
+  | "Arc"
+  | "Arc_Testnet"
+  | "Base"
+  | "Base_Sepolia"
+  // …etc.
+```
+
+## `Token`
+
+```ts
+type Token = "USDC"; // USDC for now; widens as more tokens land
+```
+
+## `ResolvedRecipient`
+
+What a resolver returns and what `engine.quote(...)` accepts.
+
+```ts
+type ResolvedRecipient = {
+  chain: Chain;
+  address: string;
+  /** Display label — typically the original ENS name. */
+  display?: string;
+};
+```
+
+## `Route`
+
+The transport mode chosen at quote time.
+
+```ts
+type Route =
+  | { kind: "send"; chain: Chain }
+  | {
+      kind: "bridge";
+      sourceChain: Chain;
+      destinationChain: Chain;
+      steps: StepName[];
+    };
+```
+
+## `Step` and `StepName`
+
+```ts
+type StepName = "authorize" | "burn" | "wait" | "mint";
+type StepState = "pending" | "active" | "done" | "error";
+
+type Step = {
+  name: StepName;
+  status: StepState;
+  txHash?: string;
+};
+```
+
+## `FeeBreakdown` and `FeeEntry`
+
+```ts
+type FeeEntryKind = "gas" | "bridge" | "forwarder" | "platform";
+
+type FeeEntry = {
+  kind: FeeEntryKind;
+  label: string;
+  amount: string; // already divided by token decimals
+};
+
+type FeeBreakdown = FeeEntry[];
+```
+
+## `Quote`
+
+```ts
+type Quote = {
+  route: Route;
+  sourceChain: Chain;
+  destinationChain: Chain;
+  amountIn: string;
+  amountOut: string;
+  fees: FeeBreakdown;
+  expiresAt: number;        // ms-epoch
+  recipient: ResolvedRecipient;
+  token: Token;
+};
+```
+
+## `FeePolicy`
+
+```ts
+type FeePolicy = {
+  flat?: string;     // "0.05" — flat fee in USDC
+  percent?: number;  // 0.001 = 0.1%
+  recipient?: string;
+  label?: string;    // shown in the review UI
+};
+```
+
+## `WhiskState`
+
+The discriminated union driving every Whisk UI. See
+[State machine](/docs/concepts/state-machine) for the transition
+diagram.
+
+```ts
+type WhiskState =
+  | { kind: "disconnected" }
+  | { kind: "idle"; recipient?: ResolvedRecipient }
+  | { kind: "resolving"; input: string }
+  | { kind: "quoting"; recipient: ResolvedRecipient }
+  | { kind: "review"; quote: Quote }
+  | { kind: "sending"; quote: Quote; steps: Step[] }
+  | { kind: "success"; result: { quote: Quote; finalTxHash?: string } }
+  | { kind: "error"; error: WhiskError };
+```
+
+## `Resolver` and `ResolverContext`
+
+```ts
+type ResolverContext = {
+  chain: Chain;
+};
+
+type Resolver = (
+  input: string,
+  ctx: ResolverContext,
+) => Promise<ResolvedRecipient | undefined>;
+```

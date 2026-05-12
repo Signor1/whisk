@@ -1,0 +1,98 @@
+---
+title: createWhiskConfig
+description: Build the frozen config that WhiskProvider consumes.
+---
+
+`createWhiskConfig(...)` validates the inputs, normalises chain
+identifiers, and returns a frozen object you pass to
+`<WhiskProvider>`. Call it once, at module scope. Don't rebuild it
+on every render — the engine keys off the config object identity.
+
+```ts
+import { createWhiskConfig, evm, solana } from "@signordev/whisk-react";
+```
+
+## Signature
+
+```ts
+createWhiskConfig(options: CreateWhiskConfigOptions): WhiskClientConfig
+```
+
+## Options
+
+| Option                    | Type                              | Required | Notes |
+| ------------------------- | --------------------------------- | -------- | ----- |
+| `wallets`                 | `WalletAdapterFactory[]`          | yes      | Order matters. First adapter that matches the source chain wins. |
+| `chains`                  | `Chain[]`                         | yes      | Chains the widget can route between. |
+| `defaultSourceChain`      | `Chain`                           | no       | Initial source. Falls back to `chains[0]`. |
+| `defaultDestinationChain` | `Chain`                           | no       | Initial destination. |
+| `token`                   | `Token`                           | no       | Default token alias. USDC today. |
+| `resolver`                | `Resolver`                        | no       | Custom resolver chain. Defaults to address + ENS. |
+| `feePolicy`               | `FeePolicy`                       | no       | Platform fee config. |
+| `rpcUrls`                 | `Partial<Record<Chain, string>>`  | no       | Override the default public RPC for a chain. |
+| `useForwarder`            | `boolean`                         | no       | Forwarder Service. Defaults to `true`. |
+| `appLabel`                | `string`                          | no       | Shown in some wallet UIs as the connecting app's name. |
+| `kitKey`                  | `string`                          | no       | Circle Console kit key for swap. |
+
+## Wallet adapters
+
+### `evm(options)`
+
+```ts
+type EvmFactoryOptions = {
+  projectId: string;          // WalletConnect project ID
+  /** Pass a preconfigured wagmi config to override the bundled one. */
+  wagmiConfig?: WagmiConfig;
+};
+```
+
+### `solana(options)`
+
+```ts
+type SolanaFactoryOptions = {
+  network: "mainnet-beta" | "devnet" | "testnet";
+  /** Override the bundled wallet list. */
+  wallets?: WalletAdapter[];
+};
+```
+
+## A few examples
+
+### Minimal EVM
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId: "abc123…" })],
+  chains: ["Base", "Arbitrum"],
+});
+```
+
+### EVM + Solana with a custom RPC
+
+```ts
+const config = createWhiskConfig({
+  wallets: [
+    evm({ projectId: "abc123…" }),
+    solana({ network: "mainnet-beta" }),
+  ],
+  chains: ["Base", "Solana"],
+  rpcUrls: {
+    Base: "https://my-base-rpc.example.com",
+  },
+});
+```
+
+### With a platform fee
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId: "abc123…" })],
+  chains: ["Base"],
+  feePolicy: {
+    flat: "0.05",
+    percent: 0.002,
+    recipient: "0xMyFeeTreasury…",
+    label: "Service fee",
+  },
+});
+```

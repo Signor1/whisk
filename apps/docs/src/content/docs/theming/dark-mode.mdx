@@ -1,0 +1,93 @@
+---
+title: Dark mode
+description: How Whisk picks a theme — and how to pin one.
+---
+
+Whisk supports three modes: automatic, pinned light, pinned dark.
+
+## Automatic (the default)
+
+When `theme="system"` is set on `<WhiskProvider>` — which is the
+default — Whisk renders no `data-whisk-theme` attribute. The widget
+follows the OS through a `prefers-color-scheme` media query.
+
+```tsx
+<WhiskProvider config={config}>
+  <WhiskSend />
+</WhiskProvider>
+```
+
+This route has three things going for it:
+
+- **SSR-safe.** Server and client render identical markup; no
+  hydration mismatch.
+- **No flash.** The browser flips the theme entirely from CSS.
+- **No JS.** Toggle the OS, the widget re-themes instantly.
+
+## Pinned
+
+To override the OS preference, pass `theme`:
+
+```tsx
+<WhiskProvider config={config} theme="dark">
+  <WhiskSend />
+</WhiskProvider>
+```
+
+This renders `data-whisk-theme="dark"` on the widget root. The
+selector lives at the bottom of the cascade, so it beats the media
+query.
+
+## Driving theme from your app's toggle
+
+Most apps already have a theme system — next-themes, Tailwind's
+`.dark` class, a Radix theme. Whisk's stylesheet recognises both
+contracts, so you can pass `theme="system"` to Whisk and let your
+app drive the class on a parent element:
+
+```css
+[data-whisk][data-whisk-theme="dark"],
+[data-whisk].dark {
+  /* dark tokens applied */
+}
+```
+
+A typical Tailwind dark-mode setup works without ceremony:
+
+```tsx
+<html className={resolvedTheme === "dark" ? "dark" : ""}>
+  <body>
+    <WhiskProvider config={config} theme="system">
+      <WhiskSend />
+    </WhiskProvider>
+  </body>
+</html>
+```
+
+## Customising the dark palette
+
+The dark tokens live inside two selectors:
+`@media (prefers-color-scheme: dark)` and
+`[data-whisk][data-whisk-theme="dark"]`. To tweak the dark palette,
+override the same variables documented in
+[Tokens](/docs/theming/tokens), inside both selectors:
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --whisk-bg: #050505;
+    --whisk-fg: #f5f5f5;
+    --whisk-primary: #00d4ff;
+  }
+}
+
+[data-whisk][data-whisk-theme="dark"] {
+  --whisk-bg: #050505;
+  --whisk-fg: #f5f5f5;
+  --whisk-primary: #00d4ff;
+}
+```
+
+Repeating the block in both selectors is the cost of supporting
+both "automatic via OS" and "pinned dark." There's no clean way to
+collapse them in CSS until `:is()` gets media-query support.

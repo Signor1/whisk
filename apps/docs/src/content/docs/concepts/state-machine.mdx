@@ -1,0 +1,110 @@
+---
+title: State machine
+description: The states Whisk transitions through, what triggers each transition, and how to read them.
+---
+
+Whisk runs on a small explicit state machine. Each visible state of
+the widget corresponds to exactly one node in the machine, and every
+transition is pure and reproducible. If you can name the state, you
+know what's on screen.
+
+## The states
+
+| `kind`           | What's happening                                      |
+| ---------------- | ----------------------------------------------------- |
+| `disconnected`   | No wallet connected. Connect CTA is shown.            |
+| `idle`           | Connected. The user is filling in the form.           |
+| `resolving`      | Looking up a recipient (address or ENS).              |
+| `quoting`        | Building the route and fees for the current input.    |
+| `review`         | Quote is ready. Confirmation card is on screen.       |
+| `sending`        | Transaction submitted. Step rail tracks bridge state. |
+| `success`        | Transfer or bridge completed. Result card visible.    |
+| `error`          | Terminal failure. The banner shows a typed `WhiskError`. |
+
+## Reading state in React
+
+The discriminated union narrows automatically once you check `kind`.
+You don't need optional chaining — TypeScript knows which fields
+exist in each branch:
+
+```tsx
+const { state } = useWhisk();
+
+if (state.kind === "review") {
+  // state.quote is defined here. state.error isn't.
+  console.log("Sending", state.quote.amountIn, "USDC");
+}
+
+if (state.kind === "error") {
+  // state.error is defined here. state.quote isn't.
+  toast.error(state.error.message);
+}
+```
+
+This is the part of Whisk worth understanding well — building any
+custom UI on top of `useWhisk` is mostly a matter of branching on
+`state.kind` and rendering the right slice.
+
+## Triggering transitions
+
+You don't dispatch reducer actions yourself. The `actions` object
+from `useWhisk` is the public surface — it's stable across renders,
+so it's safe to include in `useEffect` deps:
+
+```tsx
+const { actions } = useWhisk();
+
+// disconnected → idle happens automatically on wallet connect.
+await actions.resolve("vitalik.eth", "Base_Sepolia"); // → idle (with recipient)
+await actions.quote(recipient, "10", "Arc_Testnet");  // → review
+await actions.send();                                  // → success | error
+actions.back();   // review → idle
+actions.reset();  // any → idle
+```
+
+`back()` is intentionally narrow — only available from review. It
+won't drop you back to the disconnected state if you're mid-bridge.
+For "cancel everything," call `reset()`.
+
+## Hooking external listeners
+
+`<WhiskSend onStateChange={...}>` fires for every transition.
+Common uses:
+
+```tsx
+<WhiskSend
+  onStateChange={(state) => {
+    // Loading toast lifecycle
+    if (state.kind === "sending") toast.loading("Sending…");
+    if (state.kind === "success") toast.success("Done.");
+    if (state.kind === "error")   toast.dismiss();
+
+    // Sync into your store
+    appStore.setWhiskState(state.kind);
+  }}
+/>
+```
+
+Resolving and quoting are noisy — the user can change the recipient
+or amount mid-typing and you'll see lots of `resolving → idle →
+quoting → review` cycles. If you only care about meaningful
+transitions, gate the callback:
+
+```tsx
+const meaningful = new Set(["review", "sending", "success", "error"]);
+
+onStateChange={(state) => {
+  if (meaningful.has(state.kind)) analytics.track(state.kind);
+}}
+```
+
+## Driving the machine without React
+
+The reducer is exported from core: `reduce`, `initialState`,
+`initialSteps`, and the `WhiskAction` action type. You can drive
+the machine from anything — a server-side workflow, an integration
+test, a Vue component. The React hooks just wrap it.
+
+## Next
+
+[How Whisk decides between same-chain and bridge routes](/docs/concepts/routing).
