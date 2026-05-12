@@ -2,13 +2,11 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "@signordev/whisk-react/styles.css";
 import "./globals.css";
-import { Providers } from "./providers";
 
 /**
- * Self-host Inter and Geist Mono via Next.js's font API. Whisk's font
- * stack picks them up automatically because the variable is exposed as
- * `--font-inter` / `--font-geist-mono` on the body, and Whisk's CSS
- * stack lists Inter as the first preferred family.
+ * Self-host Inter and Geist Mono via Next.js's font API. Whisk reads
+ * from `--font-inter` / `--font-geist-mono` on the body, so this is
+ * how the widget picks up the playground's typography automatically.
  */
 const inter = Inter({
   subsets: ["latin"],
@@ -23,9 +21,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Whisk — embeddable USDC widget",
+  title: "Whisk Playground",
   description:
-    "Drop-in showcase: send & bridge USDC across chains with one React component.",
+    "Drive the Whisk widget through every config shape — testnet QA surface for sending and bridging USDC.",
 };
 
 export default function RootLayout({
@@ -35,9 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${geistMono.variable}`}>
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

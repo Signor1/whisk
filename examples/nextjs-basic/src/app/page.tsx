@@ -1,49 +1,51 @@
 import { ClientGate } from "./client-gate";
 
 /**
- * Server component for the page chrome. The widget itself ships through
- * `<ClientGate />`, which is the client boundary that lazy-loads the
- * full wagmi + Whisk stack with `ssr: false`.
+ * Server component for the page chrome. The playground itself ships
+ * through `<ClientGate />`, which is the client boundary that
+ * dynamically loads the full wagmi + Whisk + controls + log stack
+ * with `ssr: false`.
  */
-
 export default function Page() {
   return (
-    <main>
-      <header className="example-header">
-        <span className="example-brand">
-          <span className="example-brand__dot" aria-hidden="true" />
-          whisk · example
+    <div className="pg-shell">
+      <header className="pg-header">
+        <span className="pg-brand">
+          <span className="pg-brand__dot" aria-hidden="true" />
+          <strong>whisk</strong>
+          <span className="pg-brand__sep" aria-hidden="true">
+            ·
+          </span>
+          playground
         </span>
-        <a
-          href="https://github.com/Signor1/whisk"
-          target="_blank"
-          rel="noreferrer"
-          style={{ fontSize: "0.75rem", opacity: 0.6, color: "inherit" }}
-        >
-          github ↗
-        </a>
+        <nav className="pg-header__nav">
+          <a
+            href="https://whisk.vercel.app/docs"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Docs ↗
+          </a>
+          <a
+            href="https://github.com/Signor1/whisk"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub ↗
+          </a>
+          <a
+            href="https://faucet.circle.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            USDC faucet ↗
+          </a>
+        </nav>
       </header>
 
-      <section className="example-stage">
-        <div>
-          <div className="example-intro">
-            <h1>Send & bridge USDC, one component.</h1>
-            <p>
-              Connect a wallet, pick chains, send. Bridge transfers run
-              across CCTP under the hood.
-            </p>
-            <div className="example-meta">
-              <span>Arc Testnet</span>
-              <span>Base Sepolia</span>
-              <span>Ethereum Sepolia</span>
-              <span>Solana Devnet · v0.2</span>
-            </div>
-          </div>
-          <ClientGate />
-        </div>
-      </section>
+      <ClientGate />
 
-      <p className="example-footer">
+      <footer className="pg-footer">
         Powered by{" "}
         <a
           href="https://docs.arc.network/app-kit"
@@ -61,7 +63,7 @@ export default function Page() {
         >
           GitHub
         </a>
-      </p>
-    </main>
+      </footer>
+    </div>
   );
 }
