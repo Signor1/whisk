@@ -1,16 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { WidgetMockup } from "./widget-mockup";
+import { ChainConstellation } from "./chain-constellation";
 import { cn } from "@/lib/utils";
 
 /**
  * Above-the-fold hero. Two-column on desktop (copy + mockup), stacked
- * on mobile. The mockup is the only client component on this surface
- * — everything else is a server-rendered string of HTML for an
- * instant LCP.
- *
- * The background `BeamGrid` is a pure-CSS radial-mask grid in brand
- * tones; no canvas, no shader, no client JS.
+ * on mobile. WidgetMockup is the only client component on this
+ * surface; ChainConstellation is pure SVG with SMIL animations, so
+ * the section still hydrates fast.
  */
 export function Hero({ className }: { className?: string }) {
   return (
@@ -20,33 +18,40 @@ export function Hero({ className }: { className?: string }) {
         className,
       )}
     >
-      <BeamGrid />
+      <ChainConstellation />
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-24 md:grid-cols-2 md:py-28 lg:gap-20">
+      <div className="mx-auto grid min-h-[36rem] max-w-7xl items-center gap-12 px-4 py-24 sm:px-6 sm:py-32 md:min-h-[44rem] lg:grid-cols-2 md:py-40 lg:gap-20">
         <div className="flex flex-col items-start">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            v0.0.1 · built on Circle App Kit
+            <span className="relative inline-flex h-1.5 w-1.5">
+              <span className="absolute inset-0 animate-ping rounded-full bg-emerald-500/70" />
+              <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            </span>
+            Live on testnets
+            <span className="text-foreground/30">·</span>
+            <span className="text-foreground/80">Mainnet soon</span>
           </span>
 
-          <h1 className="mt-6 max-w-xl text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            USDC, sent and bridged with{" "}
+          <h1 className="mt-4 md:mt-6 max-w-3xl text-balance text-4xl font-extrabold tracking-tight text-foreground md:text-6xl lg:text-7xl">
+            One widget.{" "}
             <span className="bg-gradient-to-br from-primary via-primary to-foreground/70 bg-clip-text text-transparent">
-              one component.
+              Every USDC payment shape.
             </span>
           </h1>
 
-          <p className="mt-5 max-w-md text-balance text-base text-muted-foreground sm:text-lg">
-            Drop-in React widget for same-chain sends and cross-chain
-            bridges. Multi-chain, type-safe, themable. MIT licensed.
+          <p className="mt-5 max-w-xl text-balance text-base text-muted-foreground sm:text-lg">
+            Drop <code>{`<WhiskSend />`}</code> into your app and your users can
+            send or bridge USDC across any chain App Kit supports. Wallet
+            connect, ENS lookup, and CCTP bridging stay inside the widget so you
+            stay out of the plumbing.
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
-              href="/docs"
+              href="/docs/getting-started/install"
               className="inline-flex h-11 items-center gap-1.5 rounded-md bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              Get started
+              Read the docs
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
@@ -58,19 +63,6 @@ export function Hero({ className }: { className?: string }) {
               Try the playground
             </a>
           </div>
-
-          <p className="mt-8 max-w-md text-xs text-muted-foreground">
-            <span className="font-medium text-foreground/80">17 testnets</span>{" "}
-            ·{" "}
-            <span className="font-medium text-foreground/80">CCTP v2</span> ·{" "}
-            <span className="font-medium text-foreground/80">
-              ENS resolution
-            </span>{" "}
-            ·{" "}
-            <span className="font-medium text-foreground/80">
-              same-chain swap
-            </span>
-          </p>
         </div>
 
         <div className="relative mx-auto w-full max-w-sm">
@@ -78,30 +70,5 @@ export function Hero({ className }: { className?: string }) {
         </div>
       </div>
     </section>
-  );
-}
-
-/**
- * Pure-CSS background — a faint grid bleeding into a soft brand-tone
- * radial. No canvas, no JS, no shader pipeline. Looks expensive,
- * costs nothing.
- */
-function BeamGrid() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-    >
-      <div
-        className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.35)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.35)_1px,transparent_1px)] bg-[size:48px_48px]"
-        style={{
-          maskImage:
-            "radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%)",
-        }}
-      />
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_center_top,hsl(var(--primary)/0.18),transparent_60%)]" />
-    </div>
   );
 }
