@@ -15,6 +15,9 @@ export const docs = defineDocs({
   dir: "src/content/docs",
   docs: {
     schema: frontmatterSchema,
+    // Stringify the MDAST and expose it through `page.data.getText("processed")`.
+    // The `.md` route and the "Copy as markdown" action both read it.
+    postprocess: { includeProcessedMarkdown: true },
   },
   meta: {
     schema: metaSchema,

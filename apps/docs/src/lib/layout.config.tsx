@@ -17,7 +17,7 @@ export const baseOptions: BaseLayoutProps = {
   links: [
     {
       type: "main",
-      text: "Landing",
+      text: "Home",
       url: "/",
     },
     {

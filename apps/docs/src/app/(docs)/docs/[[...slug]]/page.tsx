@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { source } from "@/lib/source";
 import { getMDXComponents } from "@/../mdx-components";
+import { PageActions } from "@/components/docs/page-actions";
 
 /**
  * Slug-driven MDX renderer. Every page tree node resolves through
@@ -35,9 +36,15 @@ export default async function Page(props: {
         sha: "main",
         path: `apps/docs/src/content/docs/${page.path}`,
       }}
+      // Tighten the article horizontal padding. Fumadocs's default is
+      // `px-4 md:px-6 xl:px-8`; this leans into the available width.
+      className="px-3 md:px-4 xl:px-6"
     >
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      <div className="mb-6 flex justify-end">
+        <PageActions markdownUrl={`${page.url}.md`} />
+      </div>
       <DocsBody>
         <MDX components={getMDXComponents()} />
       </DocsBody>
