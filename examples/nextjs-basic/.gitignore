@@ -6,3 +6,5 @@ out
 .env
 .env.local
 *.tsbuildinfo
+
+TESTING.md

@@ -1,15 +1,38 @@
-# whisk-example-nextjs-basic
+# Whisk Playground
 
-A 5-file showcase of `@signordev/whisk-react` running on Next.js 15.
+The QA + testnet surface for `@signordev/whisk-react`. Renders the
+widget in one column, the live config panel in the other, and pipes
+every state transition into a bottom event log. Five preset shapes
+flip the form between the integrations Whisk is built for (open form,
+checkout, donate, invoice link, payroll row).
+
+If you're sweeping the testnet matrix before mainnet, this is the
+surface that drives it. The full checklist lives in
+[`TESTING.md`](./TESTING.md).
+
+## Layout
 
 ```
 src/app/
-├── layout.tsx     # Self-hosts Inter + Geist Mono via next/font/google,
-│                   # imports `@signordev/whisk-react/styles.css`.
-├── providers.tsx  # Client boundary — createWhiskConfig + WhiskProvider.
-├── page.tsx       # Server component — page chrome.
-├── widget.tsx     # Client component — <WhiskSend /> with callbacks.
-└── globals.css    # Page background + intro typography only.
+├── layout.tsx                 # Self-hosts Inter + Geist Mono via next/font;
+│                              # imports `@signordev/whisk-react/styles.css`.
+├── globals.css                # Playground chrome + control panel + log styles.
+├── page.tsx                   # Server component. Page header + footer +
+│                              # mounts <ClientGate />.
+├── client-gate.tsx            # Dynamic-loaded boundary with ssr:false so
+│                              # wagmi never runs server-side.
+└── playground/
+    ├── index.tsx              # Composition root. Holds the store; wires
+    │                          # theme up to the providers and config down
+    │                          # to the widget.
+    ├── providers.tsx          # WhiskProvider with reactive theme.
+    ├── store.ts               # Reducer + types + presets-aware initial state.
+    ├── controls.tsx           # Left panel — presets, toggles, address book.
+    ├── stage.tsx              # The <WhiskSend /> with the current config.
+    ├── event-log.tsx          # Bottom strip — last 30 events with kind +
+    │                          # timestamp.
+    ├── presets.ts             # Five named preset shapes.
+    └── address-book.ts        # Quick-pick recipient list.
 ```
 
 ## Run it
@@ -17,41 +40,45 @@ src/app/
 ```bash
 # from the repo root
 pnpm install
-pnpm --filter @signordev/whisk-core build       # one-time, for the workspace dep
+pnpm --filter @signordev/whisk-core build   # one-time, for the workspace dep
 cp examples/nextjs-basic/.env.example examples/nextjs-basic/.env.local
-# (optional) paste a WalletConnect Cloud project ID into .env.local
+# paste a WalletConnect Cloud project ID + (optional) a Circle Kit key
 pnpm --filter @signordev/whisk-example-nextjs-basic dev
 ```
 
-Open <http://localhost:3000>. Connect MetaMask / Rabby / Coinbase Wallet
-(WalletConnect appears once you set the project ID).
+Open <http://localhost:3000>.
 
-## What's wired in
+## Environment
 
-- **Chains shown in the picker:** Arc Testnet, Base Sepolia, Ethereum
-  Sepolia, Solana Devnet.
-- **EVM wallets:** MetaMask, Coinbase Wallet, Rabby, any other injected
-  EIP-1193 extension. WalletConnect lights up only when you paste a
-  project ID into `.env.local`.
-- **Solana wallets:** Phantom, Solflare, Backpack, and any other
-  modern wallet that implements the Solana Wallet Standard — auto-
-  discovered at runtime. Buttons disable for wallets you don't have
-  installed.
-- **Footer wordmark** is on (`showFooter`) so you can see the opt-in
-  brand surface.
+| Var | Required | Effect |
+| --- | --- | --- |
+| `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | optional | Unlocks WalletConnect in the connect modal. Without it, only injected wallets (MetaMask, Coinbase, Rabby) light up. |
+| `NEXT_PUBLIC_CIRCLE_KIT_KEY` | optional | Enables the Swap tab. Without it, the Swap toggle in the control panel is disabled and the widget only renders Transfer. |
 
-## Working on Whisk and the example simultaneously
+## What's wired
 
-`next.config.ts` lists both Whisk packages in `transpilePackages`, so the
-Next.js compiler reads them straight from source. Edit anything in
+- **All 18 testnets** in the chain picker. Solana Devnet is held back until the signer-kind fix lands.
+- **EVM wallets:** MetaMask, Coinbase Wallet, Rabby, any injected EIP-1193 provider. WalletConnect lights up with a project ID.
+- **Live config panel:** theme · wordmark · swap tab · lock amount / recipient / source / destination · address book quick-picks · JSON inspector for the current config object.
+- **Five presets:** Open form, E-commerce checkout, Donate button, Invoice payment link, Payroll row. Picking one rewrites the entire form so you can flip through integration shapes in seconds.
+- **Event log:** every `onStateChange / onSuccess / onError` event with a timestamp and kind chip. Newest at the top. `aria-live="polite"` for screen readers.
+
+## QA workflow
+
+1. Open the playground.
+2. Open [`TESTING.md`](./TESTING.md) alongside.
+3. Walk section by section. Use the address book quick-picks instead of typing the same address into eighteen chains.
+4. Watch the event log instead of DevTools for state transitions.
+5. Use the JSON inspector to confirm the live config matches what you intended before each test.
+
+## Working on Whisk and the playground simultaneously
+
+`next.config.ts` lists both Whisk packages in `transpilePackages`, so
+the Next compiler reads them straight from source. Edit anything in
 `packages/core/src/` or `packages/react/src/` and the dev server picks
 it up on save — no rebuild step.
 
-## Test transfers
+## Getting testnet USDC
 
-The widget defaults source + destination to **Arc Testnet** so the first
-transfer you do is a same-chain `send` (no CCTP attestation wait, fast
-to verify). Switch the destination to Base Sepolia or Ethereum Sepolia
-to exercise the bridge flow.
-
-Need testnet USDC? <https://faucet.circle.com>.
+Faucet: <https://faucet.circle.com>. Most chains also need native gas
+for the source-chain transaction — check each chain's own faucet.
