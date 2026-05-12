@@ -1,17 +1,40 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+  IBM_Plex_Mono,
+} from "next/font/google";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
-const inter = Inter({
+// Body sans. Plus Jakarta Sans — modern, geometric with a slight
+// warmth, designed specifically for digital UI. Reads cleanly from
+// display sizes down to 12px, pairs naturally with JetBrains Mono
+// without competing for attention.
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-sans",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+// Code blocks. JetBrains Mono is the canonical choice for engineer-facing
+// docs — wide x-height, clear l/I/1 disambiguation, ligatures for `=>`
+const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
+  display: "swap",
+});
+
+// Inline-code emphasis (`prose code` inside paragraphs). IBM Plex Mono
+// has true italic glyphs with a near-cursive feel — distinct enough
+// from JetBrains Mono that inline `code` mentions read as emphasized
+// language references rather than code-block excerpts.
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-mono-italic",
   display: "swap",
 });
 
@@ -37,6 +60,27 @@ export const metadata: Metadata = {
     "Web3",
   ],
   authors: [{ name: "SignorDev", url: "https://github.com/Signor1" }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      {
+        url: "/android-chrome-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/android-chrome-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
   openGraph: {
     type: "website",
     siteName: "Whisk",
@@ -44,12 +88,28 @@ export const metadata: Metadata = {
     description:
       "Send and bridge USDC across any chain with one React component.",
     url: SITE_URL,
+    images: [
+      {
+        url: "/thumbnail.png",
+        width: 1200,
+        height: 630,
+        alt: "Whisk — embeddable USDC send & bridge widget for React",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Whisk — embeddable USDC send & bridge widget for React",
     description:
       "Send and bridge USDC across any chain with one React component.",
+    images: [
+      {
+        url: "/thumbnail.png",
+        width: 1200,
+        height: 630,
+        alt: "Whisk — embeddable USDC send & bridge widget for React",
+      },
+    ],
   },
 };
 
@@ -67,7 +127,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable}`}
+      className={`${plusJakarta.variable} ${jetBrainsMono.variable} ${ibmPlexMono.variable}`}
       suppressHydrationWarning
     >
       <body>
