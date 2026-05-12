@@ -1,13 +1,13 @@
 import Image from "next/image";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * Whisk wordmark + logo combo. The supplied asset is the terracotta
- * "W" glyph at 277×125; we use it at a tighter aspect on the nav and
- * pair it with the lowercase wordmark to read as a unified mark.
+ * The brand mark. Renders as a plain span — the consumer decides
+ * whether to wrap it in a Link.
  *
- * `Image` priority is on so the LCP element doesn't lazy-load.
+ * Why: fumadocs's `<InlineNavTitle>` already wraps the title slot in
+ * its own `<Link>`, so a self-linking Logo produces `<a><a/></a>`
+ * and React fires a hydration error.
  */
 export function Logo({
   className,
@@ -17,13 +17,9 @@ export function Logo({
   showWordmark?: boolean;
 }) {
   return (
-    <Link
-      href="/"
-      className={cn(
-        "inline-flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md",
-        className,
-      )}
-      aria-label="Whisk home"
+    <span
+      className={cn("inline-flex items-center gap-2", className)}
+      aria-label="Whisk"
     >
       <Image
         src="/logo.png"
@@ -34,10 +30,10 @@ export function Logo({
         className="h-7 w-auto"
       />
       {showWordmark ? (
-        <span className="font-semibold tracking-tight text-[1.0625rem] text-foreground">
+        <span className="font-semibold font-jetbrains tracking-tight text-[1.0625rem] text-foreground">
           whisk
         </span>
       ) : null}
-    </Link>
+    </span>
   );
 }
