@@ -11,6 +11,8 @@ export { Badge } from "./Badge.js";
 export type { BadgeProps } from "./Badge.js";
 export { ChainPicker } from "./ChainPicker.js";
 export type { ChainPickerProps } from "./ChainPicker.js";
+export { ChainIcon } from "./ChainIcon.js";
+export type { ChainIconProps } from "./ChainIcon.js";
 export { StepRail } from "./StepRail.js";
 export type { StepRailProps } from "./StepRail.js";
 export { Header } from "./Header.js";

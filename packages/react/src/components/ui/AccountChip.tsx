@@ -4,6 +4,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react";
 import { explorerAddressUrl, type Chain } from "@signordev/whisk-core";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
+import { ChainIcon } from "./ChainIcon.js";
 
 function shorten(address: string): string {
   if (address.length <= 12) return address;
@@ -123,7 +124,15 @@ export function NetworkPill() {
       data-whisk-chain={currentChain}
       title={`Wallet network: ${chainName}`}
     >
-      <span className="whisk-network-pill__dot" aria-hidden="true" />
+      {currentChain ? (
+        <ChainIcon
+          chain={currentChain}
+          size={12}
+          className="whisk-network-pill__icon"
+        />
+      ) : (
+        <span className="whisk-network-pill__dot" aria-hidden="true" />
+      )}
       {chainName}
     </span>
   );
