@@ -69,7 +69,7 @@ export function WidgetMockup({ className }: { className?: string }) {
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-2xl shadow-primary/5">
         <CardHeader stageLabel={meta.label} tone={meta.tone} />
 
-        <div className="relative min-h-[19rem] px-5 pb-5">
+        <div className="relative h-[21rem] md:h-[20rem] overflow-hidden px-5 pb-5">
           <AnimatePresence mode="wait">
             {stage === 0 ? (
               <StageConnect key="connect" />
@@ -90,7 +90,7 @@ export function WidgetMockup({ className }: { className?: string }) {
           parent section, so a soft glow is all that bleeds out). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-12 -z-10 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_60%)]"
+        className="pointer-events-none absolute lg:-inset-12 -inset-6 -z-10 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_60%)]"
       />
     </div>
   );
@@ -193,8 +193,8 @@ function StageConnect() {
         <span className="font-semibold">Connect to continue</span>
       </div>
       <p className="mx-auto max-w-xs text-xs text-muted-foreground">
-        Send, bridge, or swap USDC across any chain. Whisk never holds
-        your keys.
+        Send, bridge, or swap USDC across any chain. Whisk never holds your
+        keys.
       </p>
       <PrimaryButton>Connect wallet</PrimaryButton>
     </motion.div>
@@ -231,12 +231,7 @@ function StageCompose() {
       />
 
       <div className="flex items-stretch gap-2">
-        <FieldBoxStatic
-          label="Amount"
-          value="6.00"
-          big
-          className="flex-1"
-        />
+        <FieldBoxStatic label="Amount" value="6.00" big className="flex-1" />
         <TokenPickerStatic />
       </div>
 
