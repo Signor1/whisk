@@ -1,0 +1,60 @@
+---
+title: useChainBalance
+description: Read the connected wallet's USDC balance on a given chain.
+---
+
+A small hook for showing balances. Useful for "Max" buttons,
+insufficient-balance UX, and pre-quote validation.
+
+```tsx
+import { useChainBalance } from "@signordev/whisk-react";
+```
+
+## Returns
+
+```ts
+type ChainBalance = {
+  /** Already divided by token decimals. */
+  formatted: string | undefined;
+  /** Same value in base units. */
+  raw: bigint | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+};
+```
+
+## Showing the balance
+
+```tsx
+export function BalanceLine() {
+  const { formatted, isLoading } = useChainBalance("Base_Sepolia");
+  if (isLoading) return <span>Loading…</span>;
+  return <span>Balance: {formatted ?? "0"} USDC</span>;
+}
+```
+
+## A Max button
+
+```tsx
+const { formatted } = useChainBalance("Base");
+const [amount, setAmount] = useState("");
+
+<>
+  <input
+    value={amount}
+    onChange={(e) => setAmount(e.target.value)}
+  />
+  <button
+    disabled={!formatted}
+    onClick={() => setAmount(formatted ?? "")}
+  >
+    Max
+  </button>
+</>;
+```
+
+<Callout type="tip">
+  Call `refetch()` from `<WhiskSend onSuccess={...}>` to update the
+  balance immediately after a transfer settles.
+</Callout>

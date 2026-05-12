@@ -1,0 +1,48 @@
+---
+title: ConnectModal
+description: The wallet picker dialog. Used inside WhiskSend; exposed so you can mount it in your own UI.
+---
+
+`<ConnectModal>` is the Radix Dialog that lists every wallet in your
+config (EVM and Solana) and runs the connect flow on click.
+`<WhiskSend>` opens it when the user clicks the connect CTA. Import
+it directly only if you're building your own shell.
+
+```tsx
+import { ConnectModal } from "@signordev/whisk-react";
+```
+
+## Props
+
+| Prop          | Type                       | Notes                                  |
+| ------------- | -------------------------- | -------------------------------------- |
+| `open`        | `boolean`                  | Whether the modal is open.             |
+| `onOpenChange`| `(open: boolean) => void`  | Fires on every open/close.             |
+| `trigger`     | `ReactNode`                | Optional Radix `Dialog.Trigger` element. |
+
+## Controlled
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<button onClick={() => setOpen(true)}>Connect</button>
+<ConnectModal open={open} onOpenChange={setOpen} />
+```
+
+## With a trigger
+
+```tsx
+<ConnectModal
+  trigger={<Button variant="primary">Sign in with wallet</Button>}
+/>
+```
+
+Once the user connects, the modal closes itself. From there, your
+own UI (or any Whisk component) can read connection state from
+[`useWhiskAccount`](/docs/hooks/use-whisk-account).
+
+<Callout type="tip">
+  Pair this with `useWhiskAccount` to show the connected address +
+  give the user a way to disconnect — that round-trip belongs in your
+  layout, not inside the widget.
+</Callout>

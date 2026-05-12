@@ -1,0 +1,132 @@
+---
+title: useWhisk
+description: Read the state, call the actions. The hook that drives every Whisk-on-React surface.
+---
+
+`useWhisk()` is what `<WhiskSend>` uses internally and what you'll
+reach for first when you need a custom UI. It returns the current
+state, a stable actions object, and shortcuts for connection state.
+
+```tsx
+import { useWhisk } from "@signordev/whisk-react";
+```
+
+## Returns
+
+```ts
+type UseWhiskResult = {
+  state: WhiskState;
+  actions: WhiskActions;
+  connected: boolean;
+  address: string | undefined;
+};
+
+type WhiskActions = {
+  resolve: (input: string, chain: Chain) => Promise<void>;
+  quote: (
+    recipient: ResolvedRecipient,
+    amount: string,
+    sourceChain: Chain,
+    token?: Token,
+  ) => Promise<void>;
+  back: () => void;
+  send: () => Promise<void>;
+  reset: () => void;
+};
+```
+
+The `actions` object is stable across renders. You can include it in
+a `useEffect` dependency array; it won't trigger re-runs.
+
+## A custom shell
+
+```tsx title="components/custom-send.tsx"
+"use client";
+import { useState } from "react";
+import { useWhisk } from "@signordev/whisk-react";
+
+export function CustomSend() {
+  const { state, actions, connected, address } = useWhisk();
+  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState("");
+
+  if (!connected) {
+    return <p>Connect a wallet to continue.</p>;
+  }
+
+  if (state.kind === "review") {
+    return (
+      <div>
+        <p>
+          Send {state.quote.amountIn} USDC to{" "}
+          {state.quote.recipient.display}
+        </p>
+        <button onClick={() => actions.back()}>Back</button>
+        <button onClick={() => actions.send()}>Confirm</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p>Connected as {address}</p>
+      <input
+        value={recipient}
+        onChange={(e) => setRecipient(e.target.value)}
+        placeholder="vitalik.eth or 0x…"
+      />
+      <input
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        placeholder="0.00"
+      />
+      <button
+        onClick={async () => {
+          await actions.resolve(recipient, "Base_Sepolia");
+          // Read state.kind === "idle" + state.recipient,
+          // then call actions.quote(...) to push into review.
+        }}
+      >
+        Continue
+      </button>
+    </div>
+  );
+}
+```
+
+For a complete headless example, see
+[the donate-button recipe](/docs/recipes/donate-button).
+
+## Common patterns
+
+### Resolving on debounce
+
+Don't `resolve()` on every keystroke. Whisk will queue resolution
+calls cleanly, but you'll burn through RPC calls. Debounce 250 ms:
+
+```tsx
+import { useDeferredValue } from "react";
+
+const deferred = useDeferredValue(recipient);
+
+useEffect(() => {
+  if (!deferred) return;
+  actions.resolve(deferred, destChain);
+}, [deferred, destChain]);
+```
+
+### Pinning a default token
+
+`actions.quote` accepts an optional `token` argument. Skip it and
+Whisk falls back to whatever the engine was configured with —
+typically USDC. Pass it when you support multiple tokens and want
+to control which one the next quote builds against.
+
+## Related
+
+- [`useWhiskAccount`](/docs/hooks/use-whisk-account) — connection
+  state, `connect`/`disconnect`.
+- [`useChainBalance`](/docs/hooks/use-chain-balance) — the user's
+  USDC balance on a given chain.
+- [`useWhiskSwap`](/docs/hooks/use-whisk-swap) — same idea but for
+  swaps.

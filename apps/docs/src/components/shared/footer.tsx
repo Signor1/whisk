@@ -42,18 +42,18 @@ const FOOTER_GROUPS = [
  */
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-border/60 bg-background">
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
-        <div className="col-span-2 md:col-span-1">
+    <footer className="mt-auto w-full border-t border-border/60 bg-background">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-12 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-8 md:px-6">
+        <div className="sm:max-w-xs">
           <Logo />
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Drop-in USDC send & bridge widget for React. Built on Circle
-            App Kit. MIT licensed.
+          <p className="mt-3 text-sm text-muted-foreground md:text-base">
+            Drop-in USDC send & bridge widget for React. Built on Circle App
+            Kit. MIT licensed.
           </p>
         </div>
 
         {FOOTER_GROUPS.map((group) => (
-          <div key={group.title}>
+          <div key={group.title} className="min-w-32">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">
               {group.title}
             </h3>
@@ -88,7 +88,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/60">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:px-6">
           <span>© {new Date().getFullYear()} Whisk. MIT licensed.</span>
           <span>
             Made with{" "}

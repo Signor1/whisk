@@ -1,0 +1,109 @@
+---
+title: Primitives
+description: The building blocks that make up WhiskSend, exposed so you can compose your own UI.
+---
+
+`<WhiskSend>` is a composition of small, single-purpose components.
+Every one of them is re-exported, so you can build a custom shell
+without copying source into your repo.
+
+```tsx
+import {
+  // Card surface
+  Card,
+  // Buttons + inputs
+  Button,
+  Input,
+  Field,
+  FieldBox,
+  FieldBoxSelect,
+  // Pills, chips, badges
+  Badge,
+  AccountChip,
+  NetworkPill,
+  BalanceLine,
+  // Chain + step UI
+  ChainPicker,
+  StepRail,
+  // Status
+  Banner,
+} from "@signordev/whisk-react";
+```
+
+Every primitive reads from the same `[data-whisk]` token contract,
+so your theme overrides (see [Theming](/docs/theming/overview))
+apply to custom layouts automatically.
+
+## A custom shell
+
+This is what a hand-rolled version of `<WhiskSend>` might look like
+— enough to show what each primitive does:
+
+```tsx title="MyShell.tsx"
+"use client";
+import {
+  Card,
+  Field,
+  Input,
+  Button,
+  Banner,
+  ChainPicker,
+  useWhisk,
+} from "@signordev/whisk-react";
+
+export function MyShell() {
+  const { state, actions } = useWhisk();
+
+  return (
+    <Card data-whisk>
+      {state.kind === "error" && (
+        <Banner tone="destructive">{state.error.message}</Banner>
+      )}
+
+      <Field label="Amount">
+        <Input
+          inputMode="decimal"
+          placeholder="0.00"
+          onChange={(e) => {
+            /* … debounced quote(...) */
+          }}
+        />
+      </Field>
+
+      <ChainPicker
+        chains={["Arc_Testnet", "Base_Sepolia"]}
+        onSelect={(chain) => {
+          /* … */
+        }}
+      />
+
+      <Button
+        variant="primary"
+        onClick={() => actions.send()}
+        loading={state.kind === "sending"}
+      >
+        Send
+      </Button>
+    </Card>
+  );
+}
+```
+
+The pattern is the same as building on top of any well-typed React
+library: read state from the hook, render primitives, call actions
+on click.
+
+## When to drop to primitives
+
+Reach for them when:
+
+- The card layout would clash with the rest of your app (e.g.
+  you're inside a sheet, a sidebar wizard, or a full-page checkout).
+- You need to inject a custom step into the flow (e.g. a corporate
+  approval check before send).
+- You want to replace just one step (e.g. swap the recipient picker
+  for an autocomplete that searches your CRM).
+
+For everything else, the styled `<WhiskSend>` is the better default.
+It's already accessible, themed, and tested. Dropping to primitives
+means owning the layout and accessibility work yourself.

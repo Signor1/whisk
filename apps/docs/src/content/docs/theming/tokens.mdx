@@ -1,0 +1,61 @@
+---
+title: Tokens
+description: The complete list of CSS variables Whisk reads from.
+---
+
+Every Whisk style hangs off one of these variables. Override them
+on a parent of the widget — `:root`, `body`, or any wrapping
+element that the widget descends from.
+
+## Brand surfaces
+
+| Variable           | Default     | What it paints                    |
+| ------------------ | ----------- | --------------------------------- |
+| `--whisk-bg`       | `#e4e2d4`   | Card and surface background.      |
+| `--whisk-fg`       | `#6e4d54`   | Primary text.                     |
+| `--whisk-fg-muted` | `#7a5c63`   | Labels, hints, secondary copy.    |
+| `--whisk-border`   | `#ca9b8f`   | Hairline borders.                 |
+
+## Accent
+
+| Variable              | Default     | What it paints                          |
+| --------------------- | ----------- | --------------------------------------- |
+| `--whisk-primary`     | `#d65c3c`   | CTA buttons, active dots, focus ring.   |
+| `--whisk-primary-fg`  | `#fbf8ee`   | Text on the accent surface.             |
+
+## Derived
+
+These default to brand tokens. Override them only when you need a
+different shade for one specific surface.
+
+| Variable           | Default                  | What it paints     |
+| ------------------ | ------------------------ | ------------------ |
+| `--whisk-card`     | `var(--whisk-bg)`        | Card background.   |
+| `--whisk-card-fg`  | `var(--whisk-fg)`        | Card text.         |
+| `--whisk-input`    | `var(--whisk-border)`    | Input borders.     |
+| `--whisk-ring`     | `var(--whisk-primary)`   | Focus ring.        |
+
+## Semantic state
+
+| Variable                  | Default     | What it paints              |
+| ------------------------- | ----------- | --------------------------- |
+| `--whisk-success`         | `#6b8e4e`   | Success banner, success badge. |
+| `--whisk-warning`         | `#d69a3c`   | Warning banner, warning badge. |
+| `--whisk-destructive`     | `#b23a3a`   | Error banner, destructive button. |
+| `--whisk-destructive-fg`  | `#fbf8ee`   | Text on the destructive surface. |
+
+## Shape
+
+| Variable             | Default      | What it shapes              |
+| -------------------- | ------------ | --------------------------- |
+| `--whisk-radius`     | `0.625rem`   | Fields, buttons.            |
+| `--whisk-radius-sm`  | `0.375rem`   | Badges.                     |
+| `--whisk-radius-lg`  | `1rem`       | Card.                       |
+| `--whisk-border-w`   | `0.5px`      | Hairline border width.      |
+
+## Type
+
+| Variable             | Default                       | What it covers          |
+| -------------------- | ----------------------------- | ----------------------- |
+| `--whisk-font`       | Inter → SF Pro → system       | Body type.              |
+| `--whisk-font-mono`  | Geist Mono → JetBrains Mono   | Address & tx hash type. |

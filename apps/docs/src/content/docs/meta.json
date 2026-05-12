@@ -1,4 +1,16 @@
 {
   "title": "Whisk",
-  "pages": ["index"]
+  "pages": [
+    "index",
+    "---Setup---",
+    "getting-started",
+    "---Reference---",
+    "concepts",
+    "components",
+    "hooks",
+    "theming",
+    "---Patterns---",
+    "recipes",
+    "api"
+  ]
 }

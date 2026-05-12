@@ -1,56 +1,88 @@
 ---
 title: Introduction
-description: An embeddable USDC send & bridge widget for React, built on Circle App Kit.
+description: A React widget for sending and bridging USDC, built on Circle App Kit.
 ---
 
-Whisk is a drop-in React component for sending and bridging USDC
-across any chain App Kit ships with. It handles wallet connection,
-recipient resolution, quote computation, gas estimation, signature
-collection, transaction submission, and bridge confirmation — so you
-can ship a stablecoin payment experience in your app in an afternoon.
+Whisk is a React component you drop into a page so people can send
+USDC. Once it's mounted, they can pay anyone with a wallet, on any
+chain Circle App Kit supports, with or without a bridge in the
+middle. You don't have to think about wagmi configs, CCTP step
+ordering, or which RPC speaks Solana — Whisk handles all of that
+behind the component.
 
-## Install
+```tsx title="app/page.tsx"
+import {
+  WhiskProvider,
+  WhiskSend,
+  createWhiskConfig,
+  evm,
+} from "@signordev/whisk-react";
+import "@signordev/whisk-react/styles.css";
 
-<InstallCommand packages={["@signordev/whisk-react", "@signordev/whisk-core"]} />
+const config = createWhiskConfig({
+  wallets: [evm({ projectId: process.env.WALLETCONNECT_PROJECT_ID! })],
+  chains: ["Arc_Testnet", "Base_Sepolia"],
+});
 
-## Quick start
-
-```tsx
-import { WhiskProvider, WhiskSend } from "@signordev/whisk-react";
-
-export default function App() {
+export default function Page() {
   return (
-    <WhiskProvider projectId="your-app-kit-project-id">
+    <WhiskProvider config={config}>
       <WhiskSend />
     </WhiskProvider>
   );
 }
 ```
 
-That's the full integration. Drop it into a page, point the
-`projectId` at your Circle App Kit project, and you're live.
+Save the file. Open the page. That's the entire integration. Connect
+a wallet, type an address, type an amount, hit send. If the
+destination is a different chain than the source, Whisk routes
+through CCTP; if it's the same chain, it skips the bridge.
 
-## What's in this monorepo
+## Two packages
 
-- **`@signordev/whisk-core`** — chain-agnostic engine. State machine,
-  CCTP routing, ENS resolution, quote computation. No React
-  dependency.
-- **`@signordev/whisk-react`** — the components and hooks. Styled
-  `<WhiskSend />`, `<WhiskSwap />`, plus headless `useWhisk`,
-  `useWhiskSwap`, `useWhiskAccount` for custom UI.
-- **Five example apps** — e-commerce checkout, donate button, themed
-  SaaS dashboard, payroll batch, invoice payment link. All under
-  `examples/` in the repo.
+`@signordev/whisk-react` ships the components, hooks, and provider.
+`@signordev/whisk-core` ships the engine that drives them — pure
+TypeScript, no React import. The React package re-exports the few
+helpers most apps need (`chainInfo`, `composeResolvers`,
+`WhiskError` subclasses), so you almost never have to import from
+core directly.
 
-## Next steps
+## What it does that you don't have to
 
-The full guides (Getting Started, Concepts, Components, Hooks,
-Theming, Recipes, API reference) ship in the next docs release. Until
-then:
+<Cards>
+  <Card title="Recipient lookup" href="/docs/concepts/resolvers">
+    Addresses, ENS names, and ENSIP-11 multichain coin types resolve
+    against the destination chain. Bring your own resolvers — Lens,
+    Farcaster, an internal email lookup — and they slot into the same
+    chain.
+  </Card>
+  <Card title="Quote and route" href="/docs/concepts/routing">
+    Same-chain transfers go direct. Cross-chain transfers route
+    through CCTP v2 with Circle's Iris forwarder handling the mint,
+    so the user signs once.
+  </Card>
+  <Card title="State you can read" href="/docs/concepts/state-machine">
+    Every transition fires through a discriminated union. Narrow on
+    `state.kind` and the rest of the shape is fully typed. Good for
+    analytics, custom UI, or a global app store.
+  </Card>
+  <Card title="A theme you can repaint" href="/docs/theming/overview">
+    Every visible property routes through a CSS variable scoped to
+    `[data-whisk]`. Override `--whisk-primary` once; the whole widget
+    follows. Nothing leaks into the rest of your app.
+  </Card>
+</Cards>
 
-- Read the source on
-  [GitHub](https://github.com/Signor1/whisk).
-- Try the deployed
-  [playground](https://whisk-playground.vercel.app).
-- Open an [issue](https://github.com/Signor1/whisk/issues) for
-  anything that surprises you.
+## A note on status
+
+Whisk is live on 17 testnets today. Mainnet is in progress. If you're
+building toward production, build against testnet first — the API
+won't change between testnet and mainnet, only the chain identifiers
+you put in `createWhiskConfig`.
+
+## Where to start
+
+- New to the library: [Install Whisk](/docs/getting-started/install).
+- Want to understand the parts: [Concepts](/docs/concepts/engine).
+- Building a payment flow: [Recipes](/docs/recipes/ecommerce-checkout).
+- Reaching for a specific hook: [Hooks](/docs/hooks/use-whisk).

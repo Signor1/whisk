@@ -1,0 +1,102 @@
+---
+title: E-commerce checkout
+description: Pin the cart total and merchant address — let the customer just confirm and pay.
+---
+
+The most common Whisk integration. Your app already knows the cart
+total and where the money should go; the widget is just there to
+collect a signature.
+
+## The shape
+
+```tsx title="app/checkout/[orderId]/page.tsx"
+"use client";
+
+import { WhiskSend } from "@signordev/whisk-react";
+import { useRouter } from "next/navigation";
+import { useOrder } from "@/lib/orders";
+
+export default function CheckoutPage({
+  params,
+}: {
+  params: { orderId: string };
+}) {
+  const router = useRouter();
+  const order = useOrder(params.orderId);
+
+  if (!order) return null;
+
+  return (
+    <main className="mx-auto max-w-md py-16">
+      <h1 className="text-2xl font-semibold mb-2">
+        Pay {order.amount} USDC
+      </h1>
+      <p className="text-muted-foreground mb-6">
+        Order #{order.id} · {order.summary}
+      </p>
+
+      <WhiskSend
+        amount={order.amount}
+        recipient={process.env.NEXT_PUBLIC_MERCHANT_TREASURY!}
+        destinationChain="Base"
+        onSuccess={({ finalTxHash }) => {
+          fetch(`/api/orders/${order.id}/paid`, {
+            method: "POST",
+            body: JSON.stringify({ tx: finalTxHash }),
+          });
+          router.push(`/order/confirmed?tx=${finalTxHash}`);
+        }}
+        onError={(e) => toast.error(e.message)}
+      />
+    </main>
+  );
+}
+```
+
+## What's locked, what's free
+
+- **Locked:** `amount` (the cart total), `recipient` (your treasury),
+  `destinationChain` (where you accept USDC).
+- **Free:** the source chain. Customers send from whichever chain
+  has their USDC; Whisk handles the bridge.
+
+That mix is what makes this surface feel like a checkout. The user
+isn't typing numbers or picking recipients; they're confirming what
+your app has already decided.
+
+## The server-side bit you can't skip
+
+Don't trust the `finalTxHash` you get from `onSuccess`. Anyone can
+fire that callback by inspecting the page. Before you mark the order
+as paid, verify the transaction on-chain from the server:
+
+```ts title="app/api/orders/[id]/paid/route.ts"
+import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+
+const client = createPublicClient({ chain: base, transport: http() });
+
+export async function POST(req, { params }) {
+  const { tx } = await req.json();
+
+  const receipt = await client.getTransactionReceipt({ hash: tx });
+  if (!receipt || receipt.status !== "success") {
+    return new Response("Tx not landed", { status: 400 });
+  }
+
+  // Parse the USDC Transfer event from receipt.logs and
+  // confirm amount + recipient match the order.
+  // …
+
+  await markOrderPaid(params.id, tx);
+  return Response.json({ ok: true });
+}
+```
+
+This step matters. Skipping it is how stores get drained.
+
+## Full source
+
+[`examples/ecommerce-checkout`](https://github.com/Signor1/whisk/tree/main/examples/ecommerce-checkout)
+has the full Next.js app: order pages, server verification, the
+post-payment redirect, and the Postgres schema for orders.

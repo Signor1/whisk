@@ -1,0 +1,86 @@
+---
+title: Payroll batch
+description: An admin tool that walks a list of payees — one Whisk render per row.
+---
+
+When an operator pays a list of vendors or contractors, you want a
+single connection state across the batch but a fresh widget per
+payee. The cleanest way to do that: keep the provider mounted at
+the top of the page and remount `<WhiskSend>` on each step.
+
+## The shape
+
+```tsx title="app/admin/payroll/page.tsx"
+"use client";
+
+import { useState } from "react";
+import { WhiskSend } from "@signordev/whisk-react";
+import { usePayees } from "@/lib/payroll";
+
+export default function PayrollPage() {
+  const payees = usePayees();
+  const [completed, setCompleted] = useState<string[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const active = payees[activeIndex];
+  const remaining = payees.length - completed.length;
+
+  if (!active) {
+    return (
+      <p className="p-12 text-center">
+        All {payees.length} payees paid.
+      </p>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-4xl py-12 grid grid-cols-[1fr_360px] gap-8">
+      <section>
+        <h1 className="text-2xl font-semibold">Run payroll</h1>
+        <p className="mb-6 text-muted-foreground">
+          {remaining} of {payees.length} remaining
+        </p>
+
+        <ol className="space-y-2">
+          {payees.map((p) => (
+            <li
+              key={p.id}
+              data-done={completed.includes(p.id)}
+              className="data-[done=true]:opacity-50"
+            >
+              {p.name} — {p.amount} USDC → {p.chain}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <aside>
+        <WhiskSend
+          key={active.id}
+          amount={active.amount}
+          recipient={active.address}
+          destinationChain={active.chain}
+          onSuccess={() => {
+            setCompleted((prev) => [...prev, active.id]);
+            setActiveIndex((i) => i + 1);
+          }}
+        />
+      </aside>
+    </main>
+  );
+}
+```
+
+## Why the `key` matters
+
+`<WhiskSend>` has internal state — the current step, the last quote,
+the resolved recipient. Without `key={active.id}`, when you move
+from one payee to the next, the widget would keep the previous
+payee's state around. The `key` forces a fresh mount per row, so
+each payment starts from a clean form.
+
+## Full source
+
+[`examples/payroll-batch`](https://github.com/Signor1/whisk/tree/main/examples/payroll-batch)
+adds CSV upload for payee lists, per-row status persistence, and a
+summary report at the end of the run.

@@ -1,0 +1,127 @@
+---
+title: Resolvers
+description: Turning "vitalik.eth" into an on-chain address — and plugging in custom lookups.
+---
+
+A resolver takes whatever the user typed and returns an address on
+the destination chain. Whisk's `defaultResolver` chains two of them:
+
+1. **`addressResolver`** — accepts a raw hex address or Solana
+   pubkey, checks the checksum, returns it.
+2. **`ensResolver`** — accepts an ENS name and looks up the right
+   address for the destination chain using ENSIP-11 coin types.
+
+`<WhiskProvider>` wires this default in for you. If all you need is
+addresses + ENS, do nothing.
+
+## Chaining your own resolvers
+
+`composeResolvers(...resolvers)` tries each one in order and takes
+the first match. To add a custom resolver while keeping the
+defaults, stack them:
+
+```ts title="resolvers/with-lens.ts"
+import {
+  composeResolvers,
+  addressResolver,
+  ensResolver,
+} from "@signordev/whisk-react";
+import { lensResolver } from "./lens";
+
+export const customResolver = composeResolvers(
+  addressResolver,
+  ensResolver(),       // `vitalik.eth`
+  lensResolver(),      // `vitalik.lens`
+);
+```
+
+Pass it to the config:
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId })],
+  chains: ["Base"],
+  resolver: customResolver,
+});
+```
+
+## Writing a resolver
+
+A resolver is just a function:
+
+```ts
+type Resolver = (
+  input: string,
+  ctx: ResolverContext,
+) => Promise<ResolvedRecipient | undefined>;
+```
+
+Return `undefined` to fall through to the next resolver in the
+chain. Return a `ResolvedRecipient` to claim the input. The `ctx`
+argument gives you the destination chain so you can scope your
+lookup:
+
+```ts title="resolvers/email.ts"
+import type { Resolver } from "@signordev/whisk-react";
+import { lookupAddressForEmail } from "./api";
+
+export const emailResolver: Resolver = async (input, ctx) => {
+  if (!input.includes("@")) return undefined;
+
+  const address = await lookupAddressForEmail(input, ctx.chain);
+  if (!address) return undefined;
+
+  return {
+    chain: ctx.chain,
+    address,
+    display: input,
+  };
+};
+```
+
+A few rules that pay off:
+
+- **Be fast.** Resolvers run sequentially. A 2-second resolver
+  delays the entire chain.
+- **Bail early.** Check the input shape (`includes("@")` here)
+  before hitting the network. The user types every character and
+  the resolver chain re-runs each time.
+- **Don't normalize blindly.** Lowercasing an ENS name is fine.
+  Lowercasing a base58-encoded Solana pubkey breaks it. If you
+  normalize, do it per format.
+
+## ENSIP-11, briefly
+
+ENS names can point to a different address on each chain via
+"coin types" (`'60` for Ethereum, `'2147483658` for Base, and so on).
+The built-in `ensResolver()` handles this — it pulls the coin type
+for the destination chain and returns the address recorded there.
+
+If the ENS record doesn't have a coin type set for the destination
+chain, the resolver falls back to the primary Ethereum address. This
+matches the behaviour most ENS users expect.
+
+## Debugging a chain
+
+When a resolver chain isn't claiming the input you expect, add a
+trace resolver near the top of the chain:
+
+```ts
+const trace: Resolver = async (input, ctx) => {
+  console.log("[resolver] saw:", input, "for", ctx.chain);
+  return undefined; // always fall through
+};
+
+export const debugResolver = composeResolvers(
+  trace,
+  addressResolver,
+  ensResolver(),
+);
+```
+
+You'll see every keystroke fly past in the console, which makes it
+obvious whether the upstream chain is being hit at all.
+
+## Next
+
+[How fees and quotes are built](/docs/concepts/fees).

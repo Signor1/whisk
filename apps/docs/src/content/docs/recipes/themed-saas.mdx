@@ -1,0 +1,80 @@
+---
+title: Themed SaaS dashboard
+description: A worked rebrand — earth-tone defaults swapped for corporate navy and teal, with one CSS rule.
+---
+
+If you're shipping Whisk inside an existing product, the default
+earth-tone palette probably won't match. This recipe takes a
+typical B2B fintech brand — deep navy, teal accent, tighter
+corners — and applies it to the widget without forking a single
+component.
+
+## The CSS
+
+```css title="app/whisk-theme.css"
+:root {
+  /* Brand surfaces */
+  --whisk-bg: #0a1729;
+  --whisk-fg: #e7eef7;
+  --whisk-fg-muted: #8a9bb3;
+  --whisk-border: #1d3556;
+
+  /* Accent */
+  --whisk-primary: #14b8a6;
+  --whisk-primary-fg: #06292a;
+
+  /* Derived */
+  --whisk-card: #102239;
+  --whisk-input: #1d3556;
+  --whisk-ring: #14b8a6;
+
+  /* Shape — tighter for the fintech aesthetic */
+  --whisk-radius: 0.375rem;
+  --whisk-radius-sm: 0.25rem;
+  --whisk-radius-lg: 0.625rem;
+}
+```
+
+## The integration
+
+Import the override *after* Whisk's styles so it wins on cascade:
+
+```tsx title="app/layout.tsx"
+import "@signordev/whisk-react/styles.css";
+import "./whisk-theme.css";
+
+export default function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+```tsx title="app/(dashboard)/payouts/page.tsx"
+"use client";
+import { WhiskSend } from "@signordev/whisk-react";
+
+export default function PayoutsPage() {
+  return (
+    <section className="rounded-xl border bg-card p-6">
+      <h2 className="mb-4">Pay out</h2>
+      <WhiskSend />
+    </section>
+  );
+}
+```
+
+That's it. Every Whisk component — card, input, button, chips, step
+rail, banner, badge — picks up the new palette automatically.
+
+## Full source
+
+[`examples/themed-saas`](https://github.com/Signor1/whisk/tree/main/examples/themed-saas)
+ships the navy theme with light + dark variants, alongside a
+dashboard shell to drop the widget into.

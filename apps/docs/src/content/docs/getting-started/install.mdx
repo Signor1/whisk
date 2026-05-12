@@ -1,0 +1,73 @@
+---
+title: Install
+description: Get the Whisk packages and their wallet-layer peers into your project.
+---
+
+Whisk lives in two packages. The React package pulls in the core
+engine automatically and re-exports the helpers you'll touch most
+often, so installing it once is usually enough:
+
+<InstallCommand packages={["@signordev/whisk-react", "@signordev/whisk-core"]} />
+
+The React package speaks to wallets through `wagmi` (EVM) and
+`@solana/wallet-adapter-react` (Solana). If your app already uses
+them, you can skip ahead. If not, install them now:
+
+<InstallCommand packages={["wagmi", "viem", "@tanstack/react-query"]} />
+
+Solana support is optional. Add these only if you'll be sending from
+a Solana address:
+
+<InstallCommand packages={["@solana/wallet-adapter-react", "@solana/wallet-adapter-base"]} />
+
+## Import the stylesheet once
+
+Whisk's styles are scoped to a `[data-whisk]` attribute selector, so
+they never collide with the rest of your app. Import the stylesheet
+at the root of your tree and forget about it:
+
+```tsx title="app/layout.tsx"
+import "@signordev/whisk-react/styles.css";
+```
+
+If your bundler refuses CSS imports from `node_modules` (some older
+Webpack setups), reach for the explicit path:
+
+```tsx
+import "@signordev/whisk-react/dist/styles.css";
+```
+
+## Grab a WalletConnect project ID
+
+EVM wallet connection runs through WalletConnect. Sign in to
+[cloud.walletconnect.com](https://cloud.walletconnect.com), create a
+project, and copy the ID into your environment:
+
+```bash title=".env.local"
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
+```
+
+<Callout type="info">
+  Solana wallets discover themselves through the standard wallet
+  adapter protocol. No project ID needed on that side.
+</Callout>
+
+## Verify the install
+
+Quick sanity check before you move on. Add this to any page in your
+app:
+
+```tsx
+import { allChains } from "@signordev/whisk-react";
+
+console.log(allChains().map((c) => c.id));
+```
+
+You should see a list of supported chains in the console. If the
+import fails or the array is empty, the install didn't land — start
+again from the top.
+
+## Next
+
+[Mount the provider](/docs/getting-started/provider) so the widget
+can read from the wallet stack.

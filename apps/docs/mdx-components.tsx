@@ -4,6 +4,8 @@ import { Steps, Step } from "fumadocs-ui/components/steps";
 import { Callout } from "fumadocs-ui/components/callout";
 import { Card, Cards } from "fumadocs-ui/components/card";
 import { InstallCommand } from "@/components/mdx/install-command";
+import { ChainBadge } from "@/components/mdx/chain-badge";
+import { SupportedChainsGrid } from "@/components/mdx/supported-chains-grid";
 
 /**
  * The MDX component map for the whole docs corpus. Every MDX file
@@ -36,6 +38,8 @@ export function getMDXComponents(
     Card,
     Cards,
     InstallCommand,
+    ChainBadge,
+    SupportedChainsGrid,
     ...components,
   };
 }
