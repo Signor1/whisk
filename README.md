@@ -1,4 +1,4 @@
-<img src="./logo.png" alt="Whisk Logo" width="200" />
+<img src="./banner.png" alt="Whisk Logo" width="100%" />
 
 # Whisk
 
