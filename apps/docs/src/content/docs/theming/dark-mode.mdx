@@ -1,14 +1,14 @@
 ---
 title: Dark mode
-description: How Whisk picks a theme — and how to pin one.
+description: How Whisk picks a theme and how to pin one.
 ---
 
 Whisk supports three modes: automatic, pinned light, pinned dark.
 
 ## Automatic (the default)
 
-When `theme="system"` is set on `<WhiskProvider>` — which is the
-default — Whisk renders no `data-whisk-theme` attribute. The widget
+When `theme="system"` is set on `<WhiskProvider>` (which is the
+default), Whisk renders no `data-whisk-theme` attribute. The widget
 follows the OS through a `prefers-color-scheme` media query.
 
 ```tsx
@@ -40,7 +40,7 @@ query.
 
 ## Driving theme from your app's toggle
 
-Most apps already have a theme system — next-themes, Tailwind's
+Most apps already have a theme system; next-themes, Tailwind's
 `.dark` class, a Radix theme. Whisk's stylesheet recognises both
 contracts, so you can pass `theme="system"` to Whisk and let your
 app drive the class on a parent element:

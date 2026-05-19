@@ -75,9 +75,7 @@ export function fromAppKitFees(
   return entries;
 }
 
-function mapAppKitFeeType(
-  type: AppKitEstimateFee["type"],
-): FeeEntry["kind"] {
+function mapAppKitFeeType(type: AppKitEstimateFee["type"]): FeeEntry["kind"] {
   switch (type) {
     case "provider":
       return "provider";

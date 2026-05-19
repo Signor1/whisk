@@ -25,10 +25,22 @@ wallet and the widget walks through the rest:
 
 <Steps>
   <Step>Pick a source chain, paste a recipient, type an amount.</Step>
-  <Step>Whisk resolves the recipient (raw address or ENS name) against the destination chain.</Step>
-  <Step>It builds a quote — same-chain transfer or CCTP bridge — and shows the fee breakdown.</Step>
-  <Step>The user confirms. Whisk submits the transaction and renders a step rail (`authorize → burn → wait → mint`) for bridges.</Step>
-  <Step>On success, you get a result card with the final tx hash and an explorer link.</Step>
+  <Step>
+    Whisk resolves the recipient (raw address or ENS name) against the
+    destination chain.
+  </Step>
+  <Step>
+    It builds a quote (same-chain transfer or CCTP bridge) and shows the fee
+    breakdown.
+  </Step>
+  <Step>
+    The user confirms. Whisk submits the transaction and renders a step rail
+    (`authorize → burn → wait → mint`) for bridges.
+  </Step>
+  <Step>
+    On success, you get a result card with the final tx hash and an explorer
+    link.
+  </Step>
 </Steps>
 
 ## Listening to the flow
@@ -57,7 +69,7 @@ can include them in `useEffect` deps without re-rendering:
 />
 ```
 
-`onStateChange` fires on every transition — including transient ones
+`onStateChange` fires on every transition, including transient ones
 like `resolving` and `quoting`. If you only care about terminal
 states, gate it:
 
@@ -88,7 +100,7 @@ once unlocks both surfaces.
 
 ## Where this falls short
 
-`<WhiskSend>` is opinionated about layout — it's a card, it's
+`<WhiskSend>` is opinionated about layout; it's a card, it's
 centred, it owns its width. If you need a different shape (sidebar
 wizard, full-page checkout, sheet from the bottom), drop down to the
 primitives. See [Components → Primitives](/docs/components/primitives).

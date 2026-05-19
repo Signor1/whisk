@@ -58,9 +58,7 @@ const { evm, solana, connectEvm, connectSolana } = useWhiskAccount();
 
 return (
   <>
-    {!evm?.isConnected && (
-      <button onClick={connectEvm}>Connect EVM</button>
-    )}
+    {!evm?.isConnected && <button onClick={connectEvm}>Connect EVM</button>}
     {!solana?.isConnected && (
       <button onClick={connectSolana}>Connect Solana</button>
     )}
@@ -69,7 +67,7 @@ return (
 ```
 
 <Callout type="info">
-  `disconnect()` disconnects whichever ecosystem is currently
-  primary. To disconnect both, call it twice — or call the underlying
-  wagmi / Solana adapter hooks directly if you need finer control.
+  `disconnect()` disconnects whichever ecosystem is currently primary. To
+  disconnect both, call it twice or call the underlying wagmi / Solana adapter
+  hooks directly if you need finer control.
 </Callout>

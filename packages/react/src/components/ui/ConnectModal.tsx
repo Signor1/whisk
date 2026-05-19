@@ -102,8 +102,8 @@ export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
             </header>
 
             <p className="whisk-help whisk-dialog__lede">
-              Whisk never holds your keys. Connect to send, bridge or swap
-              USDC across the chains your dev configured.
+              Whisk never holds your keys. Connect to send, bridge or swap USDC
+              across the chains your dev configured.
             </p>
 
             <div className="whisk-dialog__list">

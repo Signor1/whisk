@@ -41,14 +41,8 @@ const { formatted } = useChainBalance("Base");
 const [amount, setAmount] = useState("");
 
 <>
-  <input
-    value={amount}
-    onChange={(e) => setAmount(e.target.value)}
-  />
-  <button
-    disabled={!formatted}
-    onClick={() => setAmount(formatted ?? "")}
-  >
+  <input value={amount} onChange={(e) => setAmount(e.target.value)} />
+  <button disabled={!formatted} onClick={() => setAmount(formatted ?? "")}>
     Max
   </button>
 </>;

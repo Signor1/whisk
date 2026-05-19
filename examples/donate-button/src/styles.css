@@ -25,18 +25,35 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   background:
-    radial-gradient(ellipse at 50% -10%, rgba(214, 92, 60, 0.1) 0%, transparent 60%),
+    radial-gradient(
+      ellipse at 50% -10%,
+      rgba(214, 92, 60, 0.1) 0%,
+      transparent 60%
+    ),
     var(--app-bg);
   color: var(--app-fg);
   -webkit-font-smoothing: antialiased;
 }
 
-#root { min-height: 100dvh; }
+#root {
+  min-height: 100dvh;
+}
 
-a { color: inherit; text-decoration: none; }
-a:hover { text-decoration: underline; text-underline-offset: 3px; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 code {
   font-family: "Geist Mono", ui-monospace, monospace;
@@ -47,7 +64,9 @@ code {
 }
 
 @media (prefers-color-scheme: dark) {
-  code { background: rgba(228, 226, 212, 0.08); }
+  code {
+    background: rgba(228, 226, 212, 0.08);
+  }
 }
 
 .page {
@@ -180,7 +199,9 @@ code {
 }
 
 @media (max-width: 880px) {
-  .layout { grid-template-columns: 1fr; }
+  .layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .donation-card {
@@ -232,12 +253,23 @@ code {
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
 }
 
-.chip:hover { background: rgba(214, 92, 60, 0.1); border-color: rgba(214, 92, 60, 0.55); }
-.chip--active { background: rgba(214, 92, 60, 0.18); border-color: rgba(214, 92, 60, 0.7); }
-.chip--ghost { border-style: dashed; opacity: 0.75; }
+.chip:hover {
+  background: rgba(214, 92, 60, 0.1);
+  border-color: rgba(214, 92, 60, 0.55);
+}
+.chip--active {
+  background: rgba(214, 92, 60, 0.18);
+  border-color: rgba(214, 92, 60, 0.7);
+}
+.chip--ghost {
+  border-style: dashed;
+  opacity: 0.75;
+}
 
 /* ============================================================
    Thanks state
@@ -264,8 +296,16 @@ code {
   background: rgba(107, 142, 78, 0.2);
 }
 
-.thanks h3 { margin: 0; font-size: 1.125rem; }
-.thanks p { margin: 0; font-size: 0.875rem; line-height: 1.5; opacity: 0.85; }
+.thanks h3 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.thanks p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
 
 /* ============================================================
    Recent donors
@@ -310,7 +350,9 @@ code {
   font-size: 0.8125rem;
 }
 
-.recent li:last-child { border-bottom: none; }
+.recent li:last-child {
+  border-bottom: none;
+}
 
 .recent__who {
   font-family: "Geist Mono", ui-monospace, monospace;

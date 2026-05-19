@@ -53,7 +53,7 @@ await engine.send({
 
 The `adapter` argument is what tells the engine which wallet to use.
 In React, the hooks pull the right adapter out of the provider stack
-automatically. In a Node context, you bring your own — typically a
+automatically. In a Node context, you bring your own; typically a
 viem `Account` or a Solana keypair.
 
 ## How the React side maps onto it
@@ -61,15 +61,15 @@ viem `Account` or a Solana keypair.
 Every action you call from `useWhisk` ends up calling a method on
 the same `engine` object:
 
-| React action                    | Engine call                        |
-| ------------------------------- | ---------------------------------- |
-| `useWhisk().actions.resolve()`  | `engine.resolve(input, chain)`     |
-| `useWhisk().actions.quote()`    | `engine.quote(params)`             |
-| `useWhisk().actions.send()`     | `engine.send(params)`              |
+| React action                   | Engine call                    |
+| ------------------------------ | ------------------------------ |
+| `useWhisk().actions.resolve()` | `engine.resolve(input, chain)` |
+| `useWhisk().actions.quote()`   | `engine.quote(params)`         |
+| `useWhisk().actions.send()`    | `engine.send(params)`          |
 
 The React `state` you read from `useWhisk` is driven by the
 [state machine](/docs/concepts/state-machine), not the engine. The
-engine doesn't keep state — it returns data and lets the caller
+engine doesn't keep state, it returns data and lets the caller
 manage transitions.
 
 ## Why this split exists

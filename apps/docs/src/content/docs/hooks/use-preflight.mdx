@@ -1,0 +1,121 @@
+---
+title: usePreflight
+description: Read-only pre-signature checks — balance, native gas, and wallet chain alignment. Catches problems before the user signs anything that's doomed to fail.
+---
+
+`usePreflight` runs the checks that prevent the _most common_ user
+complaint: "I signed and it just failed". It inspects the wallet's
+balance, native gas, and current chain ID against the quote on the
+Review screen, and returns a list of issues — each tagged as either
+_blocking_ (Send disabled) or _warning_ (Send proceeds, user informed).
+
+Read-only. Zero gas. Zero transactions. Just RPC reads via wagmi and
+`@solana/web3.js`.
+
+## Signature
+
+```ts
+function usePreflight(
+  quote: Quote | undefined,
+  walletAddress: string | undefined,
+): PreflightResult;
+```
+
+`quote` typically comes from `state.quote` when state is in `review`.
+`walletAddress` comes from `useWhisk().address`.
+
+## Result
+
+```ts
+type PreflightCheckId = "balance" | "gas" | "chain";
+type PreflightStatus = "ok" | "warning" | "blocking";
+
+type PreflightCheck = {
+  id: PreflightCheckId;
+  status: PreflightStatus;
+  message: string; // short, inline-friendly
+};
+
+type PreflightResult = {
+  checks: PreflightCheck[]; // only failing/warning ones appear here
+  hasBlocking: boolean; // true → gate the Send button
+  isLoading: boolean; // true while balances are still being fetched
+};
+```
+
+## What gets checked
+
+| Check       | Source                                                | Status when wrong | Why                                                         |
+| ----------- | ----------------------------------------------------- | ----------------- | ----------------------------------------------------------- |
+| **Balance** | Source chain USDC/EURC/USDT balance read via wagmi    | `blocking`        | No point letting the user sign a doomed tx                  |
+| **Gas**     | Source chain native balance heuristic                 | `warning`         | Wallets sometimes auto-fund — don't false-positive          |
+| **Chain**   | wagmi's `useChainId()` vs source chain's `evmChainId` | `blocking`        | Signing on the wrong chain confuses the wallet and the user |
+
+Solana sources skip the chain check (no wagmi equivalent for Solana
+clusters); other checks still run via `useChainBalance`.
+
+## Example: inline notices on a custom Review screen
+
+```tsx
+"use client";
+
+import { useWhisk, usePreflight } from "@signordev/whisk-react";
+
+export function CustomReview() {
+  const { state, actions, address } = useWhisk();
+  const quote = state.kind === "review" ? state.quote : undefined;
+  const preflight = usePreflight(quote, address);
+
+  if (state.kind !== "review") return null;
+
+  return (
+    <div>
+      {/* …quote summary, fees, etc… */}
+
+      {preflight.checks.map((c) => (
+        <p
+          key={c.id}
+          className={
+            c.status === "blocking" ? "text-red-500" : "text-amber-500"
+          }
+        >
+          {c.message}
+        </p>
+      ))}
+
+      <button
+        onClick={actions.send}
+        disabled={preflight.hasBlocking || preflight.isLoading}
+      >
+        {preflight.hasBlocking ? "Resolve issues above" : "Send"}
+      </button>
+    </div>
+  );
+}
+```
+
+The `<WhiskSend>` widget wires `usePreflight` into the default Review
+screen automatically — failing checks render as inline notices, the
+Send button gates on `hasBlocking`, and the button label flips to
+"Resolve issues above" when blocked.
+
+## Notes
+
+- The hook never throws. Network errors during balance reads surface
+  as `isLoading: true` for longer, then resolve to `ok` when the read
+  succeeds.
+- Returns an empty `checks` array (and `hasBlocking: false`) when
+  `quote` is undefined or no source chain can be determined. Safe to
+  call unconditionally.
+- The gas check is intentionally a heuristic, not a precise estimate.
+  Calculating actual gas cost requires running the tx — which would
+  defeat the point of a pre-signature check.
+
+## Related
+
+- [Error handling & recovery](/docs/concepts/error-handling) — the
+  philosophy behind pre-flight as a first line of defence.
+- [`useChainBalance`](/docs/hooks/use-chain-balance) — the underlying
+  balance hook `usePreflight` calls.
+- [`useWhisk`](/docs/hooks/use-whisk) — sources the `quote` and
+  `address` that `usePreflight` consumes.

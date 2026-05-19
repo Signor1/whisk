@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "@signordev/whisk-react/styles.css";
 import "./globals.css";
 
 /**
- * Self-host Inter and Geist Mono via Next.js's font API. Whisk reads
- * from `--font-inter` / `--font-geist-mono` on the body, so this is
- * how the widget picks up the playground's typography automatically.
+ * Self-host Plus Jakarta Sans + JetBrains Mono via Next's font API.
+ * The widget reads the `--whisk-font` / `--whisk-font-mono` stack,
+ * which now lists these two as the preferred families — so loading
+ * them here means the widget picks them up automatically without any
+ * extra wiring.
  */
-const inter = Inter({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -32,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );

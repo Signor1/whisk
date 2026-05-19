@@ -6,11 +6,7 @@ import {
   QueryClientProvider,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  WagmiProvider,
-  WagmiContext,
-  type Config as WagmiConfig,
-} from "wagmi";
+import { WagmiProvider, WagmiContext, type Config as WagmiConfig } from "wagmi";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -18,7 +14,7 @@ import {
 import { createWhisk, ConfigError } from "@signordev/whisk-core";
 import type { WhiskClientConfig } from "../config/types.js";
 import type { SolanaConfig } from "../config/adapters/solana.js";
-import { defaultResolver } from "../resolvers/index.js";
+import { createDefaultResolver } from "../resolvers/index.js";
 import { WhiskContext, type WhiskContextValue } from "./context.js";
 
 export type WhiskProviderProps = {
@@ -81,13 +77,19 @@ export function WhiskProvider({
         defaultSourceChain: config.defaultSourceChain,
         defaultDestinationChain: config.defaultDestinationChain,
         token: config.token,
-        // Falls back to address + ENS composition when the dev hasn't
-        // passed a custom resolver. Lets users type `vitalik.eth` on
-        // any EVM destination chain without extra setup.
-        resolver: config.resolver ?? defaultResolver,
+        // Falls back to a mode-aware default resolver when the dev
+        // hasn't passed a custom one. In testnet mode, the chain is
+        // Sepolia ENS → mainnet ENS fallback (so devs can register
+        // their own Sepolia test names but still resolve mainnet
+        // names like `vitalik.eth`). In mainnet mode, mainnet only.
+        // `createWhisk` resolves `config.mode` from the chain list
+        // when omitted; we re-derive here so the resolver lines up.
+        resolver:
+          config.resolver ?? createDefaultResolver({ mode: config.mode }),
         feePolicy: config.feePolicy,
         rpcUrls: config.rpcUrls,
         useForwarder: config.useForwarder,
+        mode: config.mode,
         appLabel: config.appLabel,
       }),
     // Engine config is meant to be static for the lifetime of the

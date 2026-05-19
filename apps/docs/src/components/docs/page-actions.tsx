@@ -28,7 +28,8 @@ export function PageActions({ markdownUrl }: { markdownUrl: string }) {
 
   async function fetchMarkdown(): Promise<string> {
     const res = await fetch(markdownUrl);
-    if (!res.ok) throw new Error(`Couldn't fetch ${markdownUrl}: ${res.status}`);
+    if (!res.ok)
+      throw new Error(`Couldn't fetch ${markdownUrl}: ${res.status}`);
     return res.text();
   }
 

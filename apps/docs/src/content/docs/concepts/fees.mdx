@@ -4,7 +4,7 @@ description: What's in a Quote, how fees are calculated, and how to charge your 
 ---
 
 A `Quote` is the engine's answer to "if I send X to Y, what
-happens?". It's pure data — until the user clicks confirm, no
+happens?". It's pure data until the user clicks confirm, no
 transaction is submitted. You can build a quote, throw it away,
 build another one, do whatever you want with it before the user
 commits.
@@ -13,13 +13,13 @@ commits.
 
 ```ts
 type Quote = {
-  route: Route;             // same-chain "send" or cross-chain "bridge"
+  route: Route; // same-chain "send" or cross-chain "bridge"
   sourceChain: Chain;
   destinationChain: Chain;
-  amountIn: string;         // what the user types
-  amountOut: string;        // what the recipient receives
-  fees: FeeBreakdown;       // every line item
-  expiresAt: number;        // ms-epoch — quotes get stale
+  amountIn: string; // what the user types
+  amountOut: string; // what the recipient receives
+  fees: FeeBreakdown; // every line item
+  expiresAt: number; // ms-epoch — quotes get stale
   recipient: ResolvedRecipient;
   token: Token;
 };
@@ -52,10 +52,10 @@ const config = createWhiskConfig({
   wallets: [evm({ projectId })],
   chains: ["Base"],
   feePolicy: {
-    flat: "0.05",                 // 5¢ flat
-    percent: 0.001,               // plus 0.1%
+    flat: "0.05", // 5¢ flat
+    percent: 0.001, // plus 0.1%
     recipient: "0xYourTreasury…", // your fee wallet
-    label: "Platform fee",        // shown in the review UI
+    label: "Platform fee", // shown in the review UI
   },
 });
 ```
@@ -78,7 +78,7 @@ const quote = await engine.quote({
   adapter,
 });
 
-console.log(quote.amountOut);      // "99.92"
+console.log(quote.amountOut); // "99.92"
 console.log(quote.fees);
 // → [
 //     { kind: "gas",      label: "Gas",          amount: "0.04"  },

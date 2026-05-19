@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import type { Chain, Quote, Token, WhiskState } from "@signordev/whisk-core";
+import type { SwapState } from "../hooks/useWhiskSwap.js";
 import { useWhisk } from "../hooks/useWhisk.js";
+import { useWhiskContext } from "../hooks/useWhiskContext.js";
+import { useManualMint } from "../hooks/useManualMint.js";
+import { usePreflight } from "../hooks/usePreflight.js";
+import { useTabLock } from "../hooks/useTabLock.js";
+import { Badge } from "./ui/Badge.js";
+import { FlaskConical } from "lucide-react";
 import { AccountChip, NetworkPill } from "./ui/AccountChip.js";
 import { Card } from "./ui/Card.js";
 import { Footer } from "./ui/Footer.js";
@@ -25,8 +32,22 @@ export type WhiskSendProps = {
   onSuccess?: (result: { quote: Quote; finalTxHash?: string }) => void;
   /** Fires when a transfer fails terminally. */
   onError?: (error: Error) => void;
-  /** Fires for every state-machine transition — useful for analytics. */
+  /** Fires for every transfer state-machine transition — useful for analytics. */
   onStateChange?: (state: WhiskState) => void;
+
+  /**
+   * Fires when a swap completes successfully. Only meaningful when the
+   * Swap tab is enabled — Transfer-only widgets never invoke this.
+   */
+  onSwapSuccess?: (result: {
+    txHash?: string;
+    explorerUrl?: string;
+    amountOut?: string;
+  }) => void;
+  /** Fires when a swap fails terminally. */
+  onSwapError?: (error: Error) => void;
+  /** Fires for every swap state-machine transition. */
+  onSwapStateChange?: (state: SwapState) => void;
 
   /* ─── Controlled inputs (host app pins the value) ─────────────────── */
 
@@ -116,6 +137,9 @@ export function WhiskSend({
   onSuccess,
   onError,
   onStateChange,
+  onSwapSuccess,
+  onSwapError,
+  onSwapStateChange,
   amount,
   recipient,
   sourceChain,
@@ -135,7 +159,70 @@ export function WhiskSend({
   showFooter = false,
   className,
 }: WhiskSendProps) {
-  const { state, actions, connected } = useWhisk();
+  const { state, actions, connected, address } = useWhisk();
+  const { engine } = useWhiskContext();
+  const { manualMint } = useManualMint();
+  // Resolved mode comes from the engine's baked-in config (see
+  // `createWhisk` → `resolveMode`). Drives the visible "Testnet" pill
+  // at the top of the card. Mainnet renders no pill — absence is the
+  // safer signal that real money is moving.
+  const mode = engine.config.mode ?? "testnet";
+
+  // Pre-flight checks (P5): read-only inspection of balance, gas, and
+  // wallet chain alignment. Runs while we have a `quote` in the
+  // review state; results are forwarded to the Review step which renders
+  // them inline and gates the Send button on any `blocking` check.
+  const reviewQuote = state.kind === "review" ? state.quote : undefined;
+  const preflight = usePreflight(reviewQuote, address);
+
+  // Cross-tab single-flight (P7). Lock keyed on (address, sourceChain)
+  // so a user with Whisk open in two tabs can't fire two CCTP burns
+  // from the same wallet simultaneously. The owning tab proceeds
+  // freely; observer tabs see `isLockedByOther` and their Send button
+  // disables with a "Another tab is sending" notice.
+  const sendingRoute =
+    state.kind === "review"
+      ? state.quote.route
+      : state.kind === "sending"
+        ? state.quote.route
+        : undefined;
+  const sendingSource =
+    sendingRoute?.kind === "send"
+      ? sendingRoute.chain
+      : sendingRoute?.kind === "bridge"
+        ? sendingRoute.sourceChain
+        : undefined;
+  const lockScope =
+    address && sendingSource ? `${address}:${sendingSource}` : undefined;
+  const tabLock = useTabLock(lockScope);
+
+  // Wrap `actions.send` so it acquires the cross-tab lock first.
+  // Release happens reactively below via a state-watcher effect so we
+  // cover both success and failure terminal states without the action
+  // having to know it owns a lock.
+  const guardedSend = useCallback(async () => {
+    if (!tabLock.acquire()) {
+      // Another tab beat us to it. The button is already disabled in
+      // that case, so this is a belt-and-braces guard.
+      return;
+    }
+    await actions.send();
+  }, [tabLock, actions]);
+
+  // Release the lock when we leave the sending state. `useEffect` fires
+  // on every state change; we only act when state has moved off
+  // `sending` AND we still hold the lock.
+  const wasSendingRef = useRef(false);
+  useEffect(() => {
+    if (state.kind === "sending") {
+      wasSendingRef.current = true;
+    } else if (wasSendingRef.current) {
+      // Terminal state (succeeded / failed / idle / disconnected after
+      // a send) — release whatever lock we held.
+      wasSendingRef.current = false;
+      tabLock.release();
+    }
+  }, [state.kind, tabLock]);
 
   useEffect(() => {
     onStateChange?.(state);
@@ -164,35 +251,47 @@ export function WhiskSend({
     if (state.kind !== "idle") return;
     if (!recipient) return;
     autoResolvedRef.current = true;
-    const target =
-      destinationChain ??
-      sourceChain ??
-      undefined;
+    const target = destinationChain ?? sourceChain ?? undefined;
     if (target) {
       void actions.resolve(recipient, target);
     }
-  }, [connected, state.kind, recipient, destinationChain, sourceChain, actions]);
+  }, [
+    connected,
+    state.kind,
+    recipient,
+    destinationChain,
+    sourceChain,
+    actions,
+  ]);
 
   // Tab visibility — gated on kitKey so apps that don't pay for swap
   // never see a half-broken tab.
   const visibleTabs: WhiskSendTab[] =
     tabs ?? (kitKey ? ["transfer", "swap"] : ["transfer"]);
   const showTabs = visibleTabs.length > 1;
-  const initialTab: WhiskSendTab =
-    defaultTab ?? (visibleTabs[0] ?? "transfer");
+  const initialTab: WhiskSendTab = defaultTab ?? visibleTabs[0] ?? "transfer";
 
-  const transferContent = renderTransfer(state, actions, connected, {
-    amount,
-    recipient,
-    sourceChain,
-    destinationChain,
-    defaultAmount,
-    defaultRecipient,
-    onAmountChange,
-    onRecipientChange,
-    onSourceChainChange,
-    onDestinationChainChange,
-  });
+  const transferContent = renderTransfer(
+    state,
+    actions,
+    connected,
+    manualMint,
+    preflight,
+    tabLock.isLockedByOther,
+    guardedSend,
+    {
+      amount,
+      recipient,
+      sourceChain,
+      destinationChain,
+      defaultAmount,
+      defaultRecipient,
+      onAmountChange,
+      onRecipientChange,
+      onSourceChainChange,
+      onDestinationChainChange,
+    },
+  );
 
   const swapContent = (
     <SwapTab
@@ -200,6 +299,9 @@ export function WhiskSend({
       defaultChain={swapDefaultChain}
       defaultTokenIn={swapDefaultTokenIn}
       defaultTokenOut={swapDefaultTokenOut}
+      onStateChange={onSwapStateChange}
+      onSuccess={onSwapSuccess}
+      onError={onSwapError}
     />
   );
 
@@ -214,6 +316,22 @@ export function WhiskSend({
         gap: "1rem",
       }}
     >
+      {/*
+       * Mode indicator. Visible from the moment the widget mounts —
+       * users should know they're on testnet BEFORE they connect a
+       * wallet, not after they've already considered the transfer
+       * real. Mainnet renders nothing on purpose (no pill = real
+       * money) so dismissal is impossible.
+       */}
+      {mode === "testnet" ? (
+        <div className="whisk-mode-row" aria-label="Mode: testnet">
+          <Badge variant="warning">
+            <FlaskConical size={11} strokeWidth={2.5} />
+            Testnet
+          </Badge>
+        </div>
+      ) : null}
+
       {connected && state.kind !== "disconnected" ? (
         <div className="whisk-account-row">
           <NetworkPill />
@@ -275,6 +393,10 @@ function renderTransfer(
   state: WhiskState,
   actions: ReturnType<typeof useWhisk>["actions"],
   connected: boolean,
+  manualMint: ReturnType<typeof useManualMint>["manualMint"],
+  preflight: ReturnType<typeof usePreflight>,
+  tabLockedByOther: boolean,
+  guardedSend: () => Promise<void>,
   fields: ControlledFieldProps,
 ): ReactNode {
   if (!connected || state.kind === "disconnected") {
@@ -325,14 +447,14 @@ function renderTransfer(
         <ReviewStep
           quote={state.quote}
           busy={false}
-          onConfirm={actions.send}
+          onConfirm={guardedSend}
           onBack={actions.back}
+          preflight={preflight}
+          tabLockedByOther={tabLockedByOther}
         />
       );
     case "sending":
-      return (
-        <SendingStep steps={state.steps} activeStep={state.currentStep} />
-      );
+      return <SendingStep steps={state.steps} activeStep={state.currentStep} />;
     case "succeeded":
       return (
         <ResultStep
@@ -343,15 +465,61 @@ function renderTransfer(
           onReset={actions.reset}
         />
       );
-    case "failed":
+    case "failed": {
+      // Mid-flight detection: burn already succeeded on source, but the
+      // mint didn't land on destination. `state.raw` is preserved by
+      // `mapAppKitBridgeResult` only on the bridge path, so this
+      // implicitly excludes same-chain sends (which can't be
+      // mid-flight). Surfacing `onRetry` only when all three signals
+      // line up means a pre-burn failure stays a clean "Try again".
+      const steps = state.steps ?? [];
+      const burnStep = steps.find(
+        (s) => s.name === "burn" && s.state === "success",
+      );
+      const mintedAlready = steps.some(
+        (s) => s.name === "mint" && s.state === "success",
+      );
+      const canRetry =
+        Boolean(burnStep) && !mintedAlready && state.raw !== undefined;
+
+      // Manual-mint escape hatch (P3). Only offered when the retry
+      // path is available AND we have the inputs we need:
+      //   - burn tx hash (so Iris can be polled)
+      //   - source + destination chains (for chain-switching + lookup)
+      // This is the *direct* MessageTransmitter path — bypasses App
+      // Kit entirely. Use it when retry keeps failing despite a
+      // healthy Iris attestation.
+      const route = state.quote?.route;
+      const sourceChain =
+        route?.kind === "bridge" ? route.sourceChain : undefined;
+      const destinationChain =
+        route?.kind === "bridge" ? route.destinationChain : undefined;
+      const canManualMint =
+        canRetry &&
+        burnStep?.txHash !== undefined &&
+        sourceChain !== undefined &&
+        destinationChain !== undefined;
+
+      const onManualMint = canManualMint
+        ? () =>
+            manualMint({
+              destinationChain: destinationChain!,
+              burnSourceChain: sourceChain!,
+              burnTxHash: burnStep!.txHash!,
+            })
+        : undefined;
+
       return (
         <ResultStep
           kind="failure"
           error={state.error}
           steps={state.steps}
           onReset={actions.reset}
+          onRetry={canRetry ? actions.retry : undefined}
+          onManualMint={onManualMint}
         />
       );
+    }
     default: {
       const _: never = state;
       return null;

@@ -24,7 +24,8 @@ function ChainSection({
   return (
     <section>
       <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-fd-muted-foreground">
-        {title} <span className="text-fd-foreground/60">· {entries.length}</span>
+        {title}{" "}
+        <span className="text-fd-foreground/60">· {entries.length}</span>
       </h3>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {entries.map(({ id, label, Icon }) => (

@@ -1,25 +1,25 @@
 ---
 title: Routing
-description: How Whisk picks between same-chain transfer and cross-chain CCTP bridge — and what the bridge actually does.
+description: How Whisk picks between same-chain transfer and cross-chain CCTP bridge, and what the bridge actually does.
 ---
 
 When the user hits "Continue," Whisk has to answer one question
 first: is this a transfer or a bridge? The answer depends on whether
 the source chain equals the destination chain. For example, sending
 from <ChainBadge chain="Base" /> to <ChainBadge chain="Base" /> stays
-on the same chain — a direct USDC transfer. Sending from <ChainBadge
-chain="Base" /> to <ChainBadge chain="Arbitrum" /> crosses chains —
+on the same chain (a direct USDC transfer). Sending from <ChainBadge
+chain="Base" /> to <ChainBadge chain="Arbitrum" /> crosses chains;
 the engine routes through CCTP.
 
 ## Two routes
 
-| `route.kind` | When                                              | What happens                          |
-| ------------ | ------------------------------------------------- | ------------------------------------- |
-| `send`       | Source chain = destination chain.                 | Direct USDC ERC-20 transfer.          |
-| `bridge`     | Source ≠ destination, both supported by CCTP.     | CCTP v2 burn + mint, optionally forwarded. |
+| `route.kind` | When                                          | What happens                               |
+| ------------ | --------------------------------------------- | ------------------------------------------ |
+| `send`       | Source chain = destination chain.             | Direct USDC ERC-20 transfer.               |
+| `bridge`     | Source ≠ destination, both supported by CCTP. | CCTP v2 burn + mint, optionally forwarded. |
 
 The decision lives in `decideRoute(...)` in `@signordev/whisk-core`.
-You almost never call it yourself — `engine.quote(...)` calls it
+You almost never call it yourself, `engine.quote(...)` calls it
 and stamps the chosen route onto the returned `Quote.route`. But
 if you need to know what route a pair will take before quoting (a
 checkout summary, a route preview), call it directly:
@@ -46,11 +46,17 @@ destination. The user never signs again, never switches chains.
 <Steps>
   <Step>The user signs an authorization on the source chain.</Step>
   <Step>Whisk submits the burn transaction.</Step>
-  <Step>Circle's Iris service watches the source chain for that burn and submits the corresponding mint on the destination.</Step>
-  <Step>Whisk polls the destination chain until the mint lands, then surfaces the final tx hash.</Step>
+  <Step>
+    Circle's Iris service watches the source chain for that burn and submits the
+    corresponding mint on the destination.
+  </Step>
+  <Step>
+    Whisk polls the destination chain until the mint lands, then surfaces the
+    final tx hash.
+  </Step>
 </Steps>
 
-This is on by default because the alternative is bad UX — without
+This is on by default because the alternative is bad UX without
 the forwarder, the user has to switch wallets to the destination
 chain mid-flow and sign a second transaction.
 

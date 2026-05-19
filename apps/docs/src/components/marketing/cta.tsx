@@ -16,9 +16,9 @@ export function CTA({ className }: { className?: string }) {
           Three lines and you're shipping.
         </h2>
         <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
-          Install the package, mount the provider, render the widget.
-          The rest of the docs is just helping you go further than the
-          three-line version.
+          Install the package, mount the provider, render the widget. The rest
+          of the docs is just helping you go further than the three-line
+          version.
         </p>
 
         <div className="mx-auto mt-8 max-w-xl">

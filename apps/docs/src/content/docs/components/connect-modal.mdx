@@ -14,11 +14,11 @@ import { ConnectModal } from "@signordev/whisk-react";
 
 ## Props
 
-| Prop          | Type                       | Notes                                  |
-| ------------- | -------------------------- | -------------------------------------- |
-| `open`        | `boolean`                  | Whether the modal is open.             |
-| `onOpenChange`| `(open: boolean) => void`  | Fires on every open/close.             |
-| `trigger`     | `ReactNode`                | Optional Radix `Dialog.Trigger` element. |
+| Prop           | Type                      | Notes                                    |
+| -------------- | ------------------------- | ---------------------------------------- |
+| `open`         | `boolean`                 | Whether the modal is open.               |
+| `onOpenChange` | `(open: boolean) => void` | Fires on every open/close.               |
+| `trigger`      | `ReactNode`               | Optional Radix `Dialog.Trigger` element. |
 
 ## Controlled
 
@@ -42,7 +42,7 @@ own UI (or any Whisk component) can read connection state from
 [`useWhiskAccount`](/docs/hooks/use-whisk-account).
 
 <Callout type="tip">
-  Pair this with `useWhiskAccount` to show the connected address +
-  give the user a way to disconnect — that round-trip belongs in your
-  layout, not inside the widget.
+  Pair this with `useWhiskAccount` to show the connected address + give the user
+  a way to disconnect. That round-trip belongs in your layout, not inside the
+  widget.
 </Callout>

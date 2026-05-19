@@ -34,9 +34,7 @@ export function ExampleInvoice() {
     return (
       <div className="invoice invoice--empty">
         <h2>Invoice link required</h2>
-        <p>
-          This page expects URL params. Try one of these:
-        </p>
+        <p>This page expects URL params. Try one of these:</p>
         <ul className="invoice__samples">
           <li>
             <a href="/?to=0x5B8ecaB7096F8aBED873D246629ef9f05f467605&amount=49.99&chain=Arc_Testnet&memo=Invoice+%23420">

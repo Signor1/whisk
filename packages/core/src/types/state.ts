@@ -34,6 +34,14 @@ export type WhiskState =
       error: WhiskError;
       quote?: Quote;
       steps?: Step[];
+      /**
+       * Original App Kit `BridgeResult`, preserved when a bridge fails
+       * after the burn step succeeded. Lets `actions.retry()` resume
+       * via `kit.retryBridge` instead of re-burning. Carried as
+       * `unknown` to keep the React-facing types decoupled from App
+       * Kit; the engine narrows it internally.
+       */
+      raw?: unknown;
     };
 
 export type WhiskStateKind = WhiskState["kind"];

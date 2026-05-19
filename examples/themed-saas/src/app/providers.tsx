@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  WhiskProvider,
-  createWhiskConfig,
-  evm,
-} from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const config = useMemo(

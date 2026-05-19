@@ -1,6 +1,6 @@
 ---
 title: E-commerce checkout
-description: Pin the cart total and merchant address — let the customer just confirm and pay.
+description: Pin the cart total and merchant address. Let the customer just confirm and pay.
 ---
 
 The most common Whisk integration. Your app already knows the cart
@@ -28,9 +28,7 @@ export default function CheckoutPage({
 
   return (
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-2xl font-semibold mb-2">
-        Pay {order.amount} USDC
-      </h1>
+      <h1 className="text-2xl font-semibold mb-2">Pay {order.amount} USDC</h1>
       <p className="text-muted-foreground mb-6">
         Order #{order.id} · {order.summary}
       </p>

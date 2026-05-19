@@ -85,7 +85,9 @@ export function AccountChip({
             {explorer ? (
               <DropdownMenu.Item
                 className="whisk-account-menu__row"
-                onSelect={() => window.open(explorer, "_blank", "noopener,noreferrer")}
+                onSelect={() =>
+                  window.open(explorer, "_blank", "noopener,noreferrer")
+                }
               >
                 <ExternalLink size={12} strokeWidth={2} />
                 View on explorer

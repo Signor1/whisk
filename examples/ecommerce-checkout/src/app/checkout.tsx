@@ -62,9 +62,10 @@ type CartItem = { product: Product };
 
 export function ExampleCheckout() {
   const [cart, setCart] = useState<CartItem | null>(null);
-  const [paid, setPaid] = useState<{ txHash?: string; product: Product } | null>(
-    null,
-  );
+  const [paid, setPaid] = useState<{
+    txHash?: string;
+    product: Product;
+  } | null>(null);
 
   if (paid) {
     return (
@@ -82,8 +83,8 @@ export function ExampleCheckout() {
               >
                 View tx on Arc Explorer
               </a>
-            ) : null}
-            {" "}You'll get a shipping email when this leaves the warehouse.
+            ) : null}{" "}
+            You'll get a shipping email when this leaves the warehouse.
           </p>
         </header>
         <button

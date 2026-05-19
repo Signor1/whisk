@@ -56,8 +56,7 @@ export function StepRail({ steps, activeStep }: StepRailProps) {
     <ol className="whisk-step-rail" aria-label="Transfer progress">
       {steps.map((step) => {
         const Icon = STEP_ICONS[step.name];
-        const isActive =
-          step.state === "pending" && activeStep === step.name;
+        const isActive = step.state === "pending" && activeStep === step.name;
         return (
           <li
             key={step.name}

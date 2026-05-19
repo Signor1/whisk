@@ -1,0 +1,169 @@
+---
+title: useManualMint
+description: Last-resort recovery hook — submit MessageTransmitter.receiveMessage directly when App Kit's retry path is exhausted but the attestation is healthy.
+---
+
+`useManualMint` drives the **direct-CCTP recovery flow**: poll Iris
+for the attestation, then submit
+`MessageTransmitter.receiveMessage(message, attestation)` from the
+user's wallet on the destination chain.
+
+It's the escape hatch beneath `engine.retry()`. Reach for it when:
+
+1. A bridge failed mid-flight (USDC burned on source, mint didn't
+   land on destination).
+2. `engine.retry()` — which wraps App Kit's `kit.retryBridge` —
+   keeps failing despite the attestation being available.
+3. You have the burn tx hash, so Iris can be polled directly.
+
+Same gas cost as a successful retry would have been. CCTP v2's nonce
+tracking on the destination `MessageTransmitter` prevents duplicate
+mints at the protocol level, so this is safe to invoke even if a retry
+might also still succeed in parallel.
+
+## Signature
+
+```ts
+function useManualMint(): {
+  manualMint: (input: ManualMintInput) => Promise<ManualMintResult>;
+  fetchAttestation: (
+    sourceChain: Chain,
+    burnTxHash: string,
+  ) => Promise<IrisMessage>;
+};
+```
+
+## Inputs
+
+```ts
+type ManualMintInput = {
+  /** Where to mint. Must be an EVM chain — Solana destinations return "unsupported". */
+  destinationChain: Chain;
+
+  /** Iris payloads. If omitted, the hook polls Iris using burnSourceChain + burnTxHash. */
+  message?: string;
+  attestation?: string;
+
+  /** Source-chain burn tx hash. Required when message / attestation are omitted. */
+  burnSourceChain?: Chain;
+  burnTxHash?: string;
+
+  /** Max time to poll Iris (ms). Default 10 minutes. */
+  pollTimeout?: number;
+};
+```
+
+## Result
+
+```ts
+type ManualMintResult =
+  | { kind: "success"; txHash: string; explorerUrl?: string }
+  | {
+      kind: "failure";
+      reason: "no-attestation" | "unsupported-chain" | "submission-failed";
+      message: string;
+    }
+  | {
+      kind: "unsupported";
+      reason: "solana-destination" | "no-message-transmitter";
+    };
+```
+
+- `success` — `MessageTransmitter.receiveMessage` was submitted; tx
+  hash points at the user's destination-chain mint.
+- `failure` — submission attempt failed (wallet rejection, RPC error,
+  Iris status still pending after timeout).
+- `unsupported` — chain combination Whisk can't handle today. Solana
+  destinations fall here; the UI should fall back to the
+  attestation-copy escape hatch.
+
+## Example: a custom failure UI
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import {
+  useWhisk,
+  useManualMint,
+  type ManualMintResult,
+} from "@signordev/whisk-react";
+
+export function CustomFailureSurface() {
+  const { state } = useWhisk();
+  const { manualMint } = useManualMint();
+  const [result, setResult] = useState<ManualMintResult | null>(null);
+
+  if (state.kind !== "failed") return null;
+
+  const burnTx = state.steps?.find(
+    (s) => s.name === "burn" && s.state === "success",
+  )?.txHash;
+  const route = state.quote?.route;
+  const sourceChain = route?.kind === "bridge" ? route.sourceChain : undefined;
+  const destinationChain =
+    route?.kind === "bridge" ? route.destinationChain : undefined;
+
+  const canManualMint =
+    burnTx && sourceChain && destinationChain && state.raw !== undefined;
+
+  if (!canManualMint) {
+    return <p>{state.error.message}</p>;
+  }
+
+  return (
+    <div>
+      <p>Your funds are mid-flight. Submit the mint manually:</p>
+      <button
+        onClick={async () => {
+          const r = await manualMint({
+            destinationChain,
+            burnSourceChain: sourceChain,
+            burnTxHash: burnTx,
+          });
+          setResult(r);
+        }}
+      >
+        Submit manually
+      </button>
+      {result?.kind === "success" && (
+        <p>
+          Submitted: <a href={result.explorerUrl}>{result.txHash}</a>
+        </p>
+      )}
+      {result?.kind === "failure" && <p>{result.message}</p>}
+      {result?.kind === "unsupported" && (
+        <p>
+          Manual recovery unavailable for this chain. Use the attestation
+          copy-paste escape hatch:
+          <code>{state.error.cause}</code>
+        </p>
+      )}
+    </div>
+  );
+}
+```
+
+## Notes
+
+- The hook calls `useWriteContract` from wagmi, so it must be
+  rendered inside a `<WagmiProvider>` (which `<WhiskProvider>` mounts
+  for you when `evm()` is in your config).
+- The destination wallet must be connected on the destination chain —
+  wagmi will prompt the user to switch networks if they're on the
+  source chain when they click "Submit manually". This is intentional
+  safety: a manual mint sent to the wrong chain is unrecoverable.
+- The hook does NOT call `engine.retry()` internally. If you want the
+  "try retry first, fall back to manual" flow, the `<WhiskSend>`
+  widget already implements it — see
+  [Error handling & recovery](/docs/concepts/error-handling).
+
+## Related
+
+- [Error handling & recovery](/docs/concepts/error-handling) — the
+  broader story this hook fits into.
+- [`useWhisk`](/docs/hooks/use-whisk) — `actions.retry` is the
+  higher-level retry path; `useManualMint` is the fallback when that
+  also fails.
+- [Errors reference](/docs/api/errors) — `WhiskError.category` tells
+  you whether to attempt retry vs jump straight to manual mint.

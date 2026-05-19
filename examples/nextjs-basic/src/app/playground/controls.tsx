@@ -5,11 +5,7 @@ import { chainInfo, type Chain } from "@signordev/whisk-react";
 import { PLAYGROUND_CHAINS } from "./providers";
 import { PRESETS, type PresetId } from "./presets";
 import { ADDRESS_BOOK } from "./address-book";
-import type {
-  PlaygroundAction,
-  PlaygroundConfig,
-  Theme,
-} from "./store";
+import type { PlaygroundAction, PlaygroundConfig, Theme } from "./store";
 
 /**
  * The control panel that drives every adjustable prop on `<WhiskSend>`.
@@ -146,9 +142,7 @@ export function Controls({
         <Toggle
           label="Lock destination chain"
           checked={config.lockDestinationChain}
-          onChange={(lockDestinationChain) =>
-            set({ lockDestinationChain })
-          }
+          onChange={(lockDestinationChain) => set({ lockDestinationChain })}
         />
         <ChainSelect
           value={config.destinationChain}
@@ -163,11 +157,7 @@ export function Controls({
         </details>
         <p className="pg-faucets">
           Need testnet USDC?{" "}
-          <a
-            href="https://faucet.circle.com"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
             Circle faucet ↗
           </a>
         </p>

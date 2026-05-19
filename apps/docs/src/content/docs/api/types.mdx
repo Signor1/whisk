@@ -14,12 +14,8 @@ type ChainKind = "evm" | "solana";
 type ChainNetwork = "mainnet" | "testnet";
 
 /** The string-literal union of supported chain identifiers. */
-type Chain =
-  | "Arc"
-  | "Arc_Testnet"
-  | "Base"
-  | "Base_Sepolia"
-  // …etc.
+type Chain = "Arc" | "Arc_Testnet" | "Base" | "Base_Sepolia";
+// …etc.
 ```
 
 ## `Token`
@@ -93,7 +89,7 @@ type Quote = {
   amountIn: string;
   amountOut: string;
   fees: FeeBreakdown;
-  expiresAt: number;        // ms-epoch
+  expiresAt: number; // ms-epoch
   recipient: ResolvedRecipient;
   token: Token;
 };
@@ -103,10 +99,10 @@ type Quote = {
 
 ```ts
 type FeePolicy = {
-  flat?: string;     // "0.05" — flat fee in USDC
-  percent?: number;  // 0.001 = 0.1%
+  flat?: string; // "0.05" — flat fee in USDC
+  percent?: number; // 0.001 = 0.1%
   recipient?: string;
-  label?: string;    // shown in the review UI
+  label?: string; // shown in the review UI
 };
 ```
 

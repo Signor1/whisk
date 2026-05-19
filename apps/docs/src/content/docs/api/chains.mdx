@@ -4,7 +4,7 @@ description: The Chain literal, lookup helpers, and explorer URL builders.
 ---
 
 Whisk ships with the chains App Kit supports. The `Chain` type is
-the string-literal union of every supported chain identifier — so
+the string-literal union of every supported chain identifier, so
 it narrows in your editor, gives you autocomplete, and refuses bad
 input at compile time.
 
@@ -13,15 +13,13 @@ import type { Chain } from "@signordev/whisk-react";
 
 const ok: Chain = "Base_Sepolia"; // ✓
 // @ts-expect-error
-const bad: Chain = "ethereum";    // ✗ — not in the union
+const bad: Chain = "ethereum"; // ✗ — not in the union
 ```
 
 The shape is `"Network_Variant"` for clarity:
 
 ```ts
-"Arc" | "Arc_Testnet"
-| "Base" | "Base_Sepolia"
-| "Solana" | "Solana_Devnet"
+"Arc" | "Arc_Testnet" | "Base" | "Base_Sepolia" | "Solana" | "Solana_Devnet";
 // …and so on
 ```
 
@@ -87,11 +85,7 @@ Build the block-explorer URL for an address.
 ## Putting them together
 
 ```tsx
-import {
-  useWhisk,
-  chainInfo,
-  explorerTxUrl,
-} from "@signordev/whisk-react";
+import { useWhisk, chainInfo, explorerTxUrl } from "@signordev/whisk-react";
 
 function SuccessLink() {
   const { state } = useWhisk();

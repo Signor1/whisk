@@ -10,8 +10,6 @@ import { cn } from "../../lib/cn.js";
  */
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   function Card({ className, ...props }, ref) {
-    return (
-      <div ref={ref} className={cn("whisk-card", className)} {...props} />
-    );
+    return <div ref={ref} className={cn("whisk-card", className)} {...props} />;
   },
 );

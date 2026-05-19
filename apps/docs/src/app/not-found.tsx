@@ -23,8 +23,8 @@ export default function NotFound() {
         Page not found
       </h1>
       <p className="mt-4 max-w-md text-balance text-center text-muted-foreground">
-        The link you followed may be broken, or the page may have
-        moved. Try one of these:
+        The link you followed may be broken, or the page may have moved. Try one
+        of these:
       </p>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

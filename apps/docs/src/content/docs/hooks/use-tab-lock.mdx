@@ -1,0 +1,149 @@
+---
+title: useTabLock
+description: Cross-tab single-flight via BroadcastChannel — prevents accidental double-burns when the same wallet has Whisk open in more than one tab.
+---
+
+`useTabLock` is a small primitive that uses the browser-native
+`BroadcastChannel` API to advertise an active send across tabs. While
+one tab holds the lock for a `(walletAddress, sourceChain)` scope,
+every other tab's Whisk widget disables its Send button.
+
+This is a defence against accidental double-burns, not a guarantee of
+exclusivity. The lock is _advisory_ — it only prevents Whisk's UI in
+the second tab from asking for a signature. The underlying wallet
+itself would still accept two sign requests if both UIs bypassed the
+check.
+
+`<WhiskSend>` uses this hook internally. Reach for it directly when
+you want the same coordination in a custom UI.
+
+## Signature
+
+```ts
+function useTabLock(
+  scope: string | undefined,
+  options?: TabLockOptions,
+): TabLock;
+```
+
+`scope` is any string that uniquely identifies the resource being
+locked. The widget uses `${walletAddress}:${sourceChain}`. Pass
+`undefined` when no scope is known yet (e.g. wallet not connected);
+the hook safely no-ops.
+
+## Options
+
+```ts
+type TabLockOptions = {
+  /** BroadcastChannel name. Default: "whisk-tab-lock". */
+  channelName?: string;
+
+  /** Heartbeat interval (ms) — holder re-broadcasts HELD at this cadence. Default 3000. */
+  heartbeatMs?: number;
+
+  /** Stale timeout (ms). Locks not heard from in this window are presumed dead. Default 15000. */
+  staleAfterMs?: number;
+};
+```
+
+The defaults are tuned for testnets and typical wallet UX (a CCTP
+bridge takes 30s–2min, well inside the stale window). Override
+`channelName` if you're hosting multiple Whisk instances in the same
+origin that shouldn't see each other's locks.
+
+## Return value
+
+```ts
+type TabLock = {
+  /** Try to take the lock. Returns false if another tab holds it. */
+  acquire: () => boolean;
+
+  /** Release the lock. Idempotent. */
+  release: () => void;
+
+  /** True when *another* tab currently holds the lock for this scope. */
+  isLockedByOther: boolean;
+
+  /** Local tab ID — useful for debugging / telemetry. */
+  tabId: string;
+};
+```
+
+The holding tab always sees `isLockedByOther: false` — only _other_
+tabs see it true. So you can use this for "should the Send button be
+disabled?" without needing to know who holds the lock.
+
+## Example: custom send flow
+
+```tsx
+"use client";
+
+import { useWhisk, useTabLock } from "@signordev/whisk-react";
+
+export function CustomSend({ sourceChain }: { sourceChain: Chain }) {
+  const { state, actions, address } = useWhisk();
+  const lock = useTabLock(
+    address && sourceChain ? `${address}:${sourceChain}` : undefined,
+  );
+
+  const handleSend = async () => {
+    if (!lock.acquire()) return; // another tab beat us to it
+    try {
+      await actions.send();
+    } finally {
+      lock.release();
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSend}
+      disabled={lock.isLockedByOther || state.kind !== "review"}
+    >
+      {lock.isLockedByOther ? "Active send in another tab" : "Send"}
+    </button>
+  );
+}
+```
+
+## Lifecycle semantics
+
+- **`acquire()`** broadcasts a `HELD` message and returns `true` on
+  success, `false` if another tab already holds the lock. The owning
+  tab then re-broadcasts `HELD` every `heartbeatMs` so newly-mounted
+  tabs see the active lock even if they missed the initial acquire.
+- **`release()`** broadcasts a `RELEASE` message and clears the local
+  hold flag. Always call this in a `finally` block.
+- **Stale recovery.** If a tab crashes mid-flight, the heartbeat stops
+  arriving. Observer tabs wait `staleAfterMs` (default 15s — five
+  missed heartbeats) and then treat the lock as released. Without this,
+  a hard tab close mid-send would leave every other tab thinking the
+  lock is permanent.
+- **Unmount cleanup.** The hook releases automatically on unmount, so
+  React StrictMode or hot-reload doesn't strand a lock.
+
+## SSR / unsupported browsers
+
+`BroadcastChannel` is supported in every modern Chrome, Firefox,
+Safari, and Edge release. On Node SSR or older browsers the hook
+degrades to a no-op: `acquire()` always returns `true`,
+`isLockedByOther` is always `false`. Fund safety is only marginal in
+those environments (no concurrent tabs to race anyway).
+
+## Notes
+
+- `useTabLock` is per-origin. Tabs on `whisk.example.com` won't see
+  locks from `whisk.example.org`. This is a feature — different
+  deployments shouldn't block each other.
+- The default `channelName` of `"whisk-tab-lock"` means two
+  instances of Whisk in the same origin DO see each other's locks.
+  If you're rendering `<WhiskSend>` and your own custom send UI in
+  the same page, both should use the same scope so they coordinate.
+
+## Related
+
+- [Error handling & recovery](/docs/concepts/error-handling) — the
+  fund-safety story this hook fits into.
+- [`useWhisk`](/docs/hooks/use-whisk) — the action set that `useTabLock`
+  guards.
+- [MDN — `BroadcastChannel`](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel)

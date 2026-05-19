@@ -5,15 +5,17 @@ import {
   WhiskProvider,
   createWhiskConfig,
   evm,
+  solana,
   type Chain,
 } from "@signordev/whisk-react";
 
 /**
  * Every testnet App Kit currently supports. The playground exposes
  * the full set so the chain picker mirrors what production apps will
- * see. Solana Devnet is intentionally absent — it's gated behind the
- * v0.2 signer fix; re-add it once `useWhiskAdapter` stops returning
- * a stub for SVM.
+ * see. Solana Devnet rides on `useWhiskAdapter`'s hand-built
+ * `TransactionPartialSigner` workaround for App Kit's sending-vs-
+ * partial-signer mismatch; the workaround lives in
+ * `packages/react/src/hooks/useWhiskAdapter.ts`.
  */
 const TESTNET_CHAINS: Chain[] = [
   "Arc_Testnet",
@@ -30,6 +32,7 @@ const TESTNET_CHAINS: Chain[] = [
   "Plume_Testnet",
   "Polygon_Amoy_Testnet",
   "Sei_Testnet",
+  "Solana_Devnet",
   "Sonic_Testnet",
   "Unichain_Sepolia",
   "World_Chain_Sepolia",
@@ -67,7 +70,25 @@ export function PlaygroundProviders({
             chains: TESTNET_CHAINS,
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
             appName: "Whisk Playground",
+            // Fallback RPC chain. Circle's public Arc Testnet RPC
+            // rate-limits hard during testnet sweeps, which surfaced
+            // as viem "Timed out while waiting for transaction
+            // receipt" errors during swap approves. The list below
+            // is tried in order and re-ranked by latency, so a stuck
+            // primary transparently flips to the next.
+            rpcUrls: {
+              Arc_Testnet: [
+                "https://rpc.testnet.arc.network",
+                "https://arc-testnet.drpc.org",
+                "https://rpc.blockdaemon.testnet.arc.network",
+                "https://rpc.quicknode.testnet.arc.network",
+              ],
+            },
           }),
+          // Solana Devnet support — the factory defaults to devnet, so
+          // no options needed. Mounts `<ConnectionProvider>` +
+          // `<WalletProvider>` only when this is present.
+          solana(),
         ],
         chains: TESTNET_CHAINS,
         defaultSourceChain: "Arc_Testnet",

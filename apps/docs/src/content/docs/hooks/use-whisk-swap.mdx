@@ -64,16 +64,14 @@ export function MySwap() {
 
       {state.kind === "swapping" && <p>Swapping…</p>}
 
-      {state.kind === "success" && (
-        <p>Done. Tx: {state.result.txHash}</p>
-      )}
+      {state.kind === "success" && <p>Done. Tx: {state.result.txHash}</p>}
     </div>
   );
 }
 ```
 
 <Callout type="info">
-  `useWhiskSwap` needs a `kitKey` on `createWhiskConfig`. Without
-  one, `estimate()` resolves to a typed `ConfigError` — surface it
-  through `state.kind === "error"` and tell the user to set the key.
+  `useWhiskSwap` needs a `kitKey` on `createWhiskConfig`. Without one,
+  `estimate()` resolves to a typed `ConfigError`; surface it through `state.kind
+  === "error"` and tell the user to set the key.
 </Callout>

@@ -87,7 +87,11 @@ function reducer(
       // preserved because it's a UI preference, not a payment shape.
       return {
         ...state,
-        config: { ...INITIAL_CONFIG, theme: state.config.theme, ...action.config },
+        config: {
+          ...INITIAL_CONFIG,
+          theme: state.config.theme,
+          ...action.config,
+        },
       };
 
     case "LOG_EVENT": {
@@ -96,7 +100,10 @@ function reducer(
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         at: Date.now(),
       };
-      return { ...state, events: [event, ...state.events].slice(0, MAX_EVENTS) };
+      return {
+        ...state,
+        events: [event, ...state.events].slice(0, MAX_EVENTS),
+      };
     }
 
     case "CLEAR_LOG":

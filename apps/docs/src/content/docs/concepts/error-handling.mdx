@@ -1,0 +1,335 @@
+---
+title: Error handling & recovery
+description: How Whisk keeps user funds safe when something fails — the recovery primitives that defend against burned-but-not-minted, dropped tabs, and stuck attestations.
+---
+
+USDC bridges have one truly bad failure mode: the burn lands on the
+source chain, the mint doesn't land on the destination. The user's
+funds are gone from where they were and not yet where they're going.
+Every other failure is a UX problem; that one is a _trust_ problem.
+
+Whisk's recovery primitives exist to make sure this never becomes a
+permanent state for your users, no matter what fails — App Kit's
+internal poll, Circle's Iris relayer, the user's RPC, the user's tab.
+This page is the map.
+
+## Three classes of failure
+
+| Class          | What it looks like                                                      | Risk                 | Default UX                                        |
+| -------------- | ----------------------------------------------------------------------- | -------------------- | ------------------------------------------------- |
+| **Pre-burn**   | Authorize / approve step fails — wallet rejects, network drops, gas low | No funds at risk     | "Try again" — resets cleanly                      |
+| **Mid-flight** | Burn succeeded on source, mint didn't land on destination               | **Funds in transit** | "Mint pending on destination · Complete the mint" |
+| **Terminal**   | Mint landed (success), or unrecoverable upstream error                  | None                 | Tx hash + explorer link                           |
+
+The widget routes every failure into one of these three lanes. The
+classification drives which CTA is shown, what state gets persisted,
+and whether `engine.retry()` can resume the flow.
+
+## What the widget does automatically
+
+Mount `<WhiskSend>` and you get all of this without writing a line:
+
+1. **Mid-flight detection.** When the bridge fails with a successful
+   burn step but no successful mint step, the failure UI swaps from
+   "Try again" to "Complete the mint" — calling `engine.retry()` which
+   wraps App Kit's `kit.retryBridge` with the saved attestation. The
+   user signs once on the destination chain; the burn isn't repeated.
+2. **48-hour persistence.** The in-flight failure snapshot
+   (`raw` + `steps` + `quote` + serialized error) is written to
+   `localStorage` keyed on `(walletKind, address, sourceChain)`. A
+   refresh, a tab close, even a browser restart within 48 hours lands
+   the user back on the recovery CTA when they reconnect the same
+   wallet + source chain. Replay-safe via CCTP nonces.
+3. **Manual recovery escape hatch.** Beneath "Complete the mint" sits a
+   secondary "Submit manually (advanced)" button. It polls Iris
+   independently of App Kit, gets the attestation, and submits
+   `MessageTransmitter.receiveMessage` _directly_ on the destination
+   chain. Same gas the retry would have cost, just bypassing App Kit's
+   sometimes-flaky polling.
+4. **Pre-flight checks.** Before the user can sign anything, the
+   Review screen runs read-only checks: USDC balance vs amount, native
+   gas sufficiency, wallet chain alignment. Blocking checks gate the
+   Send button. Warnings render inline.
+5. **Cross-tab single-flight.** If the same wallet has Whisk open in
+   two tabs and tab A is mid-burn, tab B's Send button disables and
+   shows "Active send in another tab." Prevents accidental double-burns
+   via `BroadcastChannel`.
+6. **Telemetry opt-out.** App Kit 1.5+ ships unhandled-error reporting
+   to Circle's collection endpoint by default. Whisk passes
+   `disableErrorReporting: true` on construction so host apps don't
+   leak error events without consent.
+
+## The principles behind these choices
+
+- **Funds > UX > polish.** Every design tradeoff weighs fund-loss risk
+  first.
+- **Pessimistic UI.** Assume every step can fail. Bake recovery into the
+  default render, not into a separate error branch.
+- **Provenance.** Every step that has a `txHash` gets an explorer link.
+  Every error names its source (typed `WhiskError.category`).
+- **Idempotency.** CCTP nonces at the protocol level, plus
+  `BroadcastChannel` at the UI level, mean a user cannot accidentally
+  double-burn — no matter how many tabs, how many clicks, how many
+  refreshes.
+- **Escape hatches.** When in-widget recovery fails, the user can still
+  recover manually using the same attestation Iris returns. Never a
+  dead end.
+
+## The recovery toolkit
+
+For most apps, the defaults are enough. When you want to build custom
+UI, headless flows, or back-office tooling, the primitives are public.
+All live in `@signordev/whisk-core/recovery` (server-friendly, no React
+dependency) and are re-exported from `@signordev/whisk-core` for
+convenience.
+
+### Persistence
+
+```ts
+import {
+  saveInflight,
+  loadInflight,
+  clearInflight,
+  listInflightSnapshots,
+  type InflightSnapshot,
+} from "@signordev/whisk-core";
+```
+
+`saveInflight(snapshot)` writes a recovery snapshot to localStorage,
+keyed on `(walletKind, address, sourceChain)` and TTL'd to 48 hours.
+`loadInflight(walletKind, address, sourceChain)` returns the snapshot
+if one exists and is not expired; `clearInflight(...)` removes it.
+`listInflightSnapshots()` returns every non-expired snapshot — useful
+for a "you have N pending recoveries" surface.
+
+The default widget calls these for you on `SEND_FAILURE` /
+`SEND_SUCCESS` / `RESET`. Reach for them directly when you're driving
+the engine without `<WhiskSend>`.
+
+### Iris polling
+
+```ts
+import {
+  pollAttestation,
+  fetchAttestationOnce,
+  type IrisMessage,
+} from "@signordev/whisk-core";
+```
+
+`pollAttestation(sourceChain, burnTxHash, options)` polls Circle's Iris
+attestation API until the status is terminal (`complete` or `failed`),
+or your timeout elapses. Defaults to a 10-minute window with a
+3-second polling interval — substantially longer than App Kit's
+internal poll, which is what lets us recover the "attestation is
+ready, App Kit gave up" case.
+
+```ts
+const result = await pollAttestation("Avalanche_Fuji", burnTxHash, {
+  timeout: 5 * 60_000,
+  onUpdate: (msg) => console.log("Iris status:", msg.status),
+});
+if (result.status === "complete") {
+  // result.message + result.attestation are ready to submit
+}
+```
+
+Use `fetchAttestationOnce(...)` for a single-shot check when you don't
+want to block.
+
+### Direct CCTP recovery
+
+```ts
+import {
+  buildReceiveMessageCall,
+  messageTransmitterAddress,
+  RECEIVE_MESSAGE_ABI,
+  type ReceiveMessageCall,
+} from "@signordev/whisk-core";
+```
+
+`buildReceiveMessageCall(destinationChain, message, attestation)`
+returns a ready-to-submit call descriptor for the destination chain's
+`MessageTransmitter.receiveMessage(message, attestation)`. The
+returned object has `{ address, abi, functionName, args }` — feed
+straight into viem's `writeContract` or wagmi's `useWriteContract`.
+
+```ts
+import { useWriteContract } from "wagmi";
+
+const call = buildReceiveMessageCall(
+  "Polygon_Amoy_Testnet",
+  message,
+  attestation,
+);
+if (!call) {
+  // No MessageTransmitter registered for this chain — fall back to
+  // App Kit retry or surface the attestation copy-paste escape hatch.
+  return;
+}
+const txHash = await writeContractAsync({
+  ...call,
+  args: [call.args[0] as `0x${string}`, call.args[1] as `0x${string}`],
+  chainId: chainInfo("Polygon_Amoy_Testnet").evmChainId,
+});
+```
+
+For React apps, the [`useManualMint`](/docs/hooks/use-manual-mint)
+hook wraps this whole flow (Iris poll → wallet sign → tx hash) in one
+call.
+
+### Domain helpers
+
+```ts
+import { cctpDomainFor, chainForCctpDomain } from "@signordev/whisk-core";
+```
+
+CCTP identifies chains by _domain_ numbers (Ethereum is 0, Base is 6,
+Solana is 5, Arc is 26, etc.), not EVM chain IDs. Iris and
+MessageTransmitter both key on domain. These helpers convert between
+Whisk's `Chain` literals and CCTP domain integers.
+
+## The hooks
+
+Three React hooks compose the recovery primitives into widget-ready
+behaviour. Each is independent — use one, use all three, use none.
+
+| Hook                                           | What it does                                                             | When to reach for it                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [`useManualMint`](/docs/hooks/use-manual-mint) | Drives the direct-CCTP recovery flow (Iris poll → wallet sign → tx hash) | Building a custom failure UI that surfaces the manual-recovery escape hatch |
+| [`usePreflight`](/docs/hooks/use-preflight)    | Read-only balance / gas / chain alignment checks                         | Custom Review screens; gating Send on insufficient funds _before_ signature |
+| [`useTabLock`](/docs/hooks/use-tab-lock)       | Cross-tab single-flight via `BroadcastChannel`                           | Multi-tab apps that need their own coordination layer                       |
+
+## A complete recovery integration (headless)
+
+If you're driving the engine without `<WhiskSend>` — embedded in a
+non-React surface, building a back-office tool, custom-UI integration —
+this is the shape:
+
+```ts
+import {
+  createWhisk,
+  pollAttestation,
+  buildReceiveMessageCall,
+  saveInflight,
+  clearInflight,
+  serializeError,
+} from "@signordev/whisk-core";
+
+const engine = createWhisk({
+  chains: ["Arc_Testnet", "Base_Sepolia", "Polygon_Amoy_Testnet"],
+  defaultSourceChain: "Arc_Testnet",
+});
+
+async function bridgeWithRecovery({
+  adapter,
+  recipient,
+  amount,
+  source,
+  dest,
+}) {
+  const resolved = await engine.resolve(recipient, dest);
+  const quote = await engine.quote({
+    sourceChain: source,
+    destinationChain: dest,
+    recipient: resolved,
+    amount,
+    adapter,
+  });
+
+  const result = await engine.send({ quote, adapter });
+  if (result.kind === "success") return result;
+
+  // Mid-flight detection.
+  const burned = result.steps?.some(
+    (s) => s.name === "burn" && s.state === "success",
+  );
+  const minted = result.steps?.some(
+    (s) => s.name === "mint" && s.state === "success",
+  );
+  if (!burned || minted || !result.raw) {
+    // Pre-burn failure or already fully landed — propagate.
+    return result;
+  }
+
+  // Persist the snapshot so a process restart can resume.
+  saveInflight({
+    walletKind: adapter.kind,
+    walletAddress: adapter.address,
+    sourceChain: source,
+    destinationChain: dest,
+    quote,
+    steps: result.steps ?? [],
+    error: serializeError(result.error),
+    raw: result.raw,
+  });
+
+  // Attempt 1: retry via App Kit.
+  const retried = await engine.retry({
+    failed: {
+      kind: "failure",
+      error: result.error,
+      steps: result.steps ?? [],
+      raw: result.raw,
+    },
+    adapter,
+  });
+  if (retried.kind === "success") {
+    clearInflight(adapter.kind, adapter.address, source);
+    return retried;
+  }
+
+  // Attempt 2: direct CCTP via Iris + MessageTransmitter.
+  const burnTxHash = result.steps?.find((s) => s.name === "burn")?.txHash;
+  if (!burnTxHash) return retried;
+
+  const iris = await pollAttestation(source, burnTxHash, {
+    timeout: 5 * 60_000,
+  });
+  if (iris.status !== "complete" || !iris.message || !iris.attestation) {
+    // Iris itself failed. Surface the snapshot so the user can resume
+    // later — clearInflight is NOT called here. The widget would
+    // restore on next mount.
+    return retried;
+  }
+
+  const call = buildReceiveMessageCall(dest, iris.message, iris.attestation);
+  if (!call) return retried;
+
+  // Submit `receiveMessage` via your own wallet plumbing here.
+  // CCTP's nonce tracking on `MessageTransmitter` makes this safe to
+  // retry — duplicate submissions revert at the protocol level.
+  // ...
+}
+```
+
+The widget version of this flow lives across `useWhisk` (retry
+action), `useManualMint` (Iris + MessageTransmitter), and
+`<ResultStep>` (the two CTAs). The headless version above is the same
+logic, unwrapped.
+
+## What about Solana?
+
+Today's recovery primitives cover EVM destinations end-to-end. Solana
+destinations have a different signing model (program instructions, not
+EVM contract calls) and `buildReceiveMessageCall` returns `null` when
+the destination is Solana — caller falls back to App Kit retry or
+surfaces the attestation copy-paste escape hatch. Native Solana
+manual-mint support is on the roadmap.
+
+Solana _source_ bridges work normally; the recovery story above
+applies as long as the destination is EVM.
+
+## Related
+
+- [Errors reference](/docs/api/errors) — every `WhiskError` subclass
+  and the `category` field that powers machine-readable failure
+  classification.
+- [State machine](/docs/concepts/state-machine) — the `failed` state's
+  shape and the `RETRY_START` / `HYDRATE_FAILED` transitions.
+- [`useWhisk`](/docs/hooks/use-whisk) — the `retry` action and how it
+  composes with the recovery snapshot.
+- [`useManualMint`](/docs/hooks/use-manual-mint) — the high-level
+  React hook for the manual-recovery escape hatch.
+- [`usePreflight`](/docs/hooks/use-preflight) — pre-signature checks
+  that prevent failures from happening in the first place.
+- [`useTabLock`](/docs/hooks/use-tab-lock) — cross-tab coordination.

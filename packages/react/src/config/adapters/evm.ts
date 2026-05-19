@@ -1,4 +1,4 @@
-import { createConfig, http } from "wagmi";
+import { createConfig } from "wagmi";
 import {
   arbitrum,
   arbitrumSepolia,
@@ -13,12 +13,8 @@ import {
   polygonAmoy,
   sepolia,
 } from "wagmi/chains";
-import {
-  coinbaseWallet,
-  injected,
-  walletConnect,
-} from "wagmi/connectors";
-import { defineChain, type Chain as ViemChain } from "viem";
+import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
+import { defineChain, fallback, http, type Chain as ViemChain } from "viem";
 import type { Chain } from "@signordev/whisk-core";
 import type { EvmAdapterFactory } from "../types.js";
 
@@ -256,7 +252,10 @@ const UNICHAIN_SEPOLIA = defineChain({
   nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: { default: { http: ["https://sepolia.unichain.org"] } },
   blockExplorers: {
-    default: { name: "Uniscan", url: "https://unichain-sepolia.blockscout.com" },
+    default: {
+      name: "Uniscan",
+      url: "https://unichain-sepolia.blockscout.com",
+    },
   },
   testnet: true,
 });
@@ -265,7 +264,9 @@ const WORLD_CHAIN_MAINNET = defineChain({
   id: 480,
   name: "World Chain",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: { default: { http: ["https://worldchain-mainnet.g.alchemy.com/public"] } },
+  rpcUrls: {
+    default: { http: ["https://worldchain-mainnet.g.alchemy.com/public"] },
+  },
   blockExplorers: {
     default: { name: "Worldscan", url: "https://worldscan.org" },
   },
@@ -275,7 +276,9 @@ const WORLD_CHAIN_SEPOLIA = defineChain({
   id: 4_801,
   name: "World Chain Sepolia",
   nativeCurrency: { name: "Sepolia Ether", symbol: "ETH", decimals: 18 },
-  rpcUrls: { default: { http: ["https://worldchain-sepolia.g.alchemy.com/public"] } },
+  rpcUrls: {
+    default: { http: ["https://worldchain-sepolia.g.alchemy.com/public"] },
+  },
   blockExplorers: {
     default: { name: "Worldscan", url: "https://sepolia.worldscan.org" },
   },
@@ -298,7 +301,10 @@ const XDC_APOTHEM = defineChain({
   nativeCurrency: { name: "TXDC", symbol: "TXDC", decimals: 18 },
   rpcUrls: { default: { http: ["https://erpc.apothem.network"] } },
   blockExplorers: {
-    default: { name: "Apothem Explorer", url: "https://explorer.apothem.network" },
+    default: {
+      name: "Apothem Explorer",
+      url: "https://explorer.apothem.network",
+    },
   },
   testnet: true,
 });
@@ -385,10 +391,29 @@ export type EvmFactoryOptions = {
   projectId?: string;
 
   /**
-   * Override the default RPC URL per chain. Strongly recommended for
-   * production — public RPCs are rate-limited.
+   * Override the default RPC for one or more chains. Strongly
+   * recommended for production — public RPCs are rate-limited and
+   * frequently the cause of timeouts.
+   *
+   * Pass a single URL string to replace the default; pass an array of
+   * URLs to install a viem `fallback` transport that tries them in
+   * order with automatic re-ranking, so a stuck RPC doesn't kill
+   * the whole flow.
+   *
+   * ```ts
+   * rpcUrls: {
+   *   // single
+   *   Base_Sepolia: "https://base-sepolia.infura.io/v3/<KEY>",
+   *   // fallback chain
+   *   Arc_Testnet: [
+   *     "https://rpc.testnet.arc.network",
+   *     "https://arc-testnet.drpc.org",
+   *     "https://rpc.blockdaemon.testnet.arc.network",
+   *   ],
+   * }
+   * ```
    */
-  rpcUrls?: Partial<Record<Chain, string>>;
+  rpcUrls?: Partial<Record<Chain, string | string[]>>;
 
   /**
    * Display name shown to users in WalletConnect / Coinbase wallet
@@ -429,7 +454,26 @@ export function evm(options: EvmFactoryOptions = {}): EvmAdapterFactory {
   const transports = Object.fromEntries(
     viemChains.map((chain) => {
       const whiskKey = whiskKeyForViemChain(chain.id, chainList);
-      const url = whiskKey ? options.rpcUrls?.[whiskKey] : undefined;
+      const configured = whiskKey ? options.rpcUrls?.[whiskKey] : undefined;
+
+      // String → single HTTP transport.
+      // Array → viem `fallback`: tries each in order, automatically
+      //   re-ranks by latency (sampleInterval defaults to ~10s), and
+      //   drops to the next if one returns a 5xx, times out, or
+      //   throws a network error. Pure win over a single URL.
+      // Undefined → viem picks up the default RPC declared on the
+      //   viem chain (see VIEM_CHAIN_BY_WHISK above).
+      if (Array.isArray(configured) && configured.length > 0) {
+        return [
+          chain.id,
+          fallback(
+            configured.map((url) => http(url)),
+            { rank: true },
+          ),
+        ];
+      }
+
+      const url = typeof configured === "string" ? configured : undefined;
       return [chain.id, http(url)];
     }),
   );

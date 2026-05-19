@@ -8,7 +8,13 @@ export {
   BridgeStepError,
   UserRejectedError,
   NetworkError,
+  WalletCapabilityError,
+  OnchainRevertError,
   ConfigError,
   toWhiskError,
 } from "./errors.js";
-export type { WhiskErrorCode, WhiskErrorOptions } from "./errors.js";
+export type {
+  WhiskErrorCode,
+  WhiskErrorCategory,
+  WhiskErrorOptions,
+} from "./errors.js";

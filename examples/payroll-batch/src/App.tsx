@@ -59,9 +59,9 @@ export function App() {
         <section className="page__intro">
           <h1>Pay your team in USDC</h1>
           <p>
-            Click a row to load Whisk pre-filled with that payee. Confirm
-            once per person — the dashboard ticks them off as the
-            on-chain receipts come back.
+            Click a row to load Whisk pre-filled with that payee. Confirm once
+            per person — the dashboard ticks them off as the on-chain receipts
+            come back.
           </p>
         </section>
 
@@ -69,7 +69,9 @@ export function App() {
           <div className="payee-list">
             <header className="payee-list__head">
               <span>Payees · cycle 0509</span>
-              <span>{Object.keys(paid).length}/{PAYEES.length} paid</span>
+              <span>
+                {Object.keys(paid).length}/{PAYEES.length} paid
+              </span>
             </header>
             {PAYEES.map((p) => {
               const isPaid = Boolean(paid[p.id]);
@@ -99,9 +101,7 @@ export function App() {
                   <span className="payee__amount">
                     {p.amount} <span>USDC</span>
                   </span>
-                  {isPaid ? (
-                    <span className="payee__badge">Paid</span>
-                  ) : null}
+                  {isPaid ? <span className="payee__badge">Paid</span> : null}
                 </button>
               );
             })}

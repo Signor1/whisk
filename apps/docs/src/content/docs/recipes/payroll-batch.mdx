@@ -1,6 +1,6 @@
 ---
 title: Payroll batch
-description: An admin tool that walks a list of payees — one Whisk render per row.
+description: An admin tool that walks a list of payees. One Whisk render per row.
 ---
 
 When an operator pays a list of vendors or contractors, you want a
@@ -26,11 +26,7 @@ export default function PayrollPage() {
   const remaining = payees.length - completed.length;
 
   if (!active) {
-    return (
-      <p className="p-12 text-center">
-        All {payees.length} payees paid.
-      </p>
-    );
+    return <p className="p-12 text-center">All {payees.length} payees paid.</p>;
   }
 
   return (
@@ -73,7 +69,7 @@ export default function PayrollPage() {
 
 ## Why the `key` matters
 
-`<WhiskSend>` has internal state — the current step, the last quote,
+`<WhiskSend>` has internal state: the current step, the last quote,
 the resolved recipient. Without `key={active.id}`, when you move
 from one payee to the next, the widget would keep the previous
 payee's state around. The `key` forces a fresh mount per row, so

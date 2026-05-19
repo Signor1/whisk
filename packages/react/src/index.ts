@@ -29,14 +29,11 @@ export { WhiskProvider } from "./provider/WhiskProvider.js";
 export type { WhiskProviderProps } from "./provider/WhiskProvider.js";
 
 // Config
-export {
-  createWhiskConfig,
-  evm,
-  solana,
-} from "./config/index.js";
+export { createWhiskConfig, evm, solana } from "./config/index.js";
 export type {
   CreateWhiskConfigOptions,
   WhiskClientConfig,
+  WhiskMode,
   WalletAdapterFactory,
   EvmAdapterFactory,
   SolanaAdapterFactory,
@@ -90,11 +87,18 @@ export type {
 // own chain (Lens, Unstoppable, custom email-resolver, etc.).
 export {
   ensResolver,
+  sepoliaEnsResolver,
+  DEFAULT_ENS_RPC_URLS,
+  DEFAULT_ENS_SEPOLIA_RPC_URLS,
   createEnsResolver,
   defaultResolver,
   createDefaultResolver,
 } from "./resolvers/index.js";
-export type { EnsResolverOptions } from "./resolvers/index.js";
+export type {
+  EnsResolverChain,
+  EnsResolverOptions,
+  CreateDefaultResolverOptions,
+} from "./resolvers/index.js";
 // Re-export core's address resolver and `composeResolvers` helper so
 // host apps don't need a second import to wire a custom chain.
 export { addressResolver, composeResolvers } from "@signordev/whisk-core";
@@ -110,10 +114,7 @@ export {
   supportedTokensFor,
   tokenAddressFor,
 } from "@signordev/whisk-core";
-export type {
-  ChainInfo,
-  SupportedTokenAlias,
-} from "@signordev/whisk-core";
+export type { ChainInfo, SupportedTokenAlias } from "@signordev/whisk-core";
 
 // Hooks (also exposed in /headless for tree-shake-friendly imports)
 export {
@@ -123,6 +124,9 @@ export {
   useWhiskContext,
   useChainBalance,
   useWhiskSwap,
+  useManualMint,
+  usePreflight,
+  useTabLock,
 } from "./hooks/index.js";
 export type {
   UseWhiskResult,
@@ -132,6 +136,15 @@ export type {
   UseWhiskSwapResult,
   SwapState,
   SwapInput,
+  ManualMintInput,
+  ManualMintResult,
+  UseManualMintResult,
+  PreflightCheck,
+  PreflightCheckId,
+  PreflightStatus,
+  PreflightResult,
+  TabLock,
+  TabLockOptions,
 } from "./hooks/index.js";
 
 // Convenience re-exports of the most common core types so consumers don't

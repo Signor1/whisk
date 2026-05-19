@@ -42,11 +42,7 @@ export function EventLog({
           </li>
         ) : (
           events.map((event) => (
-            <li
-              key={event.id}
-              className="pg-log__item"
-              data-kind={event.kind}
-            >
+            <li key={event.id} className="pg-log__item" data-kind={event.kind}>
               <time className="pg-log__time">
                 {new Date(event.at).toLocaleTimeString()}
               </time>

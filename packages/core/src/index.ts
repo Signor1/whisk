@@ -44,6 +44,7 @@ export type {
   Step,
   Quote,
   WhiskConfig,
+  WhiskMode,
   Resolver,
   ResolverContext,
   WhiskState,
@@ -72,7 +73,11 @@ export { addressResolver, composeResolvers } from "./resolvers/index.js";
 export { decideRoute } from "./routing/index.js";
 
 // Fees
-export { buildCustomFeeEntries, fromAppKitFees, sumFees } from "./fees/index.js";
+export {
+  buildCustomFeeEntries,
+  fromAppKitFees,
+  sumFees,
+} from "./fees/index.js";
 
 // State machine
 export { reduce, initialState, initialSteps } from "./state/index.js";
@@ -89,7 +94,50 @@ export {
   BridgeStepError,
   UserRejectedError,
   NetworkError,
+  WalletCapabilityError,
+  OnchainRevertError,
   ConfigError,
   toWhiskError,
 } from "./errors/index.js";
-export type { WhiskErrorCode, WhiskErrorOptions } from "./errors/index.js";
+export type {
+  WhiskErrorCode,
+  WhiskErrorCategory,
+  WhiskErrorOptions,
+} from "./errors/index.js";
+
+// Recovery primitives
+export {
+  saveInflight,
+  loadInflight,
+  clearInflight,
+  listInflightSnapshots,
+  serializeError,
+  deserializeError,
+  INFLIGHT_TTL_MS,
+  STORAGE_PREFIX,
+  fetchAttestationOnce,
+  pollAttestation,
+  getIrisBaseUrl,
+  IRIS_MAINNET_URL,
+  IRIS_SANDBOX_URL,
+  buildReceiveMessageCall,
+  messageTransmitterAddress,
+  manualMintExplorerUrl,
+  RECEIVE_MESSAGE_ABI,
+  EVM_MAINNET_MESSAGE_TRANSMITTER,
+  EVM_TESTNET_MESSAGE_TRANSMITTER,
+  SOLANA_MESSAGE_TRANSMITTER,
+} from "./recovery/index.js";
+export type {
+  InflightSnapshot,
+  WalletKind,
+  IrisMessage,
+  IrisStatus,
+  FetchAttestationOptions,
+  PollAttestationOptions,
+  ReceiveMessageCall,
+} from "./recovery/index.js";
+
+// CCTP domain helpers
+export { cctpDomainFor, chainForCctpDomain } from "./chains/cctpDomain.js";
+export { inferMode, resolveMode } from "./chains/mode.js";
