@@ -6,7 +6,65 @@ PR, how reviews work. If something here is wrong or unclear, that's a
 contribution too: open an issue or PR.
 
 For security issues, **do not open a public issue.** See
-[SECURITY.md](SECURITY.md) for the private disclosure path.
+[Reporting security issues](#reporting-security-issues) below.
+
+## Reporting security issues
+
+Whisk moves user funds. If you find a security bug, **don't open a
+public issue** — disclosing exploitable behaviour before there's a fix
+puts real users' money at risk.
+
+**Report privately via [GitHub's private vulnerability reporting](https://github.com/Signor1/whisk/security/advisories)** —
+click *Report a vulnerability*. GitHub keeps the report between you
+and the maintainers until we publish an advisory.
+
+If you can't use GitHub Security Advisories, email
+**emmanuelomemgboji@gmail.com** with the same content.
+
+### What to include
+
+- A short description of impact — can funds be misrouted? Double-sent?
+  Signature replayed? Recovery snapshot leaked?
+- Repro steps: chain pair, wallet, widget config, the exact inputs
+  that triggered it.
+- Versions involved (`@signordev/whisk-core`, `@signordev/whisk-react`,
+  App Kit, viem).
+- A working PoC is appreciated but not required.
+
+### In scope
+
+Anything that can:
+
+- Route a user's funds to an address they didn't consent to.
+- Let a user double-sign or double-burn without realising.
+- Make the recovery primitives (mid-flight retry, manual mint, Iris
+  polling, persistence) produce wrong addresses or replay nonces.
+- Leak entity secrets or PII via telemetry / logging.
+- Bypass the resolver's address-shape validation.
+- Allow cross-tab simultaneous signature prompts on the same wallet.
+- Smuggle malicious code through the build / supply chain.
+
+### Out of scope
+
+- Issues in App Kit, viem, wagmi, Solana wallet adapter, or other
+  upstream deps — report to those projects.
+- Issues in Circle's Iris service or MessageTransmitter contracts —
+  report to Circle directly.
+- DoS via RPC traffic (your RPC provider's concern).
+- Insecure RPC endpoints the host app configured themselves.
+- A wallet rejecting a transaction (expected behaviour).
+
+### Response timeline
+
+- Acknowledgement within 72 hours.
+- Severity assessment within 7 days.
+- High-severity patch within 14 days; medium-severity rolls into the
+  next minor release.
+- Public advisory + credit (unless you ask for anonymity) after the
+  patch lands and downstreams have a reasonable window to upgrade.
+
+We won't pursue good-faith research, contact your employer, or publish
+details before the fix is out.
 
 ## Ground rules
 
