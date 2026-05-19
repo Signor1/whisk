@@ -9,7 +9,7 @@ Drop-in React component. Same interface for same-chain sends and cross-chain bri
 [![npm @signordev/whisk-react](https://img.shields.io/npm/v/@signordev/whisk-react?label=%40strimz%2Fwhisk-react&style=flat-square&color=10b981)](https://www.npmjs.com/package/@signordev/whisk-react)
 [![npm @signordev/whisk-core](https://img.shields.io/npm/v/@signordev/whisk-core?label=%40strimz%2Fwhisk-core&style=flat-square&color=059669)](https://www.npmjs.com/package/@signordev/whisk-core)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/Signor1/whisk/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/Signor1/whisk/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/Signor1/whisk/ci.yml?branch=main&label=CI&logo=github)](./.github/workflows/ci.yml)
 [![Bundle size](https://img.shields.io/bundlephobia/minzip/@signordev/whisk-react?style=flat-square&label=bundle)](https://bundlephobia.com/package/@signordev/whisk-react)
 [![Types](https://img.shields.io/badge/types-TypeScript-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
