@@ -248,7 +248,13 @@ export function InputStep({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          // `minmax(0, 1fr)` is the critical bit — without the explicit
+          // 0-min, grid columns size to their content's intrinsic width
+          // and a long chain name like "World Chain Sepolia" pushes the
+          // column past the card edge. With minmax(0, …) the column can
+          // shrink, the trigger respects its `min-width: 0`, and the
+          // value span truncates with ellipsis instead.
+          gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
           gap: "0.5rem",
         }}
       >
