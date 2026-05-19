@@ -17,9 +17,13 @@ coverage
 .vscode
 .idea
 
-# Defense in depth
+# Never commit Circle wallet recovery files or entity secrets.
+# Patterns target Circle's SDK-emitted filenames (recovery_file_*.dat,
+# entity_secret_*.txt). Do NOT broaden to `recovery*` — it would catch
+# our source folder packages/core/src/recovery/.
 *.dat
-recovery*
+recovery_file*
+recovery-file*
 entity_secret*
 entity-secret*
 
