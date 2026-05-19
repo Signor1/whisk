@@ -198,10 +198,24 @@
   background: var(--whisk-bg);
   display: flex;
   flex-direction: column;
+  /* Allow the fieldbox to shrink inside a flex / grid parent (the
+   * source/destination chain picker row in InputStep). Without this,
+   * the box would size to its content's intrinsic width and a long
+   * chain label would push the column past the card edge. */
+  min-width: 0;
   gap: 0.125rem;
   transition:
     border-color 0.16s ease,
     box-shadow 0.16s ease;
+}
+
+/* Chain pickers run in tight two-column layouts (source / destination),
+ * so they get tighter horizontal padding than amount / recipient fields.
+ * `:has()` keeps the rule scoped without forcing ChainPicker to render
+ * a modifier class. */
+[data-whisk] .whisk-fieldbox:has(.whisk-select-trigger) {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 [data-whisk] .whisk-fieldbox:focus-within {
@@ -1348,17 +1362,21 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  /* Tight icon → label → chevron spacing. Was 0.5rem; tightening to
+   * 0.375rem gives the label ~8px more room before truncation kicks
+   * in, which matters in the two-column source/destination layout. */
+  gap: 0.375rem;
   /* Allow the trigger to shrink inside the source/destination grid so
    * long network names truncate cleanly instead of pushing siblings. */
   min-width: 0;
   border: none;
   background: transparent;
   font: inherit;
-  /* Slightly tighter than the surrounding form fields so multi-word
-   * chain labels ("Avalanche Fuji", "World Chain Sepolia") stay on one
-   * line at narrow widget widths. */
-  font-size: 0.875rem;
+  /* Tighter than the surrounding form fields. 0.8125rem lines up with
+   * the dropdown items below, and lets "World Chain Sepolia" /
+   * "Avalanche Fuji" / "Arbitrum Sepolia" fit on one line at the
+   * widget's narrow card width. */
+  font-size: 0.8125rem;
   color: var(--whisk-fg);
   text-align: left;
   cursor: pointer;

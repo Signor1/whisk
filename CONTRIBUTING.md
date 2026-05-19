@@ -1,0 +1,314 @@
+# Contributing to Whisk
+
+Thanks for being interested. This guide covers the practical steps for
+making a change to Whisk — setup, conventions, what to run before you
+PR, how reviews work. If something here is wrong or unclear, that's a
+contribution too: open an issue or PR.
+
+For security issues, **do not open a public issue.** See
+[Reporting security issues](#reporting-security-issues) below.
+
+## Reporting security issues
+
+Whisk moves user funds. If you find a security bug, **don't open a
+public issue** — disclosing exploitable behaviour before there's a fix
+puts real users' money at risk.
+
+**Report privately via [GitHub's private vulnerability reporting](https://github.com/Signor1/whisk/security/advisories)** —
+click *Report a vulnerability*. GitHub keeps the report between you
+and the maintainers until we publish an advisory.
+
+If you can't use GitHub Security Advisories, email
+**emmanuelomemgboji@gmail.com** with the same content.
+
+### What to include
+
+- A short description of impact — can funds be misrouted? Double-sent?
+  Signature replayed? Recovery snapshot leaked?
+- Repro steps: chain pair, wallet, widget config, the exact inputs
+  that triggered it.
+- Versions involved (`@signordev/whisk-core`, `@signordev/whisk-react`,
+  App Kit, viem).
+- A working PoC is appreciated but not required.
+
+### In scope
+
+Anything that can:
+
+- Route a user's funds to an address they didn't consent to.
+- Let a user double-sign or double-burn without realising.
+- Make the recovery primitives (mid-flight retry, manual mint, Iris
+  polling, persistence) produce wrong addresses or replay nonces.
+- Leak entity secrets or PII via telemetry / logging.
+- Bypass the resolver's address-shape validation.
+- Allow cross-tab simultaneous signature prompts on the same wallet.
+- Smuggle malicious code through the build / supply chain.
+
+### Out of scope
+
+- Issues in App Kit, viem, wagmi, Solana wallet adapter, or other
+  upstream deps — report to those projects.
+- Issues in Circle's Iris service or MessageTransmitter contracts —
+  report to Circle directly.
+- DoS via RPC traffic (your RPC provider's concern).
+- Insecure RPC endpoints the host app configured themselves.
+- A wallet rejecting a transaction (expected behaviour).
+
+### Response timeline
+
+- Acknowledgement within 72 hours.
+- Severity assessment within 7 days.
+- High-severity patch within 14 days; medium-severity rolls into the
+  next minor release.
+- Public advisory + credit (unless you ask for anonymity) after the
+  patch lands and downstreams have a reasonable window to upgrade.
+
+We won't pursue good-faith research, contact your employer, or publish
+details before the fix is out.
+
+## Ground rules
+
+Be decent, be specific, assume good faith. Critique code, not people.
+Most disagreements are about constraints the other side hasn't seen
+yet — ask before objecting.
+
+---
+
+## Repo shape
+
+This is a pnpm workspace.
+
+```
+whisk/
+├── packages/
+│   ├── core/         @signordev/whisk-core — engine, types, recovery primitives, no React
+│   └── react/        @signordev/whisk-react — provider, hooks, components, widget
+├── examples/
+│   ├── nextjs-basic/  the playground used for QA + end-to-end testing
+│   └── …              one app per integration pattern (checkout, donate, payroll, etc.)
+├── apps/
+│   └── docs/          the documentation site (whisk.vercel.app/docs) — Fumadocs
+└── .github/workflows  CI + release pipelines
+```
+
+Source of truth for cross-package types is **`packages/core`**. The
+React layer wraps it with provider + hooks + components; recipes /
+examples consume the public surface only.
+
+---
+
+## Prerequisites
+
+- **Node.js ≥ 20** (see `engines.node` in `package.json`).
+- **pnpm 10.x** — pinned via the `packageManager` field. `corepack`
+  picks it up automatically.
+- A wallet for end-to-end testing (MetaMask / Coinbase Wallet for
+  EVM, Phantom / Solflare for Solana).
+- USDC on at least one testnet, from the [Circle Faucet](https://faucet.circle.com/).
+
+## Setup
+
+```bash
+git clone https://github.com/Signor1/whisk
+cd whisk
+pnpm install              # installs everything + sets up the husky hook
+pnpm build                # build core + react packages once
+```
+
+The first run of `pnpm install` also bootstraps Husky's
+`pre-commit` hook. From then on, every commit runs `lint-staged` →
+`prettier --write` on the staged files automatically.
+
+## The development loop
+
+```bash
+# Watch-mode build for the packages
+pnpm dev
+
+# Run the playground (nextjs-basic) in another terminal
+pnpm --filter @signordev/whisk-example-nextjs-basic dev
+
+# Now open http://localhost:3000/playground — your widget edits hot-reload.
+```
+
+### Verifying before you commit
+
+```bash
+pnpm typecheck            # tsc --noEmit across every package
+pnpm test                 # vitest, runs core's 80+ unit tests
+pnpm build                # tsup builds + ensures dist/ stays valid
+```
+
+CI runs all three on every PR. Run them locally before pushing so the
+red checkmark on GitHub isn't your discovery channel.
+
+For widget UX changes, **mount your branch in the playground and
+verify in a browser** — typecheck and tests pass perfectly fine for
+broken UI.
+
+---
+
+## Commit conventions
+
+We use a light flavour of [conventional commits](https://www.conventionalcommits.org/):
+
+```
+type(scope): short summary
+
+Optional longer body. Wrap at ~72 characters. Explain WHY when it
+isn't obvious from the diff.
+```
+
+Types we use:
+
+- **feat** — new user-facing capability
+- **fix** — bug fix, including upstream compatibility patches
+- **chore** — tooling, deps, build, infra (anything not visible to widget users)
+- **docs** — docs site or in-source comment-only changes
+- **refactor** — internal restructuring with no behavioural change
+- **test** — adding or fixing tests with no behaviour change
+- **perf** — measurable performance improvement
+
+Scopes you'll see in the history: `core`, `react`, `playground`,
+`docs`, `chains`, `recovery`, `build`, `testing`. Use what fits;
+invent a new one if needed.
+
+**One commit per logical change.** Bundle related diffs; split unrelated
+diffs. If a PR has 14 commits and 13 of them are "fix typo", squash
+before requesting review.
+
+---
+
+## Pull requests
+
+1. **Open an issue first for anything non-trivial.** Small fixes can
+   go straight to PR; new features / API changes need discussion. The
+   maintainers may have context (Circle SDK quirks, upcoming work)
+   that changes the shape.
+2. **Branch from `main`.** Name it descriptively:
+   `feat/preflight-checks`, `fix/solana-adapter-deps`.
+3. **Open the PR against `main`** with a description that covers:
+   - What changed and why (the user-visible diff, not the file list).
+   - How you tested it (which playground flow, which testnet pair).
+   - Any docs that need to follow up.
+   - Whether you ran a changeset (`pnpm changeset`) for user-facing
+     changes that should hit the next release.
+4. **Pass CI.** Failing CI on `main` blocks releases for everyone.
+5. **Respond to review comments by editing the diff,** not by
+   replying-as-defence. If a reviewer is wrong, push back politely
+   and explain.
+
+Reviewers will check: typecheck/tests/build green, no `any` snuck in,
+no `console.log` left behind, no orphaned imports, public API
+changes documented + exported, recovery / fund-safety paths have
+the right guard rails.
+
+### Changesets
+
+User-facing changes need a changeset entry so the next release notes
+are generated correctly:
+
+```bash
+pnpm changeset                   # interactive — pick packages + bump kind
+git add .changeset/<file>.md
+```
+
+Don't add a changeset for:
+
+- Docs-only changes (markdown / mdx).
+- Tooling / CI / build infrastructure.
+- Test-only changes.
+- Anything in `examples/` (not published).
+- Internal refactors with zero exported surface change.
+
+If you're unsure, add one — better to have a tiny entry than miss a
+real change.
+
+---
+
+## Code conventions
+
+- **TypeScript strict.** No `any` in new code; if you must, leave a
+  comment explaining why. Cast through `unknown` first when
+  bridging an untyped foreign value.
+- **No barrel re-exports of types you don't intend to publish.** The
+  public surface is `packages/*/src/index.ts`. Don't widen it
+  accidentally.
+- **Comments explain WHY, not WHAT.** The code already says what it
+  does; comments earn their keep by naming the constraint,
+  invariant, or upstream bug they exist to work around.
+- **Prettier handles formatting.** Don't fight it. If the auto-format
+  is unreadable, the underlying expression is probably too dense
+  and wants extraction.
+- **`use client`** belongs at the top of any file that uses React
+  hooks. Whisk packages are consumed in Server Components, so the
+  directive is load-bearing.
+
+### Testing
+
+- **Pure functions go in `packages/core`** with a corresponding
+  `*.test.ts` file. Vitest is the runner.
+- **Hook / component behaviour** is exercised through the playground,
+  not via React Testing Library — the wallet adapters don't mock
+  cleanly, and end-to-end behaviour is what matters for fund safety.
+- **State machine changes** must have unit tests. `machine.test.ts`
+  is the table of truth for state transitions; new actions and edge
+  cases belong there.
+
+### Style
+
+Voice in the codebase comments + docs is technical, terse, slightly
+opinionated. Don't write marketing copy in inline comments and don't
+apologise in commit messages. State facts.
+
+---
+
+## When you touch fund-safety paths
+
+The recovery story (`packages/core/src/recovery/*`, the retry surface
+in `ResultStep`, the persistence in `useWhisk`, the manual-mint
+fallback) is the part of Whisk that genuinely prevents users from
+losing money. Changes there get extra scrutiny:
+
+- **Don't introduce new code paths that can leave funds in transit
+  without a recovery surface.** Every failure mode needs either a
+  retry path, a manual-mint escape hatch, or a clear "your funds are
+  safe at $address" message — never just an error toast.
+- **Replay safety must be argued.** If your change touches
+  attestation or nonce handling, the PR description needs a paragraph
+  on why a replay isn't possible.
+- **Tests preferred over comments.** A unit test that confirms
+  invariant X is harder to silently break than a comment that says
+  invariant X holds.
+
+The [error handling concepts page](https://whisk.vercel.app/docs/concepts/error-handling)
+has the full story. Read it before changing recovery code.
+
+---
+
+## Releases (maintainers)
+
+Releases are driven by changesets + the `release` workflow in
+`.github/workflows/release.yml`.
+
+```bash
+pnpm changeset            # accumulate during normal development
+pnpm version              # consume changesets → bump versions + write CHANGELOG entries
+pnpm release              # CI runs this — builds, then `changeset publish`
+```
+
+Manual publishes are emergency-only and require a maintainer with
+npm publish rights.
+
+---
+
+## Questions
+
+- Is the docs site at https://whisk.vercel.app/docs.
+- Bug? Open an
+  [issue](https://github.com/Signor1/whisk/issues/new/choose).
+- Idea? Open a
+  [discussion](https://github.com/Signor1/whisk/discussions) before
+  the issue — alignment is cheaper than a closed PR.
+
+Thanks for contributing.
