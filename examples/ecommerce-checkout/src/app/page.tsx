@@ -10,7 +10,11 @@ export default function Page() {
         </span>
         <nav className="storefront__nav-links">
           <a href="#shop">Shop</a>
-          <a href="https://github.com/Signor1/whisk" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/Signor1/whisk"
+            target="_blank"
+            rel="noreferrer"
+          >
             Github
           </a>
         </nav>
@@ -19,10 +23,9 @@ export default function Page() {
       <section className="storefront__hero" id="shop">
         <h1>Pay-with-USDC storefront, in production-shape.</h1>
         <p>
-          A real e-commerce flow built around{" "}
-          <code>&lt;WhiskSend /&gt;</code>. Pick a product, confirm,
-          settle on Arc Testnet — no card form, no merchant gateway,
-          no chargebacks.
+          A real e-commerce flow built around <code>&lt;WhiskSend /&gt;</code>.
+          Pick a product, confirm, settle on Arc Testnet — no card form, no
+          merchant gateway, no chargebacks.
         </p>
       </section>
 
@@ -31,8 +34,8 @@ export default function Page() {
       </section>
 
       <footer className="storefront__footer">
-        Demo only · merchant address +{" "}
-        <code>amount</code> are pinned via Whisk's controlled props
+        Demo only · merchant address + <code>amount</code> are pinned via
+        Whisk's controlled props
       </footer>
     </main>
   );

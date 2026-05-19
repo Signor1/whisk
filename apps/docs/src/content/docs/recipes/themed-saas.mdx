@@ -1,12 +1,12 @@
 ---
 title: Themed SaaS dashboard
-description: A worked rebrand — earth-tone defaults swapped for corporate navy and teal, with one CSS rule.
+description: A worked rebrand where earth-tone defaults swapped for corporate navy and teal, with one CSS rule.
 ---
 
 If you're shipping Whisk inside an existing product, the default
 earth-tone palette probably won't match. This recipe takes a
-typical B2B fintech brand — deep navy, teal accent, tighter
-corners — and applies it to the widget without forking a single
+typical B2B fintech brand (deep navy, teal accent, tighter
+corners) and applies it to the widget without forking a single
 component.
 
 ## The CSS
@@ -37,17 +37,13 @@ component.
 
 ## The integration
 
-Import the override *after* Whisk's styles so it wins on cascade:
+Import the override _after_ Whisk's styles so it wins on cascade:
 
 ```tsx title="app/layout.tsx"
 import "@signordev/whisk-react/styles.css";
 import "./whisk-theme.css";
 
-export default function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>{children}</body>
@@ -70,8 +66,8 @@ export default function PayoutsPage() {
 }
 ```
 
-That's it. Every Whisk component — card, input, button, chips, step
-rail, banner, badge — picks up the new palette automatically.
+That's it. Every Whisk component (card, input, button, chips, step
+rail, banner, badge) picks up the new palette automatically.
 
 ## Full source
 

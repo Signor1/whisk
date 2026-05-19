@@ -1,0 +1,182 @@
+---
+title: RPC configuration
+description: How Whisk picks an RPC, how to override it, and when to use a paid provider.
+---
+
+Every blockchain call the widget makes, either reading a balance, estimating
+a quote, submitting a signed transaction, polling for a receipt, runs
+through an RPC. Pick the right RPC and the flow feels instant; pick a
+slow one and your users sit on a spinner while their wallet shows the
+transaction pending.
+
+This page covers what Whisk does by default, how to override it, and
+when each pattern is right.
+
+## What happens by default
+
+You don't have to configure anything for the widget to work. Every
+chain ships with a baked-in default RPC:
+
+- **Chains Whisk registers** (Arc Testnet, Codex, HyperEVM, Ink,
+  Linea, Monad, Plume, Sei, Sonic, Unichain, World Chain, XDC),
+  declared in `packages/react/src/config/adapters/evm.ts`. Each
+  points at the chain's canonical public endpoint.
+- **Chains from `viem/chains`** (Base Sepolia, Ethereum Sepolia,
+  Arbitrum Sepolia, OP Sepolia, Polygon Amoy, Avalanche Fuji),
+  viem bundles a public default.
+
+So this works:
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId: WC_PROJECT_ID })],
+  chains: ["Arc_Testnet", "Base_Sepolia"],
+});
+```
+
+The widget will read balances and submit transactions through the
+public default for each chain. Fine for demos and first-load
+integrations.
+
+<Callout type="warn">
+  Public RPCs are shared infrastructure. They rate-limit during busy hours,
+  return stale receipts, and occasionally drop transactions outright. For
+  production traffic, override with a paid provider.
+</Callout>
+
+## Override per chain
+
+Pass the `rpcUrls` map to the `evm()` adapter. Whichever chains you
+list there get your URL; the rest keep the default.
+
+```ts
+const config = createWhiskConfig({
+  wallets: [
+    evm({
+      projectId: WC_PROJECT_ID,
+      rpcUrls: {
+        Base: "https://base-mainnet.infura.io/v3/<YOUR_KEY>",
+        Arbitrum: "https://arb-mainnet.g.alchemy.com/v2/<YOUR_KEY>",
+      },
+    }),
+  ],
+  chains: ["Base", "Arbitrum", "Optimism"],
+});
+```
+
+`Optimism` isn't in the override map, so it keeps the public default.
+`Base` and `Arbitrum` route through your paid providers.
+
+## Override with a fallback chain
+
+Pass an **array** of URLs to install viem's `fallback` transport. The
+widget tries them in order, automatically re-ranks by latency, and
+silently rolls to the next URL when one fails or times out.
+
+```ts
+const config = createWhiskConfig({
+  wallets: [
+    evm({
+      projectId: WC_PROJECT_ID,
+      rpcUrls: {
+        Arc_Testnet: [
+          "https://rpc.testnet.arc.network",
+          "https://arc-testnet.drpc.org",
+          "https://rpc.blockdaemon.testnet.arc.network",
+          "https://rpc.quicknode.testnet.arc.network",
+        ],
+        Base: [
+          "https://base-mainnet.infura.io/v3/<YOUR_KEY>",
+          "https://base-mainnet.g.alchemy.com/v2/<YOUR_KEY>",
+        ],
+      },
+    }),
+  ],
+  chains: ["Arc_Testnet", "Base"],
+});
+```
+
+What happens at runtime:
+
+<Steps>
+  <Step>
+    First request goes to whichever URL viem currently ranks fastest (initially
+    the first in your array).
+  </Step>
+  <Step>
+    If a request fails (timeout, 5xx, network error), viem retries on the next
+    URL transparently. The call site never sees the failure.
+  </Step>
+  <Step>
+    Every ~10 seconds, viem samples response times across the URLs and re-ranks.
+    A degraded primary drops to the bottom organically; a healthy alternate
+    floats to the top.
+  </Step>
+</Steps>
+
+The result: a single rate-limited or stuck RPC no longer kills a
+transfer. This is the same pattern the Whisk playground uses for Arc
+Testnet. Three or four URLs per chain, no manual rotation.
+
+## When to use which
+
+| Pattern                   | Use it when                                                                                                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No override** (default) | Local development, demos, or hackathons where you don't care about reliability. Public RPCs are good enough until your first 50 users.                              |
+| **Single URL override**   | Production app with a single canonical paid provider. Cheaper, simpler. Fine until you hit one of your provider's rare bad windows.                                 |
+| **Fallback array**        | Production app where reliability matters more than RPC cost. The 95th-percentile latency drops dramatically, and a provider incident doesn't take your widget down. |
+
+## Recommended providers
+
+Listed in no particular order. Each runs a free tier for development
+
+- paid tiers for production volume. dRPC and chainlist.org also
+  publish lists of every public RPC per chain which are useful when you need a
+  free fallback to add behind your paid primary.
+
+| Provider           | Docs                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| Alchemy            | [alchemy.com](https://www.alchemy.com)                                                    |
+| Infura             | [infura.io](https://www.infura.io)                                                        |
+| QuickNode          | [quicknode.com](https://www.quicknode.com)                                                |
+| dRPC               | [drpc.org](https://drpc.org)                                                              |
+| Blockdaemon        | [blockdaemon.com](https://blockdaemon.com)                                                |
+| Tenderly           | [tenderly.co](https://tenderly.co)                                                        |
+| Public chain lists | [drpc.org/chainlist](https://drpc.org/chainlist) · [chainlist.org](https://chainlist.org) |
+
+For Arc Testnet specifically, the [Arc docs](https://docs.arc.network/arc/references/rpc-endpoints)
+list four endpoints; Circle's primary plus dRPC, Blockdaemon, and
+QuickNode mirrors. All four are free during testnet.
+
+## What the type accepts
+
+```ts
+type RpcUrlsMap = Partial<Record<Chain, string | string[]>>;
+
+// On the evm() adapter
+rpcUrls?: RpcUrlsMap;
+
+// And on createWhiskConfig (same shape, applied at the engine layer)
+rpcUrls?: RpcUrlsMap;
+```
+
+- `string` → single URL, no fallback.
+- `string[]` → viem `fallback` transport with latency ranking.
+- omitted → chain's default public RPC.
+
+Partial map; only list the chains you want to override. Whatever
+isn't there keeps its default.
+
+## Watching it work
+
+While debugging, open the Network tab in DevTools. RPC calls show up
+as POSTs to `eth_call`, `eth_getTransactionReceipt`,
+`eth_chainId`, etc. With a fallback array, you'll see the URL the
+widget hits change between calls as viem re-ranks. If a URL is
+consistently slow, viem will stop hitting it after a few sample
+windows.
+
+If you see a transaction stuck and the receipt poll consistently
+times out at the same URL, that RPC is unreachable for your client
+right now. The fallback should have rotated by the next poll. If it
+hasn't, your `rpcUrls` config might only have one entry.

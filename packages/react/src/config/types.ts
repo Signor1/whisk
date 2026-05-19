@@ -1,4 +1,10 @@
-import type { Chain, FeePolicy, Resolver, Token } from "@signordev/whisk-core";
+import type {
+  Chain,
+  FeePolicy,
+  Resolver,
+  Token,
+  WhiskMode,
+} from "@signordev/whisk-core";
 
 /**
  * Discriminator on the wallet-adapter factories that `createWhiskConfig`
@@ -6,9 +12,7 @@ import type { Chain, FeePolicy, Resolver, Token } from "@signordev/whisk-core";
  * connectors for EVM, Solana wallet adapter for Solana). Apps that don't
  * import a given factory don't pay for its bundle weight.
  */
-export type WalletAdapterFactory =
-  | EvmAdapterFactory
-  | SolanaAdapterFactory;
+export type WalletAdapterFactory = EvmAdapterFactory | SolanaAdapterFactory;
 
 /**
  * Result returned by the `evm()` factory. Contains the wagmi config the
@@ -50,8 +54,17 @@ export type WhiskClientConfig = {
   token?: Token;
   resolver?: Resolver;
   feePolicy?: FeePolicy;
-  rpcUrls?: Partial<Record<Chain, string>>;
+  rpcUrls?: Partial<Record<Chain, string | string[]>>;
   useForwarder?: boolean;
+  /**
+   * Operational mode — `"testnet"` (default for testnet chain lists)
+   * or `"mainnet"`. Inferred from `chains` when omitted. Drives the
+   * visible mode pill on the widget, the default ENS resolver
+   * composition (Sepolia → mainnet fallback on testnet vs mainnet-only
+   * on mainnet), and persistence storage-key namespacing so testnet
+   * recovery snapshots don't surface in a mainnet config.
+   */
+  mode?: WhiskMode;
   appLabel?: string;
 };
 

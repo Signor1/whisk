@@ -21,7 +21,9 @@ describe("toWhiskError", () => {
   });
 
   it("classifies user denials too (MetaMask wording)", () => {
-    const result = toWhiskError(new Error("MetaMask Tx Signature: User denied transaction signature."));
+    const result = toWhiskError(
+      new Error("MetaMask Tx Signature: User denied transaction signature."),
+    );
     expect(result.code).toBe("USER_REJECTED");
   });
 

@@ -17,7 +17,12 @@ const RECENT_DONORS = [
   { who: "alice.eth", amount: "100", chain: "Base Sepolia", when: "12m ago" },
   { who: "0xab12…f04c", amount: "25", chain: "Arc Testnet", when: "1h ago" },
   { who: "Anonymous", amount: "5", chain: "Ethereum Sepolia", when: "3h ago" },
-  { who: "vitalik.eth", amount: "250", chain: "Arc Testnet", when: "yesterday" },
+  {
+    who: "vitalik.eth",
+    amount: "250",
+    chain: "Arc Testnet",
+    when: "yesterday",
+  },
 ];
 
 export function App() {
@@ -44,14 +49,11 @@ export function App() {
 
         <section className="hero" id="mission">
           <span className="hero__eyebrow">A non-profit · est. 2024</span>
-          <h1>
-            Open-source maintainers, paid in&nbsp;stablecoins.
-          </h1>
+          <h1>Open-source maintainers, paid in&nbsp;stablecoins.</h1>
           <p>
-            Every dollar you contribute goes directly to a developer who
-            keeps the protocols you depend on running. No platforms,
-            no payment processors, no exchange fees — USDC on-chain,
-            settled in seconds.
+            Every dollar you contribute goes directly to a developer who keeps
+            the protocols you depend on running. No platforms, no payment
+            processors, no exchange fees — USDC on-chain, settled in seconds.
           </p>
         </section>
 
@@ -67,11 +69,15 @@ export function App() {
         <section className="layout" id="donate">
           <article className="donation-card">
             <header>
-              <span className="donation-card__eyebrow">Make a contribution</span>
-              <h2>Pick an amount, send it on the chain that's cheapest for you.</h2>
+              <span className="donation-card__eyebrow">
+                Make a contribution
+              </span>
+              <h2>
+                Pick an amount, send it on the chain that's cheapest for you.
+              </h2>
               <p>
-                Recipient address is pinned to our treasury — you control
-                the chain and the amount.
+                Recipient address is pinned to our treasury — you control the
+                chain and the amount.
               </p>
             </header>
 
@@ -81,8 +87,7 @@ export function App() {
                   key={value}
                   type="button"
                   className={
-                    "chip" +
-                    (defaultAmount === value ? " chip--active" : "")
+                    "chip" + (defaultAmount === value ? " chip--active" : "")
                   }
                   onClick={() => setDefaultAmount(value)}
                 >
@@ -108,8 +113,8 @@ export function App() {
                 <p>
                   Your contribution{" "}
                   {thanked.amount ? `of $${thanked.amount} ` : ""}
-                  landed. We'll publish the funded grants this quarter
-                  in our public ledger.
+                  landed. We'll publish the funded grants this quarter in our
+                  public ledger.
                 </p>
                 <button
                   type="button"

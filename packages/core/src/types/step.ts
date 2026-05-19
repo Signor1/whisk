@@ -30,6 +30,13 @@ export type Step = {
   /** Human-readable error if the step failed. */
   errorMessage?: string;
   /**
+   * Machine-readable failure category mirrored from App Kit's
+   * `BridgeStep.errorCategory`. See `WhiskErrorCategory` in
+   * `../errors/errors` for the value list. Present only when the
+   * step is in `state: "error"`.
+   */
+  errorCategory?: import("../errors/errors.js").WhiskErrorCategory;
+  /**
    * Whether this step was executed via Circle's Forwarder relay rather than
    * a locally-signed transaction. `mint` steps only.
    */

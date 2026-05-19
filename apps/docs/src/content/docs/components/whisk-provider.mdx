@@ -12,12 +12,12 @@ import { WhiskProvider } from "@signordev/whisk-react";
 
 ## Props
 
-| Prop          | Type                                | Default     | What it does |
-| ------------- | ----------------------------------- | ----------- | ------------ |
-| `config`      | `WhiskClientConfig`                 | required    | The frozen config from `createWhiskConfig(...)`. |
-| `theme`       | `"light" \| "dark" \| "system"`     | `"system"`  | Pin a theme. `"system"` defers to OS via media query. |
-| `queryClient` | `QueryClient`                       | auto        | Reuse a host-app `QueryClient`. Auto-detected when omitted. |
-| `children`    | `ReactNode`                         | required    | Anything that reads Whisk hooks or renders Whisk components. |
+| Prop          | Type                            | Default    | What it does                                                 |
+| ------------- | ------------------------------- | ---------- | ------------------------------------------------------------ |
+| `config`      | `WhiskClientConfig`             | required   | The frozen config from `createWhiskConfig(...)`.             |
+| `theme`       | `"light" \| "dark" \| "system"` | `"system"` | Pin a theme. `"system"` defers to OS via media query.        |
+| `queryClient` | `QueryClient`                   | auto       | Reuse a host-app `QueryClient`. Auto-detected when omitted.  |
+| `children`    | `ReactNode`                     | required   | Anything that reads Whisk hooks or renders Whisk components. |
 
 ## How it decides what to mount
 
@@ -68,7 +68,7 @@ the `prefers-color-scheme` media query.
 ## Anti-patterns
 
 - **Mounting per-route.** Don't put the provider inside a route
-  layout. The engine should be a singleton for the app's lifetime —
+  layout. The engine should be a singleton for the app's lifetime;
   re-mounting it discards App Kit's internal caches and forces
   another wallet reconnection.
 - **Recreating the config on every render.** Pass a constant

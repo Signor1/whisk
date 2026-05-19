@@ -7,7 +7,7 @@ Whisk is a React component you drop into a page so people can send
 USDC. Once it's mounted, they can pay anyone with a wallet, on any
 chain Circle App Kit supports, with or without a bridge in the
 middle. You don't have to think about wagmi configs, CCTP step
-ordering, or which RPC speaks Solana — Whisk handles all of that
+ordering, or which RPC speaks Solana; Whisk handles all of that
 behind the component.
 
 ```tsx title="app/page.tsx"
@@ -41,7 +41,7 @@ through CCTP; if it's the same chain, it skips the bridge.
 ## Two packages
 
 `@signordev/whisk-react` ships the components, hooks, and provider.
-`@signordev/whisk-core` ships the engine that drives them — pure
+`@signordev/whisk-core` ships the engine that drives them; pure
 TypeScript, no React import. The React package re-exports the few
 helpers most apps need (`chainInfo`, `composeResolvers`,
 `WhiskError` subclasses), so you almost never have to import from
@@ -51,32 +51,30 @@ core directly.
 
 <Cards>
   <Card title="Recipient lookup" href="/docs/concepts/resolvers">
-    Addresses, ENS names, and ENSIP-11 multichain coin types resolve
-    against the destination chain. Bring your own resolvers — Lens,
-    Farcaster, an internal email lookup — and they slot into the same
-    chain.
+    Addresses, ENS names, and ENSIP-11 multichain coin types resolve against the
+    destination chain. Bring your own resolvers; Lens, Farcaster, an internal
+    email lookup, and they slot into the same chain.
   </Card>
   <Card title="Quote and route" href="/docs/concepts/routing">
-    Same-chain transfers go direct. Cross-chain transfers route
-    through CCTP v2 with Circle's Iris forwarder handling the mint,
-    so the user signs once.
+    Same-chain transfers go direct. Cross-chain transfers route through CCTP v2
+    with Circle's Iris forwarder handling the mint, so the user signs once.
   </Card>
   <Card title="State you can read" href="/docs/concepts/state-machine">
-    Every transition fires through a discriminated union. Narrow on
-    `state.kind` and the rest of the shape is fully typed. Good for
-    analytics, custom UI, or a global app store.
+    Every transition fires through a discriminated union. Narrow on `state.kind`
+    and the rest of the shape is fully typed. Good for analytics, custom UI, or
+    a global app store.
   </Card>
   <Card title="A theme you can repaint" href="/docs/theming/overview">
     Every visible property routes through a CSS variable scoped to
-    `[data-whisk]`. Override `--whisk-primary` once; the whole widget
-    follows. Nothing leaks into the rest of your app.
+    `[data-whisk]`. Override `--whisk-primary` once; the whole widget follows.
+    Nothing leaks into the rest of your app.
   </Card>
 </Cards>
 
 ## A note on status
 
 Whisk is live on 17 testnets today. Mainnet is in progress. If you're
-building toward production, build against testnet first — the API
+building toward production, build against testnet first. The API
 won't change between testnet and mainnet, only the chain identifiers
 you put in `createWhiskConfig`.
 

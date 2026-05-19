@@ -14,6 +14,7 @@ import type { Quote } from "../types/quote.js";
 import type { Step, StepName } from "../types/step.js";
 import { DEFAULT_TOKEN } from "../types/token.js";
 import { decideRoute } from "../routing/decide.js";
+import { resolveMode } from "../chains/mode.js";
 import { addressResolver } from "../resolvers/address.js";
 import {
   type AppKitEstimateFee,
@@ -55,12 +56,25 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
     throw new ConfigError("createWhisk: at least one chain is required.");
   }
 
-  const kit = new AppKit();
-  const defaultToken = config.token ?? DEFAULT_TOKEN;
-  const resolver = config.resolver ?? addressResolver;
+  // Resolve mode up front and bake it into the engine's exposed
+  // config. Consumers read `engine.config.mode` to drive UI (the
+  // visible "Testnet" pill), recovery storage namespacing, and the
+  // default resolver composition in the React layer.
+  const resolvedMode = resolveMode(config.mode, config.chains);
+  const resolvedConfig: WhiskConfig = { ...config, mode: resolvedMode };
+
+  // App Kit 1.5.0 introduced unhandled-error telemetry that POSTs to
+  // Circle's collection endpoint. Whisk is an embeddable widget — host
+  // apps don't expect the underlying SDK to send their error events
+  // anywhere, so we opt out by default. Consumers who want it can fork
+  // or open an issue; flipping a default-on telemetry channel without
+  // surfacing it in our own config would be a trust violation.
+  const kit = new AppKit({ disableErrorReporting: true });
+  const defaultToken = resolvedConfig.token ?? DEFAULT_TOKEN;
+  const resolver = resolvedConfig.resolver ?? addressResolver;
 
   const engine: WhiskEngine = {
-    config,
+    config: resolvedConfig,
 
     /* ---------------------------------------------------------------- *
      *  resolve                                                          *
@@ -160,7 +174,7 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
      * ---------------------------------------------------------------- */
 
     async send(params: SendParams, listeners?: SendListeners) {
-      return runSend(kit, config, params, listeners);
+      return runSend(kit, resolvedConfig, params, listeners);
     },
 
     /* ---------------------------------------------------------------- *
@@ -323,13 +337,15 @@ function mapAppKitSwapEstimate(
     .filter((e: { token: string }) => e.token === params.tokenIn)
     .reduce(
       (acc: number, e: { amount: string }) =>
-        acc + (Number.isFinite(parseFloat(e.amount)) ? parseFloat(e.amount) : 0),
+        acc +
+        (Number.isFinite(parseFloat(e.amount)) ? parseFloat(e.amount) : 0),
       0,
     );
   return {
     amountIn: estimate?.amountIn ?? params.amountIn,
     amountOut: estimate?.estimatedOutput?.amount ?? "0",
-    minOutput: estimate?.stopLimit?.amount ?? estimate?.estimatedOutput?.amount ?? "0",
+    minOutput:
+      estimate?.stopLimit?.amount ?? estimate?.estimatedOutput?.amount ?? "0",
     tokenIn: params.tokenIn,
     tokenOut: params.tokenOut,
     fees: { total: total.toString(), entries },
@@ -409,7 +425,9 @@ async function runSend(
         txHash: result.txHash,
         explorerUrl:
           result.explorerUrl ??
-          (result.txHash ? explorerTxUrl(route.chain, result.txHash) : undefined),
+          (result.txHash
+            ? explorerTxUrl(route.chain, result.txHash)
+            : undefined),
         errorMessage: result.errorMessage,
         forwarded: result.forwarded,
       };
@@ -480,14 +498,12 @@ type AppKitBridgeEventPayload = {
     explorerUrl?: string;
     forwarded?: boolean;
     errorMessage?: string;
+    errorCategory?: Step["errorCategory"];
     error?: { message?: string };
   };
 };
 
-function translateAppKitEvent(
-  name: BridgeAction,
-  payload: unknown,
-): Step {
+function translateAppKitEvent(name: BridgeAction, payload: unknown): Step {
   const p = (payload ?? {}) as AppKitBridgeEventPayload;
   const v = p.values ?? {};
   return {
@@ -496,6 +512,7 @@ function translateAppKitEvent(
     txHash: v.txHash,
     explorerUrl: v.explorerUrl,
     errorMessage: v.errorMessage ?? v.error?.message,
+    errorCategory: v.errorCategory,
     forwarded: v.forwarded,
   };
 }
@@ -508,7 +525,9 @@ function mapAppKitBridgeResult(
   raw: BridgeResult,
   listeners?: SendListeners,
 ): SendResult {
-  const steps: Step[] = (raw.steps ?? []).map((s: BridgeStep) => stepFromBridgeStep(s));
+  const steps: Step[] = (raw.steps ?? []).map((s: BridgeStep) =>
+    stepFromBridgeStep(s),
+  );
   const onStep = listeners?.onStep;
   if (onStep) for (const s of steps) onStep(s);
 
@@ -521,11 +540,15 @@ function mapAppKitBridgeResult(
   }
 
   const errorStep = steps.find((s) => s.state === "error");
+  const message =
+    errorStep?.errorMessage ?? "Bridge failed without a step error.";
   return {
     kind: "failure",
-    error: toWhiskError(
-      errorStep?.errorMessage ?? "Bridge failed without a step error.",
-    ),
+    // App Kit 1.4.2+ surfaces `errorCategory` on the failing step; we
+    // pass it through so `toWhiskError` picks the right typed subclass
+    // (UserRejectedError, OnchainRevertError, WalletCapabilityError, …)
+    // instead of falling back to regex string-matching.
+    error: toWhiskError(message, undefined, errorStep?.errorCategory),
     steps,
     raw,
   };
@@ -539,12 +562,19 @@ function stepFromBridgeStep(s: BridgeStep): Step {
     typeof (s.data as { explorerUrl?: unknown }).explorerUrl === "string"
       ? (s.data as { explorerUrl: string }).explorerUrl
       : undefined;
+  // App Kit's `BridgeStep.errorCategory` is typed in the SDK but we
+  // read it loosely to keep our Step type independent of any specific
+  // SDK version.
+  const rawCategory = (
+    s as unknown as { errorCategory?: Step["errorCategory"] }
+  ).errorCategory;
   return {
     name: s.name as StepName,
     state: s.state,
     txHash: s.txHash,
     explorerUrl: s.explorerUrl ?? dataExplorer,
     errorMessage: s.errorMessage,
+    errorCategory: rawCategory,
     forwarded: s.forwarded,
   };
 }

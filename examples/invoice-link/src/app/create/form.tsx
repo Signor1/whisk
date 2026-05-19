@@ -49,8 +49,8 @@ export function CreateForm() {
         <span className="create__eyebrow">Create payment link</span>
         <h1>Compose an invoice link</h1>
         <p>
-          Drop in your details. We encode them into a URL — share it
-          and Whisk takes over on the customer's side.
+          Drop in your details. We encode them into a URL — share it and Whisk
+          takes over on the customer's side.
         </p>
       </header>
 
@@ -127,14 +127,13 @@ export function CreateForm() {
                 </a>
               </div>
               <p className="create__hint">
-                Anyone with this link can pay the invoice — Whisk pins
-                the recipient + amount on the customer's side.
+                Anyone with this link can pay the invoice — Whisk pins the
+                recipient + amount on the customer's side.
               </p>
             </>
           ) : (
             <div className="create__placeholder">
-              Enter a valid 0x address and a positive amount to generate
-              a link.
+              Enter a valid 0x address and a positive amount to generate a link.
             </div>
           )}
         </aside>

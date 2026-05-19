@@ -1,4 +1,12 @@
 {
   "title": "Hooks",
-  "pages": ["use-whisk", "use-whisk-account", "use-whisk-swap", "use-chain-balance"]
+  "pages": [
+    "use-whisk",
+    "use-whisk-account",
+    "use-whisk-swap",
+    "use-chain-balance",
+    "use-manual-mint",
+    "use-preflight",
+    "use-tab-lock"
+  ]
 }

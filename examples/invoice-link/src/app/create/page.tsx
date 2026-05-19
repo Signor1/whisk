@@ -16,8 +16,8 @@ export default function CreatePage() {
       </section>
 
       <footer className="page__footer">
-        Compose a payment link, share it, get paid. Customers open the
-        link and Whisk pre-fills.
+        Compose a payment link, share it, get paid. Customers open the link and
+        Whisk pre-fills.
       </footer>
     </main>
   );

@@ -1,5 +1,1 @@
-export {
-  buildCustomFeeEntries,
-  fromAppKitFees,
-  sumFees,
-} from "./calculate.js";
+export { buildCustomFeeEntries, fromAppKitFees, sumFees } from "./calculate.js";

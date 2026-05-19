@@ -63,8 +63,32 @@ export function Dashboard() {
 }
 
 const RECENT = [
-  { tx: "0x1", name: "Acme Studios", amount: "1,200", chain: "Arc Testnet", when: "2m ago" },
-  { tx: "0x2", name: "Northwind Inc.", amount: "560", chain: "Base Sepolia", when: "1h ago" },
-  { tx: "0x3", name: "Crypto Cafe", amount: "85", chain: "Arc Testnet", when: "3h ago" },
-  { tx: "0x4", name: "Pixel Logistics", amount: "2,400", chain: "Base Sepolia", when: "yesterday" },
+  {
+    tx: "0x1",
+    name: "Acme Studios",
+    amount: "1,200",
+    chain: "Arc Testnet",
+    when: "2m ago",
+  },
+  {
+    tx: "0x2",
+    name: "Northwind Inc.",
+    amount: "560",
+    chain: "Base Sepolia",
+    when: "1h ago",
+  },
+  {
+    tx: "0x3",
+    name: "Crypto Cafe",
+    amount: "85",
+    chain: "Arc Testnet",
+    when: "3h ago",
+  },
+  {
+    tx: "0x4",
+    name: "Pixel Logistics",
+    amount: "2,400",
+    chain: "Base Sepolia",
+    when: "yesterday",
+  },
 ];

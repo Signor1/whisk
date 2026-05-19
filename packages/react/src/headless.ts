@@ -6,11 +6,7 @@
 export { WhiskProvider } from "./provider/WhiskProvider.js";
 export type { WhiskProviderProps } from "./provider/WhiskProvider.js";
 
-export {
-  createWhiskConfig,
-  evm,
-  solana,
-} from "./config/index.js";
+export { createWhiskConfig, evm, solana } from "./config/index.js";
 export type {
   CreateWhiskConfigOptions,
   WhiskClientConfig,

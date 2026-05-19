@@ -64,9 +64,8 @@ export function Recipes({ className }: { className?: string }) {
             Five shapes you can ship today.
           </h2>
           <p className="mt-4 text-balance text-base text-muted-foreground">
-            Each example is a runnable Next.js app in the monorepo. Clone
-            one, swap the addresses, and you have a working payment flow
-            by lunch.
+            Each example is a runnable Next.js app in the monorepo. Clone one,
+            swap the addresses, and you have a working payment flow by lunch.
           </p>
         </header>
 

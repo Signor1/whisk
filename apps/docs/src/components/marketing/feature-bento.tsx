@@ -37,48 +37,42 @@ import { cn } from "@/lib/utils";
 const FEATURES = [
   {
     title: "Every chain App Kit supports",
-    body:
-      "17 testnets, 21 mainnets — Arc, Base, Arbitrum, Optimism, Linea, Sonic, Sei, HyperEVM, Monad, and on. One widget, one config.",
+    body: "17 testnets, 21 mainnets — Arc, Base, Arbitrum, Optimism, Linea, Sonic, Sei, HyperEVM, Monad, and on. One widget, one config.",
     Icon: Globe2,
     span: "md:col-span-2",
     visual: <ChainGridVisual />,
   },
   {
     title: "Type-safe end to end",
-    body:
-      "Every prop, every event, every chain literal narrows in your editor. We don't ship `any`.",
+    body: "Every prop, every event, every chain literal narrows in your editor. We don't ship `any`.",
     Icon: ShieldCheck,
     span: "md:col-span-1",
     visual: <TypeSafeVisual />,
   },
   {
     title: "Themed to your brand",
-    body:
-      "Whisk reads CSS variables. Override `--whisk-primary` once and the whole widget follows. Light, dark, your own palette.",
+    body: "Whisk reads CSS variables. Override `--whisk-primary` once and the whole widget follows. Light, dark, your own palette.",
     Icon: Palette,
     span: "md:col-span-1",
     visual: <PaletteVisual />,
   },
   {
     title: "Bridges in one signature",
-    body:
-      "Circle's Iris service relays the mint on the destination chain, so the user only signs on the source. No chain-switch dance.",
+    body: "Circle's Iris service relays the mint on the destination chain, so the user only signs on the source. No chain-switch dance.",
     Icon: ArrowDownToLine,
     span: "md:col-span-2",
     visual: <FlowVisual />,
   },
   {
     title: "Hooks if you want them",
-    body:
-      "Skip the styled card and call `useWhisk`, `useWhiskSwap`, `useWhiskAccount` directly. Same engine, your UI.",
+    body: "Skip the styled card and call `useWhisk`, `useWhiskSwap`, `useWhiskAccount` directly. Same engine, your UI.",
     Icon: Code2,
     span: "md:col-span-1",
     visual: <HeadlessVisual />,
   },
   {
     title: "Resolvers you can stack",
-    body:
-      "Addresses, ENS, and ENSIP-11 ship by default. Plug in Lens, Farcaster, an email lookup — whatever you need — with `composeResolvers`.",
+    body: "Addresses, ENS, and ENSIP-11 ship by default. Plug in Lens, Farcaster, an email lookup or whatever you need with `composeResolvers`.",
     Icon: PuzzleIcon,
     span: "md:col-span-2",
     visual: <ResolverPipelineVisual />,
@@ -87,7 +81,9 @@ const FEATURES = [
 
 export function FeatureBento({ className }: { className?: string }) {
   return (
-    <section className={cn("border-b border-border/60 py-20 sm:py-24", className)}>
+    <section
+      className={cn("border-b border-border/60 py-20 sm:py-24", className)}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <header className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-wider text-primary">
@@ -97,8 +93,8 @@ export function FeatureBento({ className }: { className?: string }) {
             Built for the integration, not the demo.
           </h2>
           <p className="mt-4 text-balance text-base text-muted-foreground">
-            Every detail you'd otherwise build yourself — themed, typed,
-            chain-aware — already sits behind the component.
+            Every detail you'd otherwise build yourself (themed, typed,
+            chain-aware) already sits behind the component.
           </p>
         </header>
 
@@ -180,8 +176,7 @@ function ChainGridVisual() {
     <div
       className="relative h-48 px-6 pb-6 pt-2"
       style={{
-        maskImage:
-          "linear-gradient(to bottom, black 65%, transparent 100%)",
+        maskImage: "linear-gradient(to bottom, black 65%, transparent 100%)",
         WebkitMaskImage:
           "linear-gradient(to bottom, black 65%, transparent 100%)",
       }}
@@ -209,16 +204,21 @@ function TypeSafeVisual() {
     <div className="mt-2 px-6 pb-6">
       <pre className="overflow-hidden rounded-md border border-border bg-background/50 p-3 font-mono text-[11px] leading-relaxed text-foreground/85">
         <code className="block">
-          <span className="text-muted-foreground">{"// "}widens at the source</span>
+          <span className="text-muted-foreground">
+            {"// "}widens at the source
+          </span>
           {"\n"}
-          <span className="text-primary">type</span>{" Chain ="}
+          <span className="text-primary">type</span>
+          {" Chain ="}
           {"\n"}
           {"  "}
           <span className="text-emerald-700 dark:text-emerald-400">"Base"</span>
           {" | "}
           <span className="text-emerald-700 dark:text-emerald-400">"Arc"</span>
           {" | "}
-          <span className="text-emerald-700 dark:text-emerald-400">"Optimism"</span>
+          <span className="text-emerald-700 dark:text-emerald-400">
+            "Optimism"
+          </span>
           {"\n"}
           {"  "}
           <span className="text-muted-foreground">// ...</span>
@@ -230,7 +230,9 @@ function TypeSafeVisual() {
           {" = "}
           <span className="text-emerald-700 dark:text-emerald-400">"USDX"</span>
           {"\n"}
-          <span className="text-rose-700/80 dark:text-rose-400/80">{"  ╳ Type '\"USDX\"' is not assignable"}</span>
+          <span className="text-rose-700/80 dark:text-rose-400/80">
+            {"  ╳ Type '\"USDX\"' is not assignable"}
+          </span>
         </code>
       </pre>
     </div>
@@ -274,7 +276,13 @@ function FlowVisual() {
   );
 }
 
-function FlowNode({ label, tone }: { label: string; tone: "primary" | "muted" }) {
+function FlowNode({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "primary" | "muted";
+}) {
   return (
     <div className="flex flex-col items-center gap-1.5">
       <span
@@ -324,7 +332,8 @@ function HeadlessVisual() {
       <div className="absolute left-12 right-2 top-12">
         <div className="rounded-md border border-primary/40 bg-primary/8 px-3 py-2 shadow-sm">
           <div className="font-mono text-[11px] text-foreground/80">
-            <span className="text-primary">const</span>{" { state, actions } ="}
+            <span className="text-primary">const</span>
+            {" { state, actions } ="}
             <br />
             {"  "}
             <span className="text-foreground">useWhisk</span>()

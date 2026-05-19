@@ -1,12 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import {
-  useAccount,
-  useChainId,
-  useDisconnect,
-  useSwitchChain,
-} from "wagmi";
+import { useAccount, useChainId, useDisconnect, useSwitchChain } from "wagmi";
 import { chainByEvmId, chainInfo, type Chain } from "@signordev/whisk-core";
 import { viemChainForWhisk } from "../config/adapters/evm.js";
 import { useSolanaAccount } from "./useSolanaAccount.js";
@@ -96,7 +91,15 @@ export function useWhiskAccount(): UseWhiskAccountResult {
         await disconnectAsync();
       },
     }),
-    [evmConnected, status, evmAddress, connector, chainId, evmChainInfo, disconnectAsync],
+    [
+      evmConnected,
+      status,
+      evmAddress,
+      connector,
+      chainId,
+      evmChainInfo,
+      disconnectAsync,
+    ],
   );
 
   /* ── Solana ──────────────────────────────────────────────────────── */
@@ -110,7 +113,9 @@ export function useWhiskAccount(): UseWhiskAccountResult {
       kind: "solana",
       connectorName: sol.connectorName,
       currentChain: sol.currentChain,
-      chainName: sol.currentChain ? chainInfo(sol.currentChain).label : undefined,
+      chainName: sol.currentChain
+        ? chainInfo(sol.currentChain).label
+        : undefined,
       disconnect: sol.disconnect,
     }),
     [sol],
@@ -125,7 +130,11 @@ export function useWhiskAccount(): UseWhiskAccountResult {
     [evm, solana],
   );
 
-  const primary = evm.isConnected ? evm : solana.isConnected ? solana : undefined;
+  const primary = evm.isConnected
+    ? evm
+    : solana.isConnected
+      ? solana
+      : undefined;
 
   const isWrongChain = useCallback(
     (target: Chain) => {

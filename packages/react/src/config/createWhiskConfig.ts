@@ -1,8 +1,5 @@
 import { ConfigError } from "@signordev/whisk-core";
-import type {
-  CreateWhiskConfigOptions,
-  WhiskClientConfig,
-} from "./types.js";
+import type { CreateWhiskConfigOptions, WhiskClientConfig } from "./types.js";
 
 /**
  * Validate and freeze the options passed by the host app. The provider
@@ -22,9 +19,7 @@ export function createWhiskConfig(
     );
   }
   if (!options.chains || options.chains.length === 0) {
-    throw new ConfigError(
-      "createWhiskConfig: at least one chain is required.",
-    );
+    throw new ConfigError("createWhiskConfig: at least one chain is required.");
   }
   if (
     options.defaultSourceChain &&

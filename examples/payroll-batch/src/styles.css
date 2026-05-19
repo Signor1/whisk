@@ -25,7 +25,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   background: var(--app-bg);
   color: var(--app-fg);
   -webkit-font-smoothing: antialiased;

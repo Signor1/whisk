@@ -1,11 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import {
-  WhiskProvider,
-  createWhiskConfig,
-  evm,
-} from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
 
 /**
  * The merchant fixes a single chain (Arc Testnet here). The `chains`

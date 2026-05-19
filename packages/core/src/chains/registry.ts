@@ -378,8 +378,11 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     kind: "evm",
     network: "testnet",
     nativeSymbol: "HYPE",
-    explorerTxBase: "https://app.hyperliquid-testnet.xyz/explorer/tx/",
-    explorerAddressBase: "https://app.hyperliquid-testnet.xyz/explorer/address/",
+    // Hyperliquid's testnet UI doesn't resolve HyperEVM tx hashes;
+    // `hyperevm-explorer.vercel.app` is the working community explorer
+    // for HyperEVM Testnet today.
+    explorerTxBase: "https://hyperevm-explorer.vercel.app/tx/",
+    explorerAddressBase: "https://hyperevm-explorer.vercel.app/address/",
     addressRegex: EVM_RE,
     addressHint: EVM_HINT,
     evmChainId: 998,
@@ -569,7 +572,9 @@ export function chainInfo(chain: Chain): ChainInfo {
  * one of Whisk's registered EVM chains — used by the connected-account
  * hook to label the wallet's current network.
  */
-export function chainByEvmId(chainId: number | undefined): ChainInfo | undefined {
+export function chainByEvmId(
+  chainId: number | undefined,
+): ChainInfo | undefined {
   if (chainId == null) return undefined;
   return BY_EVM_CHAIN_ID.get(chainId);
 }

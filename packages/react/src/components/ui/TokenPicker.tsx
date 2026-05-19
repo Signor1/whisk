@@ -56,11 +56,7 @@ export function TokenPicker({
           >
             <Select.Viewport className="whisk-select-viewport">
               {options.map((t) => (
-                <Select.Item
-                  key={t}
-                  value={t}
-                  className="whisk-select-item"
-                >
+                <Select.Item key={t} value={t} className="whisk-select-item">
                   <Select.ItemText>{t}</Select.ItemText>
                   <Select.ItemIndicator className="whisk-select-item-indicator">
                     <Check size={14} strokeWidth={2.5} />

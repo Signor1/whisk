@@ -23,11 +23,11 @@ opt-in.
 
 ## Lifecycle callbacks
 
-| Prop             | Type                                                      |
-| ---------------- | --------------------------------------------------------- |
-| `onSuccess`      | `(result: { quote: Quote; finalTxHash?: string }) => void` |
-| `onError`        | `(error: Error) => void`                                  |
-| `onStateChange`  | `(state: WhiskState) => void`                             |
+| Prop            | Type                                                       |
+| --------------- | ---------------------------------------------------------- |
+| `onSuccess`     | `(result: { quote: Quote; finalTxHash?: string }) => void` |
+| `onError`       | `(error: Error) => void`                                   |
+| `onStateChange` | `(state: WhiskState) => void`                              |
 
 `onSuccess` fires once per completed flow. `onError` fires on
 terminal failures. `onStateChange` fires on every transition,
@@ -36,19 +36,19 @@ the callback if you only care about a subset.
 
 ## Controlled inputs (locked)
 
-| Prop                | Type      | Effect |
-| ------------------- | --------- | ------ |
-| `amount`            | `string`  | Lock the amount field. |
-| `recipient`         | `string`  | Lock the recipient field. |
-| `sourceChain`       | `Chain`   | Lock the source chain. |
-| `destinationChain`  | `Chain`   | Lock the destination chain. |
+| Prop               | Type     | Effect                      |
+| ------------------ | -------- | --------------------------- |
+| `amount`           | `string` | Lock the amount field.      |
+| `recipient`        | `string` | Lock the recipient field.   |
+| `sourceChain`      | `Chain`  | Lock the source chain.      |
+| `destinationChain` | `Chain`  | Lock the destination chain. |
 
 ## Default inputs (seeded but editable)
 
-| Prop                | Type      |
-| ------------------- | --------- |
-| `defaultAmount`     | `string`  |
-| `defaultRecipient`  | `string`  |
+| Prop               | Type     |
+| ------------------ | -------- |
+| `defaultAmount`    | `string` |
+| `defaultRecipient` | `string` |
 
 ## Change callbacks
 
@@ -57,21 +57,21 @@ the callback if you only care about a subset.
 
 ## Tabs & Swap
 
-| Prop                  | Type             | Default                                |
-| --------------------- | ---------------- | -------------------------------------- |
+| Prop                  | Type             | Default                                                               |
+| --------------------- | ---------------- | --------------------------------------------------------------------- |
 | `tabs`                | `WhiskSendTab[]` | `["transfer", "swap"]` when `kitKey` is supplied, else `["transfer"]` |
-| `defaultTab`          | `WhiskSendTab`   | `"transfer"`                           |
-| `kitKey`              | `string`         | required for swap                      |
-| `swapDefaultChain`    | `Chain`          | —                                      |
-| `swapDefaultTokenIn`  | `Token`          | —                                      |
-| `swapDefaultTokenOut` | `Token`          | —                                      |
+| `defaultTab`          | `WhiskSendTab`   | `"transfer"`                                                          |
+| `kitKey`              | `string`         | required for swap                                                     |
+| `swapDefaultChain`    | `Chain`          | —                                                                     |
+| `swapDefaultTokenIn`  | `Token`          | —                                                                     |
+| `swapDefaultTokenOut` | `Token`          | —                                                                     |
 
 ## Layout
 
-| Prop           | Type      | Notes                                                       |
-| -------------- | --------- | ----------------------------------------------------------- |
+| Prop           | Type      | Notes                                                        |
+| -------------- | --------- | ------------------------------------------------------------ |
 | `showWordmark` | `boolean` | Show the "powered by Whisk" footer wordmark. Off by default. |
-| `className`    | `string`  | Forwarded to the outer card. Use to tweak width or spacing. |
+| `className`    | `string`  | Forwarded to the outer card. Use to tweak width or spacing.  |
 
 ## A checkout
 

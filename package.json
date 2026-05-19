@@ -22,11 +22,14 @@
     "clean": "pnpm -r exec rm -rf dist .turbo node_modules/.cache",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && changeset publish",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.9",
     "@types/node": "^22.9.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.3.3",
     "tsup": "^8.3.5",
     "typescript": "^5.7.2",
@@ -36,5 +39,8 @@
     "overrides": {
       "axios@<1.15.2": ">=1.15.2"
     }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,mdx,css,yaml,yml}": "prettier --write"
   }
 }

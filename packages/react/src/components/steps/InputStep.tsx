@@ -192,12 +192,11 @@ export function InputStep({
   // clicking Back from review — we treat the resolved tag as stale and
   // route the CTA back to "Continue" so they can re-resolve.
   const recipientMatchesResolved = Boolean(
-    resolvedRecipient &&
-      resolvedRecipient.address === recipientInput.trim(),
+    resolvedRecipient && resolvedRecipient.address === recipientInput.trim(),
   );
   const recipientInvalid = Boolean(
     error ??
-      (recipientInput && !recipientLooksValid && !recipientMatchesResolved),
+    (recipientInput && !recipientLooksValid && !recipientMatchesResolved),
   );
 
   const wrongChain = account.isWrongChain(sourceChain);
@@ -285,8 +284,8 @@ export function InputStep({
           }}
         >
           Wallet is on{" "}
-          <strong>{account.evm.chainName ?? "another chain"}</strong>. Switch
-          to {chainInfo(sourceChain).label} to continue.
+          <strong>{account.evm.chainName ?? "another chain"}</strong>. Switch to{" "}
+          {chainInfo(sourceChain).label} to continue.
         </Banner>
       ) : null}
 

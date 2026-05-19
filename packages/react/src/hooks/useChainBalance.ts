@@ -140,7 +140,9 @@ export function useChainBalance(
         const lamports = await connection.getBalance(owner);
         const native = {
           value: BigInt(lamports),
-          formatted: (lamports / 1_000_000_000).toFixed(9).replace(/\.?0+$/, ""),
+          formatted: (lamports / 1_000_000_000)
+            .toFixed(9)
+            .replace(/\.?0+$/, ""),
           symbol: "SOL",
         };
 

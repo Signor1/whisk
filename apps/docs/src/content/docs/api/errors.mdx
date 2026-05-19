@@ -1,34 +1,81 @@
 ---
 title: Errors
-description: Typed errors thrown by the engine and surfaced through useWhisk.
+description: Typed errors thrown by the engine and surfaced through useWhisk — including the machine-readable category field that classifies upstream failures from App Kit.
 ---
 
-Every recoverable failure in Whisk is a `WhiskError` (or a
-subclass). They carry a stable `name` — a string-literal type —
-so you can branch on it instead of parsing messages.
+Every recoverable failure in Whisk is a `WhiskError` (or a subclass).
+They carry a stable `name` and `code` so you can branch on them
+without parsing strings, plus an optional machine-readable `category`
+that mirrors App Kit's failure classification.
+
+For the broader story — when failures happen, what the widget does
+automatically, and how to compose the recovery primitives — see
+[Error handling & recovery](/docs/concepts/error-handling).
 
 ## The base class
 
 ```ts
 class WhiskError extends Error {
-  name: WhiskErrorCode; // string literal type
-  cause?: unknown;
+  readonly code: WhiskErrorCode;
+  readonly retryable: boolean;
+  readonly step?: StepName; // present for bridge step failures
+  readonly category?: WhiskErrorCategory; // machine-readable cause
+  readonly cause?: unknown; // original throw
 }
 ```
 
+- `code` — high-level category. Stable string literal.
+- `retryable` — UI hint: "should I show a Retry button?". Authoritative.
+- `step` — for `BridgeStepError`, names which step failed
+  (`approve` / `burn` / `fetchAttestation` / `mint`).
+- `category` — App Kit's machine-readable classification (added in
+  App Kit 1.4.2+). Use this in switch statements instead of regex on
+  `message`.
+- `cause` — the underlying RPC throw / wagmi rejection / etc. Always
+  preserved.
+
 ## Subclasses
 
-| Class                       | `name`                       | When                                                    |
-| --------------------------- | ---------------------------- | ------------------------------------------------------- |
-| `NoAdapterError`            | `"NoAdapterError"`           | The source chain has no matching wallet adapter mounted.|
-| `WrongChainError`           | `"WrongChainError"`          | The wallet is on a different chain than the quote needs.|
-| `InsufficientBalanceError`  | `"InsufficientBalanceError"` | Balance < `amountIn + fees`.                            |
-| `InvalidAddressError`       | `"InvalidAddressError"`      | Recipient is malformed or fails checksum.               |
-| `ResolverError`             | `"ResolverError"`            | The resolver chain returned no match.                   |
-| `BridgeStepError`           | `"BridgeStepError"`          | A specific bridge step failed. Carries the `step` name. |
-| `UserRejectedError`         | `"UserRejectedError"`        | The user declined the wallet prompt.                    |
-| `NetworkError`              | `"NetworkError"`             | RPC timeout, fetch failure, or other transient.         |
-| `ConfigError`               | `"ConfigError"`              | The config passed to `createWhiskConfig` is invalid.    |
+| Class                      | `code`                   | When                                                                |
+| -------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| `NoAdapterError`           | `"NO_ADAPTER"`           | The source chain has no matching wallet adapter mounted.            |
+| `WrongChainError`          | `"WRONG_CHAIN"`          | The wallet is on a different chain than the quote needs.            |
+| `InsufficientBalanceError` | `"INSUFFICIENT_BALANCE"` | Balance < `amountIn + fees`.                                        |
+| `InvalidAddressError`      | `"INVALID_ADDRESS"`      | Recipient is malformed or fails checksum.                           |
+| `ResolverError`            | `"RESOLVER_FAILED"`      | The resolver chain returned no match.                               |
+| `BridgeStepError`          | `"BRIDGE_STEP_FAILED"`   | A specific bridge step failed. Carries the `step` name.             |
+| `UserRejectedError`        | `"USER_REJECTED"`        | The user declined the wallet prompt.                                |
+| `NetworkError`             | `"NETWORK_ERROR"`        | RPC timeout, fetch failure, polling timeout.                        |
+| `WalletCapabilityError`    | `"WALLET_CAPABILITY"`    | Wallet doesn't support an EIP-5792 capability (atomic batch, etc.). |
+| `OnchainRevertError`       | `"ONCHAIN_REVERT"`       | Transaction mined and reverted on chain.                            |
+| `ConfigError`              | `"CONFIG_ERROR"`         | The config passed to `createWhiskConfig` is invalid.                |
+
+## Categories
+
+App Kit 1.4.2+ classifies bridge step failures with a machine-readable
+`errorCategory`. Whisk mirrors this on `WhiskError.category` so apps
+can switch on cause without string-matching messages.
+
+```ts
+type WhiskErrorCategory =
+  | "user_rejected"
+  | "atomic_unsupported" // EIP-5792 wallet_sendCalls unsupported
+  | "batch_too_large" // wallet enforces a per-batch cap
+  | "duplicate_batch_id" // batch submitted twice
+  | "unknown_bundle" // wallet doesn't recognise the batch id
+  | "polling_timeout" // wallet_getCallsStatus didn't terminate
+  | "failed_offchain" // failed before submission
+  | "reverted_onchain" // mined and reverted on chain
+  | "partial_reverted" // some calls in a batch reverted
+  | "chain_revert" // chain-level revert (reorg / dropped)
+  | "unknown"; // App Kit couldn't categorise
+```
+
+The `polling_timeout` category is what you'd see for the Polygon Amoy →
+Sei batched-approve issue we documented in
+[testnet quirks](/docs/concepts/error-handling#what-about-solana) —
+wallet returned a batch id, `wallet_getCallsStatus` never reached a
+terminal state inside App Kit's window.
 
 ## Branching by class
 
@@ -38,11 +85,13 @@ import {
   WhiskError,
   UserRejectedError,
   InsufficientBalanceError,
+  WalletCapabilityError,
+  OnchainRevertError,
 } from "@signordev/whisk-react";
 
 const { state } = useWhisk();
 
-if (state.kind === "error") {
+if (state.kind === "failed") {
   const err = state.error;
 
   if (err instanceof UserRejectedError) {
@@ -54,14 +103,60 @@ if (state.kind === "error") {
     return <p>Top up your USDC and try again.</p>;
   }
 
+  if (err instanceof WalletCapabilityError) {
+    // Wallet rejected an EIP-5792 / atomic-batch flow. Suggest a wallet
+    // that supports it, or guide them through manual recovery.
+    return (
+      <p>
+        Your wallet doesn't support batched signing on this chain. Try
+        connecting a wallet that does, or use the manual recovery flow.
+      </p>
+    );
+  }
+
+  if (err instanceof OnchainRevertError) {
+    return <p>Transaction reverted on chain. {err.message}</p>;
+  }
+
   if (err instanceof WhiskError) {
     return <Banner tone="destructive">{err.message}</Banner>;
   }
 
   // Shouldn't happen — the engine wraps unknowns into a WhiskError.
-  // Capture so we hear about it.
   Sentry.captureException(err);
   return <p>Something went wrong.</p>;
+}
+```
+
+## Branching by category (preferred for App Kit failures)
+
+`category` is set by App Kit's machine-readable classifier and is the
+authoritative source for _why_ something failed. Prefer it over regex
+matching on `message`:
+
+```tsx
+if (state.kind === "failed" && state.error.category) {
+  switch (state.error.category) {
+    case "user_rejected":
+      return null; // silent abort
+    case "polling_timeout":
+      return (
+        <p>Submission is taking longer than expected; check the explorer.</p>
+      );
+    case "atomic_unsupported":
+    case "batch_too_large":
+      return (
+        <p>
+          Your wallet can't sign this batch atomically. Try a different wallet.
+        </p>
+      );
+    case "reverted_onchain":
+    case "partial_reverted":
+    case "chain_revert":
+      return <p>On-chain failure: {state.error.message}</p>;
+    default:
+      return <p>{state.error.message}</p>;
+  }
 }
 ```
 
@@ -69,7 +164,9 @@ if (state.kind === "error") {
 
 If you're calling engine methods directly (not through hooks),
 `toWhiskError(...)` converts anything thrown into a `WhiskError`,
-preserving the original on `error.cause`:
+preserving the original on `error.cause`. Pass an optional `category`
+when you have an App Kit `BridgeStep.errorCategory` available — the
+helper will pick the right subclass:
 
 ```ts
 import { toWhiskError } from "@signordev/whisk-core";

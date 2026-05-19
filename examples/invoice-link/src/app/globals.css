@@ -10,15 +10,20 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont,
-    system-ui, sans-serif;
+  font-family:
+    var(--font-inter),
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   background: #f5f3e8;
   color: #2a1d21;
   -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
-  html, body {
+  html,
+  body {
     background: #1a1115;
     color: #e4e2d4;
   }
@@ -227,7 +232,9 @@ main {
 }
 
 @media (max-width: 760px) {
-  .create__grid { grid-template-columns: 1fr; }
+  .create__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .create__form {
@@ -241,7 +248,10 @@ main {
 }
 
 @media (prefers-color-scheme: dark) {
-  .create__form { background: rgba(42, 29, 33, 0.5); border-color: rgba(228, 226, 212, 0.12); }
+  .create__form {
+    background: rgba(42, 29, 33, 0.5);
+    border-color: rgba(228, 226, 212, 0.12);
+  }
 }
 
 .create__row {
@@ -293,7 +303,10 @@ main {
 }
 
 @media (prefers-color-scheme: dark) {
-  .create__preview { background: rgba(42, 29, 33, 0.5); border-color: rgba(228, 226, 212, 0.12); }
+  .create__preview {
+    background: rgba(42, 29, 33, 0.5);
+    border-color: rgba(228, 226, 212, 0.12);
+  }
 }
 
 .create__url {
@@ -306,7 +319,9 @@ main {
 }
 
 @media (prefers-color-scheme: dark) {
-  .create__url { background: rgba(228, 226, 212, 0.08); }
+  .create__url {
+    background: rgba(228, 226, 212, 0.08);
+  }
 }
 
 .create__actions {

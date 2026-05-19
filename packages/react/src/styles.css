@@ -62,8 +62,8 @@
      this is just the preferred stack.)
      ========================================================== */
   --whisk-font:
-    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", system-ui, sans-serif;
+    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
   --whisk-font-mono:
     "JetBrains Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
     monospace;
@@ -261,6 +261,18 @@
   letter-spacing: -0.01em;
 }
 
+/* Placeholder in amount-mode fields uses the body type size and
+ * weight. Inheriting the 1.375rem display size made hints like
+ * "Calculating…" or "—" look comically loud. */
+[data-whisk]
+  .whisk-fieldbox--amount
+  .whisk-fieldbox__control
+  input::placeholder {
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 [data-whisk] .whisk-fieldbox--mono .whisk-fieldbox__control input {
   font-family: var(--whisk-font-mono);
   font-size: 0.8125rem;
@@ -407,6 +419,11 @@
   font-size: 0.75rem;
   color: var(--whisk-fg-muted);
   margin-top: 0.375rem;
+  /* Error messages can carry a long unspaced run (tx hashes, viem
+   * URLs, etc.). Break inside the card so they don't blow out the
+   * widget width. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 [data-whisk] .whisk-help--error {
   color: var(--whisk-destructive);
@@ -448,7 +465,11 @@
 
 [data-whisk] .whisk-banner--warning {
   background: color-mix(in srgb, var(--whisk-warning) 10%, var(--whisk-bg));
-  border-color: color-mix(in srgb, var(--whisk-warning) 35%, var(--whisk-border));
+  border-color: color-mix(
+    in srgb,
+    var(--whisk-warning) 35%,
+    var(--whisk-border)
+  );
   color: var(--whisk-fg);
 }
 
@@ -1011,6 +1032,16 @@
   flex-wrap: wrap;
 }
 
+/* Mode indicator row — always sits above everything else so the
+ * "Testnet" pill is the first thing the user sees on the card.
+ * No bottom margin: the Card's flex gap handles spacing to the
+ * next row. */
+[data-whisk] .whisk-mode-row {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
 [data-whisk] .whisk-account-chip {
   appearance: none;
   display: inline-flex;
@@ -1318,14 +1349,31 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  /* Allow the trigger to shrink inside the source/destination grid so
+   * long network names truncate cleanly instead of pushing siblings. */
+  min-width: 0;
   border: none;
   background: transparent;
   font: inherit;
-  font-size: 0.9375rem;
+  /* Slightly tighter than the surrounding form fields so multi-word
+   * chain labels ("Avalanche Fuji", "World Chain Sepolia") stay on one
+   * line at narrow widget widths. */
+  font-size: 0.875rem;
   color: var(--whisk-fg);
   text-align: left;
   cursor: pointer;
   outline: none;
+}
+
+/* The Select.Value span sits between the chain icon and the chevron.
+ * Give it the remaining row width and truncate with an ellipsis when
+ * the label is still wider than the column. */
+[data-whisk] .whisk-select-trigger > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 [data-whisk] .whisk-select-trigger:focus-visible {
@@ -1378,6 +1426,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1.5rem 0.5rem 0.625rem;
   font-size: 0.8125rem;
+  /* Single-line items — dropdown sets its own min-width to the trigger
+   * width, so labels never need to wrap. */
+  white-space: nowrap;
   border-radius: calc(var(--whisk-radius-md) - 0.25rem);
   color: var(--whisk-fg);
   outline: none;

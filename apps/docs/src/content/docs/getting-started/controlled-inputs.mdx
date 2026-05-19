@@ -4,7 +4,7 @@ description: Lock the amount, recipient, or chain so the widget becomes a confir
 ---
 
 There are two ways to put a value into `<WhiskSend>`. **Controlled
-props** lock the field — the user can read it but can't change it.
+props** lock the field so the user can read it but can't change it.
 **Default props** seed an initial value the user can still edit. Use
 controlled when the host app has the authoritative number (cart
 total, merchant address). Use defaults when you're nudging.
@@ -19,12 +19,12 @@ total, merchant address). Use defaults when you're nudging.
 />
 ```
 
-| Prop                | What it locks                       |
-| ------------------- | ----------------------------------- |
-| `amount`            | The amount field.                   |
-| `recipient`         | The recipient field.                |
-| `sourceChain`       | The source chain picker.            |
-| `destinationChain`  | The destination chain picker.       |
+| Prop               | What it locks                 |
+| ------------------ | ----------------------------- |
+| `amount`           | The amount field.             |
+| `recipient`        | The recipient field.          |
+| `sourceChain`      | The source chain picker.      |
+| `destinationChain` | The destination chain picker. |
 
 When all three of `amount`, `recipient`, and `destinationChain` are
 locked, the widget reads like a checkout summary: the user signs
@@ -35,16 +35,13 @@ once, and the transfer leaves.
 These pre-fill the input but stay editable:
 
 ```tsx title="donate-button.tsx"
-<WhiskSend
-  recipient="0xDAOTreasury…"
-  defaultAmount="10"
-/>
+<WhiskSend recipient="0xDAOTreasury…" defaultAmount="10" />
 ```
 
-| Prop                | What it seeds                       |
-| ------------------- | ----------------------------------- |
-| `defaultAmount`     | The starting amount.                |
-| `defaultRecipient`  | The starting recipient.             |
+| Prop               | What it seeds           |
+| ------------------ | ----------------------- |
+| `defaultAmount`    | The starting amount.    |
+| `defaultRecipient` | The starting recipient. |
 
 The recipient is locked (treasury address) but the amount nudges
 toward 10 USDC. Donors can change it before confirming.
@@ -61,7 +58,7 @@ const [amount, setAmount] = useState("10");
   defaultAmount={amount}
   onAmountChange={setAmount}
   recipient="0xDAOTreasury…"
-/>
+/>;
 ```
 
 The full set: `onAmountChange`, `onRecipientChange`,
@@ -70,17 +67,16 @@ new value as a string (or `Chain` literal for the chain callbacks).
 
 ## Common shapes
 
-| Flow             | Controlled              | Default              |
-| ---------------- | ----------------------- | -------------------- |
-| Checkout         | amount + recipient + dest chain | —            |
-| Donation         | recipient + dest chain  | amount               |
-| Invoice link     | amount + recipient + dest chain | source chain |
-| Payroll batch    | amount + recipient + dest chain | —            |
+| Flow          | Controlled                      | Default      |
+| ------------- | ------------------------------- | ------------ |
+| Checkout      | amount + recipient + dest chain | —            |
+| Donation      | recipient + dest chain          | amount       |
+| Invoice link  | amount + recipient + dest chain | source chain |
+| Payroll batch | amount + recipient + dest chain | —            |
 
 <Callout type="info">
-  The source chain almost always stays free. The customer pays from
-  wherever their USDC sits — Whisk handles the bridge when source
-  and destination differ.
+  The source chain almost always stays free. The customer pays from wherever
+  their USDC sits. Whisk handles the bridge when source and destination differ.
 </Callout>
 
 ## Next

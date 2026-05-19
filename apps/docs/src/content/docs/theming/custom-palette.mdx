@@ -1,6 +1,6 @@
 ---
 title: Custom palette
-description: A worked example — swap Whisk's earth tones for corporate navy and teal.
+description: A worked example. Swap Whisk's earth tones for corporate navy and teal.
 ---
 
 This page walks through a full rebrand: replacing the default
@@ -53,15 +53,15 @@ widget):
 }
 ```
 
-That's it. The card, input, button, chips, step rail, banner, badge
-— all of them — switch to the new palette. No component overrides,
+That's it. The card, input, button, chips, step rail, banner, badge,
+all of them switch to the new palette. No component overrides,
 no `!important`, no Tailwind plugin.
 
 ## Scoping the override
 
-If you want the override to apply to one section of the app only —
+If you want the override to apply to one section of the app only,
 say, a corporate portal that has its own brand inside a larger
-consumer app — wrap that section with an extra selector:
+consumer app, wrap that section with an extra selector:
 
 ```css
 .corporate-portal [data-whisk] {

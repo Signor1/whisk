@@ -13,11 +13,7 @@ the rest of Whisk is just children of it.
 ```tsx title="app/providers.tsx"
 "use client";
 
-import {
-  WhiskProvider,
-  createWhiskConfig,
-  evm,
-} from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
 
 const config = createWhiskConfig({
   wallets: [
@@ -55,7 +51,40 @@ export default function RootLayout({
 ```
 
 Wrap once, at the root. Don't sprinkle `WhiskProvider` around the
-tree — the engine should be a singleton per app.
+tree because the engine should be a singleton per app.
+
+## Mode (testnet / mainnet)
+
+Whisk operates in one of two modes. The mode is **inferred from your
+chain list** — pass all-testnet chains and you're in testnet mode,
+all-mainnet chains and you're in mainnet mode. You can also set it
+explicitly:
+
+```tsx
+createWhiskConfig({
+  mode: "testnet", // optional — inferred from chains
+  chains: ["Arc_Testnet", "Base_Sepolia"],
+  // ...
+});
+```
+
+Mode drives three visible behaviours:
+
+1. **A "Testnet" pill at the top of the widget.** Always visible in
+   testnet mode, from the moment the card mounts. Mainnet renders no
+   pill — absence is the safer signal that real money is moving.
+2. **The default ENS resolver.** Testnet mode queries Sepolia ENS
+   first, then falls back to mainnet ENS (so a dev who registers a
+   Sepolia name for integration testing gets it, while `vitalik.eth`
+   still resolves to his mainnet address). Mainnet mode queries
+   mainnet only. Customise via `createDefaultResolver({ mode })`.
+3. **Recovery persistence namespacing.** Mid-flight failure snapshots
+   are keyed on `(mode, walletKind, address, sourceChain)` — a testnet
+   recovery cannot resurrect in a mainnet config, full stop.
+
+Mixed configs (some mainnet chains, some testnet) almost always
+indicate a copy-paste mistake. Whisk defaults to `testnet` for safety
+in that case and logs a console warning so you notice.
 
 ## Adding Solana
 
@@ -79,7 +108,7 @@ const config = createWhiskConfig({
 
 If your app already mounts `<WagmiProvider>`, Whisk detects it and
 reuses your config. In that case the `evm()` adapter becomes
-optional — the host wagmi config is what drives EVM operations:
+optional and so the host wagmi config becomes what drives EVM operations:
 
 ```tsx
 <WagmiProvider config={yourWagmiConfig}>
@@ -97,7 +126,7 @@ to `<WhiskProvider>` only when you want to override the detection.
 
 ## Pinning the theme
 
-The default mode is `"system"` — Whisk follows the OS via
+The default mode is `"system"`. Whisk follows the OS via
 `prefers-color-scheme`. To pin it instead, pass `theme`:
 
 ```tsx

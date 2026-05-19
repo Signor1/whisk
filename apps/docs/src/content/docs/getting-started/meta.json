@@ -1,4 +1,4 @@
 {
   "title": "Getting Started",
-  "pages": ["install", "provider", "first-widget", "controlled-inputs"]
+  "pages": ["install", "provider", "first-widget", "controlled-inputs", "rpc"]
 }

@@ -1,6 +1,6 @@
 ---
 title: Resolvers
-description: Turning "vitalik.eth" into an on-chain address — and plugging in custom lookups.
+description: Turning "vitalik.eth" into an on-chain address and plugging in custom lookups.
 ---
 
 A resolver takes whatever the user typed and returns an address on
@@ -30,8 +30,8 @@ import { lensResolver } from "./lens";
 
 export const customResolver = composeResolvers(
   addressResolver,
-  ensResolver(),       // `vitalik.eth`
-  lensResolver(),      // `vitalik.lens`
+  ensResolver(), // `vitalik.eth`
+  lensResolver(), // `vitalik.lens`
 );
 ```
 
@@ -94,7 +94,7 @@ A few rules that pay off:
 
 ENS names can point to a different address on each chain via
 "coin types" (`'60` for Ethereum, `'2147483658` for Base, and so on).
-The built-in `ensResolver()` handles this — it pulls the coin type
+The built-in `ensResolver()` handles this. It pulls the coin type
 for the destination chain and returns the address recorded there.
 
 If the ENS record doesn't have a coin type set for the destination

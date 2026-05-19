@@ -57,7 +57,7 @@ Open <http://localhost:3000>.
 
 ## What's wired
 
-- **All 18 testnets** in the chain picker. Solana Devnet is held back until the signer-kind fix lands.
+- **All 19 testnets** in the chain picker, Solana Devnet included. The Solana path rides on a hand-built `TransactionPartialSigner` in `useWhiskAdapter` that sidesteps App Kit's stock-factory signing bug.
 - **EVM wallets:** MetaMask, Coinbase Wallet, Rabby, any injected EIP-1193 provider. WalletConnect lights up with a project ID.
 - **Live config panel:** theme · wordmark · swap tab · lock amount / recipient / source / destination · address book quick-picks · JSON inspector for the current config object.
 - **Five presets:** Open form, E-commerce checkout, Donate button, Invoice payment link, Payroll row. Picking one rewrites the entire form so you can flip through integration shapes in seconds.

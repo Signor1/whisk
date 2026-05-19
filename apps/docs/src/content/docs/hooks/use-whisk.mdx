@@ -58,8 +58,7 @@ export function CustomSend() {
     return (
       <div>
         <p>
-          Send {state.quote.amountIn} USDC to{" "}
-          {state.quote.recipient.display}
+          Send {state.quote.amountIn} USDC to {state.quote.recipient.display}
         </p>
         <button onClick={() => actions.back()}>Back</button>
         <button onClick={() => actions.send()}>Confirm</button>
@@ -118,7 +117,7 @@ useEffect(() => {
 ### Pinning a default token
 
 `actions.quote` accepts an optional `token` argument. Skip it and
-Whisk falls back to whatever the engine was configured with —
+Whisk falls back to whatever the engine was configured with and that's
 typically USDC. Pass it when you support multiple tokens and want
 to control which one the next quote builds against.
 

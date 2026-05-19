@@ -52,7 +52,5 @@ function formatBalance(raw: string): string {
   const trimmed = fixed.replace(/\.?0+$/, "");
   if (!trimmed.includes(".")) return `${trimmed}.00`;
   const [whole, frac] = trimmed.split(".");
-  return frac && frac.length < 2
-    ? `${whole}.${frac}0`
-    : trimmed;
+  return frac && frac.length < 2 ? `${whole}.${frac}0` : trimmed;
 }

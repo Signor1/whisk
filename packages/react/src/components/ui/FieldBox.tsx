@@ -69,30 +69,31 @@ export type FieldBoxSelectProps = CommonProps &
  * Inset-label `<select>` companion to `FieldBox`. Same visual structure
  * — label inside the box, native picker below — used for chain pickers.
  */
-export const FieldBoxSelect = forwardRef<HTMLSelectElement, FieldBoxSelectProps>(
-  function FieldBoxSelect(
-    { label, suffix, mono, invalid, className, children, ...rest },
-    ref,
-  ) {
-    return (
-      <label
-        className={cn(
-          "whisk-fieldbox",
-          mono && "whisk-fieldbox--mono",
-          invalid && "whisk-fieldbox--invalid",
-          className,
-        )}
-      >
-        <span className="whisk-fieldbox__label">{label}</span>
-        <span className="whisk-fieldbox__control">
-          <select ref={ref} {...rest}>
-            {children}
-          </select>
-          {suffix ? (
-            <span className="whisk-fieldbox__suffix">{suffix}</span>
-          ) : null}
-        </span>
-      </label>
-    );
-  },
-);
+export const FieldBoxSelect = forwardRef<
+  HTMLSelectElement,
+  FieldBoxSelectProps
+>(function FieldBoxSelect(
+  { label, suffix, mono, invalid, className, children, ...rest },
+  ref,
+) {
+  return (
+    <label
+      className={cn(
+        "whisk-fieldbox",
+        mono && "whisk-fieldbox--mono",
+        invalid && "whisk-fieldbox--invalid",
+        className,
+      )}
+    >
+      <span className="whisk-fieldbox__label">{label}</span>
+      <span className="whisk-fieldbox__control">
+        <select ref={ref} {...rest}>
+          {children}
+        </select>
+        {suffix ? (
+          <span className="whisk-fieldbox__suffix">{suffix}</span>
+        ) : null}
+      </span>
+    </label>
+  );
+});

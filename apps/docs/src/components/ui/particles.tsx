@@ -277,12 +277,10 @@ export const Particles: React.FC<ParticlesProps> = ({
       circle.x += circle.dx + vx;
       circle.y += circle.dy + vy;
       circle.translateX +=
-        (mouse.current.x / (staticity / circle.magnetism) -
-          circle.translateX) /
+        (mouse.current.x / (staticity / circle.magnetism) - circle.translateX) /
         ease;
       circle.translateY +=
-        (mouse.current.y / (staticity / circle.magnetism) -
-          circle.translateY) /
+        (mouse.current.y / (staticity / circle.magnetism) - circle.translateY) /
         ease;
 
       drawCircle(circle, true);

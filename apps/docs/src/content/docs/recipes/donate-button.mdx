@@ -21,12 +21,10 @@ export default function DonatePage() {
 
   return (
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-3xl font-semibold mb-4">
-        Support the project
-      </h1>
+      <h1 className="text-3xl font-semibold mb-4">Support the project</h1>
       <p className="mb-8 text-muted-foreground">
-        Every contribution goes directly to our multisig. The ledger
-        is public — see what others have given below.
+        Every contribution goes directly to our multisig. The ledger is public
+        and anyone can see what others have given below.
       </p>
 
       <WhiskSend
@@ -60,7 +58,7 @@ export default function DonatePage() {
 ## Why surface the ledger
 
 Visible recent donations work. They're the lightest possible form of
-social proof, and they cost you nothing to render — `onSuccess`
+social proof, and they cost you nothing to render, `onSuccess`
 already hands you the amount. Don't overengineer it; even a
 client-side list (the example above) gets you most of the benefit.
 

@@ -10,19 +10,33 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont,
-    "Segoe UI", system-ui, sans-serif;
+  font-family:
+    var(--font-inter),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    system-ui,
+    sans-serif;
   background:
-    radial-gradient(ellipse at 50% -10%, rgba(214, 92, 60, 0.08) 0%, transparent 60%),
+    radial-gradient(
+      ellipse at 50% -10%,
+      rgba(214, 92, 60, 0.08) 0%,
+      transparent 60%
+    ),
     #faf5e9;
   color: #2a1d21;
   -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
-  html, body {
+  html,
+  body {
     background:
-      radial-gradient(ellipse at 50% -10%, rgba(214, 92, 60, 0.18) 0%, transparent 60%),
+      radial-gradient(
+        ellipse at 50% -10%,
+        rgba(214, 92, 60, 0.18) 0%,
+        transparent 60%
+      ),
       #1a1115;
     color: #e4e2d4;
   }

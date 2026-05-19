@@ -162,8 +162,18 @@
      - Inline `code` in prose uses IBM Plex Mono italic — visually
        different from block code so language references read as
        emphasis rather than excerpts.
-     The fumadocs codeblock component already sets `font-mono` on
-     <pre>, so the override here only needs to target inline code. */
+     Fumadocs ships its own compiled stylesheet that re-declares
+     `--font-mono` at the theme layer with a system fallback chain;
+     pinning the family here explicitly guarantees the
+     next/font-injected JetBrains Mono wins regardless of cascade
+     order. Applies to both docs code blocks and the
+     `<InstallTabs>` <pre> in marketing. */
+  pre,
+  pre code {
+    font-family: var(--font-mono);
+    font-style: normal;
+  }
+
   :not(pre) > code {
     font-family: var(--font-mono-italic);
     font-style: italic;

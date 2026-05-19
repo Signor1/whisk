@@ -1,7 +1,14 @@
 "use client";
 
-import { ArrowRight, ArrowLeftRight, Clock3 } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeftRight,
+  Clock3,
+  AlertCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { chainInfo, type Quote } from "@signordev/whisk-core";
+import type { PreflightResult } from "../../hooks/usePreflight.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 
@@ -10,6 +17,19 @@ export type ReviewStepProps = {
   busy: boolean;
   onConfirm: () => void;
   onBack: () => void;
+  /**
+   * Pre-flight check results. When provided, blocking checks gate
+   * the Send button and warning checks render as inline notices.
+   * Omit to disable pre-flight UI entirely.
+   */
+  preflight?: PreflightResult;
+  /**
+   * Cross-tab single-flight signal (P7). True when another tab on the
+   * same wallet + source chain is already mid-send. Disables Send and
+   * surfaces an inline notice so the user can't accidentally fire a
+   * second burn from a different tab.
+   */
+  tabLockedByOther?: boolean;
 };
 
 function shortenAddress(address: string): string {
@@ -23,12 +43,20 @@ function shortenAddress(address: string): string {
  * 10% Arc) is rendered as separate rows so users see exactly where every
  * cent goes.
  */
-export function ReviewStep({ quote, busy, onConfirm, onBack }: ReviewStepProps) {
+export function ReviewStep({
+  quote,
+  busy,
+  onConfirm,
+  onBack,
+  preflight,
+  tabLockedByOther,
+}: ReviewStepProps) {
   const route = quote.route;
-  const fromChain =
-    route.kind === "send" ? route.chain : route.sourceChain;
-  const toChain =
-    route.kind === "send" ? route.chain : route.destinationChain;
+  const fromChain = route.kind === "send" ? route.chain : route.sourceChain;
+  const toChain = route.kind === "send" ? route.chain : route.destinationChain;
+  const blockedByPreflight = preflight?.hasBlocking ?? false;
+  const blockedByTab = tabLockedByOther ?? false;
+  const sendBlocked = blockedByPreflight || blockedByTab;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
@@ -168,8 +196,7 @@ export function ReviewStep({ quote, busy, onConfirm, onBack }: ReviewStepProps) 
             display: "flex",
             justifyContent: "space-between",
             fontWeight: 600,
-            paddingTop:
-              quote.fees.entries.length > 0 ? "0.5rem" : 0,
+            paddingTop: quote.fees.entries.length > 0 ? "0.5rem" : 0,
             borderTop:
               quote.fees.entries.length > 0
                 ? "1px dashed var(--whisk-border)"
@@ -190,15 +217,102 @@ export function ReviewStep({ quote, busy, onConfirm, onBack }: ReviewStepProps) 
         </Badge>
       ) : null}
 
+      {/*
+       * Cross-tab single-flight notice (P7). Shown when another tab on
+       * the same wallet + source chain is mid-send.
+       */}
+      {blockedByTab ? (
+        <p
+          className="whisk-help whisk-help--error"
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.375rem",
+            margin: 0,
+            fontSize: "0.75rem",
+          }}
+        >
+          <AlertCircle
+            size={12}
+            strokeWidth={2.5}
+            style={{ flexShrink: 0, marginTop: 1 }}
+          />
+          <span>
+            Another tab is already sending from this wallet on this chain. Wait
+            for it to finish before sending here.
+          </span>
+        </p>
+      ) : null}
+
+      {/*
+       * Pre-flight notices. Renders one line per check above the Send
+       * button so the user sees "you'll fail this" warnings BEFORE they
+       * sign. Blocking checks (red) gate Send; warnings (amber) inform
+       * but don't block. Read-only — no extra gas to surface these.
+       */}
+      {preflight && preflight.checks.length > 0 ? (
+        <ul
+          style={{
+            margin: 0,
+            padding: 0,
+            listStyle: "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.375rem",
+          }}
+        >
+          {preflight.checks.map((c) => (
+            <li
+              key={c.id}
+              className={
+                c.status === "blocking"
+                  ? "whisk-help whisk-help--error"
+                  : "whisk-help"
+              }
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "0.375rem",
+                margin: 0,
+                fontSize: "0.75rem",
+              }}
+            >
+              {c.status === "blocking" ? (
+                <AlertCircle
+                  size={12}
+                  strokeWidth={2.5}
+                  style={{ flexShrink: 0, marginTop: 1 }}
+                />
+              ) : (
+                <AlertTriangle
+                  size={12}
+                  strokeWidth={2.5}
+                  style={{ flexShrink: 0, marginTop: 1, opacity: 0.7 }}
+                />
+              )}
+              <span>{c.message}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       <div style={{ display: "flex", gap: "0.5rem" }}>
         <Button variant="ghost" onClick={onBack} disabled={busy}>
           Back
         </Button>
-        <Button onClick={onConfirm} disabled={busy} style={{ flex: 1 }}>
+        <Button
+          onClick={onConfirm}
+          disabled={busy || sendBlocked}
+          style={{ flex: 1 }}
+        >
           {busy ? (
             <>
               <span className="whisk-spinner" /> Sending…
             </>
+          ) : blockedByTab ? (
+            <>Active send in another tab</>
+          ) : blockedByPreflight ? (
+            <>Resolve issues above</>
           ) : (
             <>
               Send {quote.amountIn} {quote.token}

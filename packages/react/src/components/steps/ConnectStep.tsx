@@ -25,7 +25,9 @@ export function ConnectStep() {
         textAlign: "center",
       }}
     >
-      <header style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+      <header
+        style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}
+      >
         <div
           style={{
             display: "flex",

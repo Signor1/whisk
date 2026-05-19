@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { initialState, initialSteps, reduce, type WhiskAction } from "./machine.js";
+import {
+  initialState,
+  initialSteps,
+  reduce,
+  type WhiskAction,
+} from "./machine.js";
 import type { ResolvedRecipient } from "../types/recipient.js";
 import type { Quote } from "../types/quote.js";
 import type { WhiskState } from "../types/state.js";
@@ -84,26 +89,35 @@ describe("state machine — connect / disconnect", () => {
 
 describe("state machine — resolve", () => {
   it("RESOLVE_START moves idle → resolving", () => {
-    const next = reduce({ kind: "idle" }, {
-      type: "RESOLVE_START",
-      input: "alice.eth",
-    });
+    const next = reduce(
+      { kind: "idle" },
+      {
+        type: "RESOLVE_START",
+        input: "alice.eth",
+      },
+    );
     expect(next).toEqual({ kind: "resolving", input: "alice.eth" });
   });
 
   it("RESOLVE_START is also valid from resolved (re-input)", () => {
-    const next = reduce({ kind: "resolved", recipient }, {
-      type: "RESOLVE_START",
-      input: "bob.eth",
-    });
+    const next = reduce(
+      { kind: "resolved", recipient },
+      {
+        type: "RESOLVE_START",
+        input: "bob.eth",
+      },
+    );
     expect(next.kind).toBe("resolving");
   });
 
   it("RESOLVE_START is a no-op outside idle/resolved", () => {
-    const next = reduce({ kind: "disconnected" }, {
-      type: "RESOLVE_START",
-      input: "a",
-    });
+    const next = reduce(
+      { kind: "disconnected" },
+      {
+        type: "RESOLVE_START",
+        input: "a",
+      },
+    );
     expect(next).toEqual({ kind: "disconnected" });
   });
 
@@ -154,9 +168,12 @@ describe("state machine — quote / review", () => {
   });
 
   it("REVIEW_BACK moves review → resolved (preserving recipient)", () => {
-    const next = reduce({ kind: "review", quote: sendQuote }, {
-      type: "REVIEW_BACK",
-    });
+    const next = reduce(
+      { kind: "review", quote: sendQuote },
+      {
+        type: "REVIEW_BACK",
+      },
+    );
     expect(next).toEqual({ kind: "resolved", recipient });
   });
 
@@ -168,9 +185,12 @@ describe("state machine — quote / review", () => {
 
 describe("state machine — sending lifecycle", () => {
   it("SEND_START seeds steps from the route kind", () => {
-    const next = reduce({ kind: "review", quote: sendQuote }, {
-      type: "SEND_START",
-    });
+    const next = reduce(
+      { kind: "review", quote: sendQuote },
+      {
+        type: "SEND_START",
+      },
+    );
     expect(next.kind).toBe("sending");
     if (next.kind !== "sending") return;
     expect(next.steps.map((s) => s.name)).toEqual(["approve", "transfer"]);
@@ -178,9 +198,12 @@ describe("state machine — sending lifecycle", () => {
   });
 
   it("SEND_START seeds bridge-specific steps for bridge routes", () => {
-    const next = reduce({ kind: "review", quote: bridgeQuote }, {
-      type: "SEND_START",
-    });
+    const next = reduce(
+      { kind: "review", quote: bridgeQuote },
+      {
+        type: "SEND_START",
+      },
+    );
     expect(next.kind).toBe("sending");
     if (next.kind !== "sending") return;
     expect(next.steps.map((s) => s.name)).toEqual([
@@ -192,23 +215,33 @@ describe("state machine — sending lifecycle", () => {
   });
 
   it("STEP_UPDATE marks a step success and advances currentStep", () => {
-    const sending = reduce({ kind: "review", quote: bridgeQuote }, {
-      type: "SEND_START",
-    });
+    const sending = reduce(
+      { kind: "review", quote: bridgeQuote },
+      {
+        type: "SEND_START",
+      },
+    );
     if (sending.kind !== "sending") throw new Error("setup");
     const next = reduce(sending, {
       type: "STEP_UPDATE",
       step: { name: "approve", state: "success", txHash: "0xabc" },
     });
     if (next.kind !== "sending") throw new Error("expected sending");
-    expect(next.steps[0]).toMatchObject({ name: "approve", state: "success", txHash: "0xabc" });
+    expect(next.steps[0]).toMatchObject({
+      name: "approve",
+      state: "success",
+      txHash: "0xabc",
+    });
     expect(next.currentStep).toBe("burn");
   });
 
   it("STEP_UPDATE keeps currentStep when no further pending step", () => {
-    const sending = reduce({ kind: "review", quote: sendQuote }, {
-      type: "SEND_START",
-    });
+    const sending = reduce(
+      { kind: "review", quote: sendQuote },
+      {
+        type: "SEND_START",
+      },
+    );
     if (sending.kind !== "sending") throw new Error("setup");
     let cur = sending;
     cur = reduce(cur, {
@@ -224,10 +257,16 @@ describe("state machine — sending lifecycle", () => {
   });
 
   it("SEND_SUCCESS moves sending → succeeded", () => {
-    const sending = reduce({ kind: "review", quote: sendQuote }, {
-      type: "SEND_START",
+    const sending = reduce(
+      { kind: "review", quote: sendQuote },
+      {
+        type: "SEND_START",
+      },
+    );
+    const next = reduce(sending, {
+      type: "SEND_SUCCESS",
+      finalTxHash: "0xfff",
     });
-    const next = reduce(sending, { type: "SEND_SUCCESS", finalTxHash: "0xfff" });
     expect(next.kind).toBe("succeeded");
     if (next.kind !== "succeeded") return;
     expect(next.finalTxHash).toBe("0xfff");
@@ -235,9 +274,12 @@ describe("state machine — sending lifecycle", () => {
   });
 
   it("SEND_FAILURE moves sending → failed and preserves quote/steps", () => {
-    const sending = reduce({ kind: "review", quote: sendQuote }, {
-      type: "SEND_START",
-    });
+    const sending = reduce(
+      { kind: "review", quote: sendQuote },
+      {
+        type: "SEND_START",
+      },
+    );
     const next = reduce(sending, { type: "SEND_FAILURE", error: dummyError });
     expect(next.kind).toBe("failed");
     if (next.kind !== "failed") return;
@@ -248,10 +290,14 @@ describe("state machine — sending lifecycle", () => {
 
 describe("state machine — RESET", () => {
   it("RESET returns to idle from any non-disconnected state", () => {
-    expect(reduce({ kind: "review", quote: sendQuote }, { type: "RESET" })).toEqual({
+    expect(
+      reduce({ kind: "review", quote: sendQuote }, { type: "RESET" }),
+    ).toEqual({
       kind: "idle",
     });
-    expect(reduce({ kind: "failed", error: dummyError }, { type: "RESET" })).toEqual({
+    expect(
+      reduce({ kind: "failed", error: dummyError }, { type: "RESET" }),
+    ).toEqual({
       kind: "idle",
     });
   });

@@ -7,7 +7,9 @@ Whisk lives in two packages. The React package pulls in the core
 engine automatically and re-exports the helpers you'll touch most
 often, so installing it once is usually enough:
 
-<InstallCommand packages={["@signordev/whisk-react", "@signordev/whisk-core"]} />
+<InstallCommand
+  packages={["@signordev/whisk-react", "@signordev/whisk-core"]}
+/>
 
 The React package speaks to wallets through `wagmi` (EVM) and
 `@solana/wallet-adapter-react` (Solana). If your app already uses
@@ -18,7 +20,9 @@ them, you can skip ahead. If not, install them now:
 Solana support is optional. Add these only if you'll be sending from
 a Solana address:
 
-<InstallCommand packages={["@solana/wallet-adapter-react", "@solana/wallet-adapter-base"]} />
+<InstallCommand
+  packages={["@solana/wallet-adapter-react", "@solana/wallet-adapter-base"]}
+/>
 
 ## Import the stylesheet once
 
@@ -48,8 +52,8 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
 ```
 
 <Callout type="info">
-  Solana wallets discover themselves through the standard wallet
-  adapter protocol. No project ID needed on that side.
+  Solana wallets discover themselves through the standard wallet adapter
+  protocol. No project ID needed on that side.
 </Callout>
 
 ## Verify the install
@@ -64,7 +68,7 @@ console.log(allChains().map((c) => c.id));
 ```
 
 You should see a list of supported chains in the console. If the
-import fails or the array is empty, the install didn't land — start
+import fails or the array is empty, the install didn't land. Start
 again from the top.
 
 ## Next

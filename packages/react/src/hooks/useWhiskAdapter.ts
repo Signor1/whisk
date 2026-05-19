@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccount } from "wagmi";
 import { type WalletContextState } from "@solana/wallet-adapter-react";
 import type { Connection } from "@solana/web3.js";
@@ -43,6 +43,33 @@ export function useWhiskAdapter(
   const solanaWallet: WalletContextState | undefined = safeUseWallet();
   const solanaConnection: Connection | undefined = safeUseConnection();
 
+  /* -------------------------------------------------------------------- *
+   * Stability over reference equality                                     *
+   *                                                                       *
+   * `@solana/wallet-adapter-react`'s context returns a fresh                *
+   * `WalletContextState` reference on essentially every render of the      *
+   * parent provider, even when nothing meaningful changed. Treating that   *
+   * object as a `useEffect` dependency caused the adapter to be torn       *
+   * down and rebuilt on every render — which created a brief window per   *
+   * render where `adapter === null`. The user's click on "Send" would      *
+   * land in that window, the action would silently no-op (it has a        *
+   * `!adapter` guard), and they'd have to click again. Hence "Review       *
+   * needs two clicks" — only on Solana, because the wagmi-side deps        *
+   * (`connector`, `evmAddress`, `status`) are reference-stable.            *
+   *                                                                       *
+   * Fix: depend on scalar derivatives that DO have stable identity        *
+   * (publicKey as a base58 string, connected as a boolean, the connection  *
+   * URL as a string). Keep the live wallet/connection objects in refs so   *
+   * `build()` can still use them when it actually runs.                    *
+   * -------------------------------------------------------------------- */
+  const solanaPublicKey = solanaWallet?.publicKey?.toBase58();
+  const solanaConnected = Boolean(solanaWallet?.connected);
+  const solanaEndpoint = solanaConnection?.rpcEndpoint;
+  const walletRef = useRef(solanaWallet);
+  walletRef.current = solanaWallet;
+  const connectionRef = useRef(solanaConnection);
+  connectionRef.current = solanaConnection;
+
   const [adapter, setAdapter] = useState<WhiskAdapter | null>(null);
 
   useEffect(() => {
@@ -50,16 +77,15 @@ export function useWhiskAdapter(
 
     async function build(): Promise<WhiskAdapter | null> {
       if (isSolanaSource) {
-        if (!solanaWallet?.connected || !solanaWallet.publicKey) return null;
-        if (!solanaConnection) return null;
-        const address = solanaWallet.publicKey.toBase58();
-        const appKitAdapter = buildSolanaAdapter(
-          solanaWallet,
-          solanaConnection,
-          address,
-        );
+        const wallet = walletRef.current;
+        const connection = connectionRef.current;
+        if (!wallet?.connected || !wallet.publicKey) return null;
+        if (!connection) return null;
+        const address = wallet.publicKey.toBase58();
+        const appKitAdapter = buildSolanaAdapter(wallet, connection, address);
         return {
-          appKitAdapter: appKitAdapter as unknown as WhiskAdapter["appKitAdapter"],
+          appKitAdapter:
+            appKitAdapter as unknown as WhiskAdapter["appKitAdapter"],
           kind: "solana",
           address,
         };
@@ -93,8 +119,9 @@ export function useWhiskAdapter(
     status,
     connector,
     evmAddress,
-    solanaWallet,
-    solanaConnection,
+    solanaPublicKey,
+    solanaConnected,
+    solanaEndpoint,
   ]);
 
   return adapter;
@@ -170,7 +197,9 @@ function buildSolanaPartialSigner(
 ): any {
   const sAddr = kitAddress(walletAddress);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sign = wallet.signTransaction as undefined | ((tx: any) => Promise<any>);
+  const sign = wallet.signTransaction as
+    | undefined
+    | ((tx: any) => Promise<any>);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const signMsg = wallet.signMessage as
     | undefined
