@@ -158,20 +158,50 @@ export function InputStep({
     }
   }, [destChain, resolvedRecipient, recipientLocked]);
 
-  // When we re-mount on `resolved` state (typically after Back from
-  // review), seed the input field with the resolved address so the
-  // user sees what they had — but the field itself is fully editable.
+  // After a successful resolve, swap the input field to show the
+  // resolved address. Two distinct cases:
+  //
+  //  1. ENS / TLD input → resolver returns the 0x… address. Without
+  //     this swap, the input stays as "vitalik.eth", which never
+  //     matches `resolvedRecipient.address`, so the Continue button
+  //     never flips into "quote" mode — the user is stuck re-resolving
+  //     the same name on every click.
+  //  2. Re-mount on `resolved` state (after Back from review) where
+  //     the field is initially empty.
+  //
+  // The guard `recipientState !== resolvedRecipient.address` handles
+  // both: if the field already matches (raw-address path), it's a
+  // no-op; if it differs (ENS path or empty re-mount), it updates.
+  // Doesn't stomp mid-edit because the effect only re-runs when
+  // `resolvedRecipient` changes, not on every keystroke.
   useEffect(() => {
     if (
       resolvedRecipient &&
       !recipientLocked &&
-      recipientState === "" &&
-      recipientProp === undefined
+      recipientProp === undefined &&
+      recipientState !== resolvedRecipient.address
     ) {
       setRecipientState(resolvedRecipient.address);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedRecipient]);
+
+  // What the input field actually renders. For unlocked inputs this is
+  // always `recipientInput` (which is `recipientState` and gets swapped
+  // to the resolved address by the effect above). For LOCKED inputs we
+  // can't mutate the host-controlled value, but we still want the user
+  // to see "vitalik.eth" become "0xd8dA…e3eA" after resolve as visible
+  // confirmation that resolution succeeded. So when locked + resolved +
+  // the resolved address differs from the pinned value (the ENS case),
+  // override the displayed value with the resolved address. The
+  // host-facing `recipientInput` is unchanged; only the visible string
+  // in the FieldBox swaps.
+  const displayedRecipient =
+    recipientLocked &&
+    resolvedRecipient &&
+    resolvedRecipient.address !== recipientInput
+      ? resolvedRecipient.address
+      : recipientInput;
 
   // Accept either a valid raw address for the destination chain OR
   // anything domain-shaped (`*.eth`, `*.com`, etc.) — the latter is
@@ -187,12 +217,21 @@ export function InputStep({
   const amountValue = parseFloat(amount);
   const amountValid = !Number.isNaN(amountValue) && amountValue > 0;
 
-  // The resolved recipient is only "still valid" while the input matches
+  // The resolved recipient is "still valid" while the input matches
   // its address. The moment the user starts editing — typically after
   // clicking Back from review — we treat the resolved tag as stale and
   // route the CTA back to "Continue" so they can re-resolve.
+  //
+  // Locked-input exception: when the recipient is host-controlled,
+  // the user can't edit the field, so the input value can't drift
+  // away from what was resolved. The literal-string match also fails
+  // for ENS names (input="vitalik.eth", resolved address="0xd8dA…"),
+  // which used to leave the Continue button perpetually stuck in
+  // "resolve" mode on locked-ENS presets like the e-commerce checkout.
+  // Treat a locked, resolved recipient as matched by construction.
   const recipientMatchesResolved = Boolean(
-    resolvedRecipient && resolvedRecipient.address === recipientInput.trim(),
+    resolvedRecipient &&
+    (recipientLocked || resolvedRecipient.address === recipientInput.trim()),
   );
   const recipientInvalid = Boolean(
     error ??
@@ -324,7 +363,7 @@ export function InputStep({
         mono
         invalid={recipientInvalid}
         placeholder={destInfo.addressHint}
-        value={recipientInput}
+        value={displayedRecipient}
         onChange={(e) => handleRecipientChange(e.target.value)}
         disabled={busy || recipientLocked}
         readOnly={recipientLocked}
