@@ -46,11 +46,18 @@ export function ChainPicker({
           aria-label={label ?? "Chain"}
         >
           {/* Branded logo for the currently selected chain. Sits to
-              the left of the label so the trigger reads "icon → name". */}
-          <ChainIcon chain={value} className="whisk-select-trigger__icon" />
+              the left of the label so the trigger reads "icon → name".
+              Trigger icon is 14px (vs 16px in the dropdown items below)
+              so it doesn't crowd the label in the tight two-column
+              source/destination layout. */}
+          <ChainIcon
+            chain={value}
+            size={14}
+            className="whisk-select-trigger__icon"
+          />
           <Select.Value placeholder="Select a chain" />
           <Select.Icon asChild>
-            <ChevronDown size={14} strokeWidth={2.5} style={{ opacity: 0.6 }} />
+            <ChevronDown size={12} strokeWidth={2.5} style={{ opacity: 0.6 }} />
           </Select.Icon>
         </Select.Trigger>
 
