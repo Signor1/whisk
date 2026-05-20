@@ -1,10 +1,5 @@
 import type { Chain } from "./chain.js";
 
-/**
- * Whisk decides at runtime whether a transfer is a same-chain `send` or a
- * cross-chain `bridge`. Devs don't pick — the widget routes based on the
- * source/destination chains the user chose.
- */
 export type Route =
   | {
       kind: "send";
