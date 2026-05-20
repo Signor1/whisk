@@ -20,8 +20,8 @@ export type Preset = {
  * funds are recoverable. The default points at the demo address used
  * in the docs recipe pages.
  */
-const SAMPLE_RECIPIENT = "0xbe03CEa7b91Fc60Ad7daEa7140cb89BD9BAe70Fe2";
-const SAMPLE_PAYEE = "0xd9dB5BcC53dF9F88C5e83C24A03F4C4cE7E9E645";
+const SAMPLE_RECIPIENT = "0xbe03CE9d6001D27BE41fc87e3E3f777d04e70Fe2";
+const SAMPLE_PAYEE = "0xd9dBe0daa503Caa6e061f1902a7AF22af096E645";
 
 /**
  * Five preset shapes mirroring the recipe pages in /docs/recipes.
