@@ -19,12 +19,12 @@ export const ADDRESS_BOOK: AddressEntry[] = [
   },
   {
     label: "Test recipient #1",
-    value: "0xbe03CEa7b91Fc60Ad7daEa7140cb89BD9BAe70Fe2",
+    value: "0xbe03CE9d6001D27BE41fc87e3E3f777d04e70Fe2",
     kind: "address",
   },
   {
     label: "Test recipient #2",
-    value: "0xd9dB5BcC53dF9F88C5e83C24A03F4C4cE7E9E645",
+    value: "0xd9dBe0daa503Caa6e061f1902a7AF22af096E645",
     kind: "address",
   },
   {
