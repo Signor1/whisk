@@ -1,5 +1,5 @@
 {
-  "name": "@signordev/whisk-react",
+  "name": "@usewhisk/react",
   "version": "0.0.1",
   "description": "Whisk React — embeddable USDC send & bridge widget components, hooks, and providers built on Circle App Kit.",
   "license": "MIT",
@@ -82,7 +82,7 @@
     "@radix-ui/react-dropdown-menu": "^2.1.0",
     "@radix-ui/react-select": "^2.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
-    "@signordev/whisk-core": "workspace:*",
+    "@usewhisk/core": "workspace:*",
     "@solana/kit": "^5.0.0",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",

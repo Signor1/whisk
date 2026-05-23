@@ -31,7 +31,7 @@ No SDK on the merchant's site, no JS coordination — just a hyperlink.
 
 ```bash
 pnpm install
-pnpm --filter @signordev/whisk-example-invoice-link dev
+pnpm --filter @usewhisk/example-invoice-link dev
 ```
 
 Open <http://localhost:3014/?to=0x5B8ecaB7096F8aBED873D246629ef9f05f467605&amount=49.99&chain=Arc_Testnet&memo=Invoice+%23420>.

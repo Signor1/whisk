@@ -19,7 +19,7 @@ CSS variable overrides — no fork, no re-export, just a stylesheet.
 
 ```bash
 pnpm install
-pnpm --filter @signordev/whisk-example-themed-saas dev
+pnpm --filter @usewhisk/example-themed-saas dev
 ```
 
 Open <http://localhost:3012>.

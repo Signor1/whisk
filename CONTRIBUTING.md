@@ -27,7 +27,7 @@ If you can't use GitHub Security Advisories, email
   Signature replayed? Recovery snapshot leaked?
 - Repro steps: chain pair, wallet, widget config, the exact inputs
   that triggered it.
-- Versions involved (`@signordev/whisk-core`, `@signordev/whisk-react`,
+- Versions involved (`@usewhisk/core`, `@usewhisk/react`,
   App Kit, viem).
 - A working PoC is appreciated but not required.
 
@@ -81,8 +81,8 @@ This is a pnpm workspace.
 ```
 whisk/
 ├── packages/
-│   ├── core/         @signordev/whisk-core — engine, types, recovery primitives, no React
-│   └── react/        @signordev/whisk-react — provider, hooks, components, widget
+│   ├── core/         @usewhisk/core — engine, types, recovery primitives, no React
+│   └── react/        @usewhisk/react — provider, hooks, components, widget
 ├── examples/
 │   ├── nextjs-basic/  the playground used for QA + end-to-end testing
 │   └── …              one app per integration pattern (checkout, donate, payroll, etc.)
@@ -126,7 +126,7 @@ The first run of `pnpm install` also bootstraps Husky's
 pnpm dev
 
 # Run the playground (nextjs-basic) in another terminal
-pnpm --filter @signordev/whisk-example-nextjs-basic dev
+pnpm --filter @usewhisk/example-nextjs-basic dev
 
 # Now open http://localhost:3000/playground — your widget edits hot-reload.
 ```
