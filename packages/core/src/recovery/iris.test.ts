@@ -115,8 +115,8 @@ describe("pollAttestation", () => {
     expect(final.status).toBe("complete");
     expect(final.message).toBe("0xa");
     expect(onUpdate).toHaveBeenCalledTimes(2);
-    expect(onUpdate.mock.calls[0][0].status).toBe("pending_confirmations");
-    expect(onUpdate.mock.calls[1][0].status).toBe("complete");
+    expect(onUpdate.mock.calls[0]![0].status).toBe("pending_confirmations");
+    expect(onUpdate.mock.calls[1]![0].status).toBe("complete");
   });
 
   it("returns 'failed' immediately and stops polling further", async () => {
