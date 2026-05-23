@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
   ArrowDownToLine,
   Code2,
@@ -7,6 +8,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ComponentType, SVGAttributes } from "react";
+import { FramedSection } from "./framed-section";
+import { CodeWindow, type CodeLine } from "./code-window";
 import {
   NetworkArbitrumOne,
   NetworkArc,
@@ -29,22 +32,17 @@ import {
 } from "@web3icons/react";
 import { cn } from "@/lib/utils";
 
-/**
- * Feature bento — six cells, weighted so the wider ones carry the
- * heavier visuals. Every illustration is pure SVG / CSS. No client JS.
- */
-
 const FEATURES = [
   {
     title: "Every chain App Kit supports",
-    body: "17 testnets, 21 mainnets — Arc, Base, Arbitrum, Optimism, Linea, Sonic, Sei, HyperEVM, Monad, and on. One widget, one config.",
+    body: "18 testnets, 21 mainnets. Arc, Base, Arbitrum, Optimism, Linea, Sonic, Sei, HyperEVM, Monad, and on. One widget, one config.",
     Icon: Globe2,
     span: "md:col-span-2",
     visual: <ChainGridVisual />,
   },
   {
     title: "Type-safe end to end",
-    body: "Every prop, every event, every chain literal narrows in your editor. We don't ship `any`.",
+    body: "Chain names are a real union type from @usewhisk/core. A typo fails the build, not the user.",
     Icon: ShieldCheck,
     span: "md:col-span-1",
     visual: <TypeSafeVisual />,
@@ -81,29 +79,31 @@ const FEATURES = [
 
 export function FeatureBento({ className }: { className?: string }) {
   return (
-    <section
-      className={cn("border-b border-border/60 py-20 sm:py-24", className)}
+    <FramedSection
+      className={className}
+      innerClassName="py-24 sm:py-32"
+      ariaLabel="Why Whisk"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="w-full lg:px-12 xl:px-16 2xl:px-20">
         <header className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-primary">
+          <p className="font-display text-xs font-medium uppercase tracking-[0.18em] text-primary">
             Why Whisk
           </p>
-          <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 className="mt-3 text-balance font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl md:text-5xl">
             Built for the integration, not the demo.
           </h2>
-          <p className="mt-4 text-balance text-base text-muted-foreground">
+          <p className="mt-5 text-balance text-base text-foreground/75 sm:text-lg">
             Every detail you'd otherwise build yourself (themed, typed,
             chain-aware) already sits behind the component.
           </p>
         </header>
 
-        <div className="mt-12 grid auto-rows-fr gap-4 md:grid-cols-3 md:gap-5">
+        <div className="mt-16 grid gap-5 md:grid-cols-3 md:gap-6">
           {FEATURES.map((feat) => (
             <article
               key={feat.title}
               className={cn(
-                "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 transition-shadow hover:shadow-lg hover:shadow-primary/5",
+                "group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/80 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-border hover:shadow-lg hover:shadow-foreground/5 sm:p-7",
                 feat.span,
               )}
             >
@@ -112,15 +112,15 @@ export function FeatureBento({ className }: { className?: string }) {
                 strokeWidth={2}
                 aria-hidden="true"
               />
-              <h3 className="mt-4 text-lg font-semibold tracking-tight">
+              <h3 className="mt-4 font-display text-xl font-semibold tracking-tight text-foreground">
                 {feat.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="mt-2 text-[15px] leading-relaxed text-foreground/75">
                 {feat.body}
               </p>
 
               {feat.visual ? (
-                <div className="mt-6 flex-1 -mx-6 -mb-6 overflow-hidden">
+                <div className="-mx-5 -mb-5 mt-6 flex-1 overflow-hidden sm:-mx-7 sm:-mb-7">
                   {feat.visual}
                 </div>
               ) : null}
@@ -128,21 +128,14 @@ export function FeatureBento({ className }: { className?: string }) {
           ))}
         </div>
       </div>
-    </section>
+    </FramedSection>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Cell visuals — pure SVG / CSS                                              */
+/*  Cell visuals — pure SVG / CSS                                             */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Wall of branded chain logos, faded at the bottom edge. Eighteen of
- * the chains Whisk routes through, each rendered with its real glyph
- * from `@web3icons/react`. Reads as "look how many — and they're all
- * the real thing" without any text labels competing with the brand
- * marks.
- */
 type Web3Icon = ComponentType<
   SVGAttributes<SVGSVGElement> & {
     variant?: "branded" | "mono" | "background";
@@ -171,23 +164,27 @@ const BENTO_CHAINS: Array<{ id: string; Icon: Web3Icon }> = [
   { id: "world", Icon: NetworkWorld },
 ];
 
+/**
+ * Wall of branded chain logos in proper square tiles. Faded at the
+ * bottom so the grid reads as "more underneath" without dominating.
+ */
 function ChainGridVisual() {
   return (
     <div
-      className="relative h-48 px-6 pb-6 pt-2"
+      className="relative px-5 pb-5 pt-2 sm:px-7 sm:pb-7"
       style={{
-        maskImage: "linear-gradient(to bottom, black 65%, transparent 100%)",
+        maskImage: "linear-gradient(to bottom, black 70%, transparent 100%)",
         WebkitMaskImage:
-          "linear-gradient(to bottom, black 65%, transparent 100%)",
+          "linear-gradient(to bottom, black 70%, transparent 100%)",
       }}
     >
-      <div className="grid grid-cols-6 gap-2">
+      <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-6 sm:gap-2 md:grid-cols-9 md:gap-2.5">
         {BENTO_CHAINS.map(({ id, Icon }) => (
           <div
             key={id}
-            className="flex h-11 items-center justify-center rounded-md border border-border bg-background/60"
+            className="flex aspect-square items-center justify-center rounded-lg border border-border/70 bg-background/70 ring-1 ring-inset ring-foreground/[0.03] transition-colors hover:border-primary/40 hover:bg-background"
           >
-            <Icon variant="branded" size={22} aria-hidden="true" />
+            <Icon variant="branded" size={48} aria-hidden="true" />
           </div>
         ))}
       </div>
@@ -196,60 +193,53 @@ function ChainGridVisual() {
 }
 
 /**
- * A snippet of TypeScript with the literal-union being narrowed.
- * Doesn't run shiki — just hand-rolled spans, brand-coloured.
+ * Real Whisk `Chain` union from `@usewhisk/core` (see
+ * `packages/core/src/types/chain.ts`). A typo fails at the
+ * TypeScript layer, never at runtime.
  */
 function TypeSafeVisual() {
+  const lines: CodeLine[] = [
+    [
+      { t: "import type", c: "keyword" },
+      { t: " { Chain } " },
+      { t: "from", c: "keyword" },
+      { t: ' "@usewhisk/core"', c: "string" },
+    ],
+    [
+      { t: "const", c: "keyword" },
+      { t: " chain: " },
+      { t: "Chain", c: "type" },
+      { t: " = " },
+      { t: '"Arc_Testnet"', c: "string" },
+    ],
+    [
+      { t: "const", c: "keyword" },
+      { t: " bad: " },
+      { t: "Chain", c: "type" },
+      { t: " = " },
+      { t: '"Mainnet"', c: "string-err" },
+    ],
+    [{ t: "  ✗ Type '\"Mainnet\"' is not", c: "error" }],
+    [{ t: "    assignable to type 'Chain'.", c: "error" }],
+  ];
   return (
-    <div className="mt-2 px-6 pb-6">
-      <pre className="overflow-hidden rounded-md border border-border bg-background/50 p-3 font-mono text-[11px] leading-relaxed text-foreground/85">
-        <code className="block">
-          <span className="text-muted-foreground">
-            {"// "}widens at the source
-          </span>
-          {"\n"}
-          <span className="text-primary">type</span>
-          {" Chain ="}
-          {"\n"}
-          {"  "}
-          <span className="text-emerald-700 dark:text-emerald-400">"Base"</span>
-          {" | "}
-          <span className="text-emerald-700 dark:text-emerald-400">"Arc"</span>
-          {" | "}
-          <span className="text-emerald-700 dark:text-emerald-400">
-            "Optimism"
-          </span>
-          {"\n"}
-          {"  "}
-          <span className="text-muted-foreground">// ...</span>
-          {"\n"}
-          {"\n"}
-          <span className="text-primary">const</span>
-          {" c: "}
-          <span className="text-foreground">Chain</span>
-          {" = "}
-          <span className="text-emerald-700 dark:text-emerald-400">"USDX"</span>
-          {"\n"}
-          <span className="text-rose-700/80 dark:text-rose-400/80">
-            {"  ╳ Type '\"USDX\"' is not assignable"}
-          </span>
-        </code>
-      </pre>
+    <div className="px-5 pb-5 pt-2 sm:px-7 sm:pb-7">
+      <CodeWindow filename="chains.ts" lines={lines} size="sm" />
     </div>
   );
 }
 
 function PaletteVisual() {
   return (
-    <div className="flex h-24 items-end gap-1.5 px-6 pb-6">
+    <div className="flex h-24 items-end gap-1.5 px-5 pb-5 sm:h-28 sm:px-7 sm:pb-7">
       {[40, 60, 80, 70, 90, 55].map((h, i) => (
         <span
           key={i}
           aria-hidden="true"
-          className="flex-1 rounded-t-sm"
+          className="flex-1 rounded-t-md"
           style={{
             height: `${h}%`,
-            background: `hsl(var(--primary) / ${0.25 + i * 0.12})`,
+            background: `hsl(var(--primary) / ${0.22 + i * 0.13})`,
           }}
         />
       ))}
@@ -262,14 +252,14 @@ function PaletteVisual() {
  */
 function FlowVisual() {
   return (
-    <div className="relative flex h-36 items-center justify-between gap-2 px-6 pb-6">
+    <div className="relative flex h-auto items-center justify-between gap-2 px-5 pb-16 sm:h-auto sm:gap-3 sm:px-7 sm:pb-12">
       <FlowNode label="Source" tone="primary" />
       <FlowArrow />
       <FlowNode label="Forwarder" tone="muted" />
       <FlowArrow />
       <FlowNode label="Destination" tone="primary" />
 
-      <span className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="absolute bottom-5 sm:bottom-0 left-1/2 -translate-x-1/2 rounded-full border border-border bg-card px-2.5 py-1 font-display text-[10px] font-medium uppercase tracking-[0.15em] text-foreground/70">
         one signature
       </span>
     </div>
@@ -284,18 +274,18 @@ function FlowNode({
   tone: "primary" | "muted";
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-2">
       <span
         className={cn(
-          "inline-flex h-9 w-9 items-center justify-center rounded-full text-[10px] font-semibold",
+          "inline-flex h-11 w-11 items-center justify-center rounded-full font-display text-sm font-semibold",
           tone === "primary"
             ? "border border-primary/40 bg-primary/15 text-primary"
-            : "border border-border bg-muted/60 text-muted-foreground",
+            : "border border-border bg-background/70 text-foreground/70",
         )}
       >
         {label[0]}
       </span>
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+      <span className="font-display text-[10px] uppercase tracking-[0.15em] text-foreground/65">
         {label}
       </span>
     </div>
@@ -306,7 +296,7 @@ function FlowArrow() {
   return (
     <span
       aria-hidden="true"
-      className="h-px flex-1 bg-gradient-to-r from-border via-primary/60 to-border"
+      className="h-px flex-1 bg-gradient-to-r from-border via-primary/70 to-border"
     />
   );
 }
@@ -317,28 +307,37 @@ function FlowArrow() {
  */
 function HeadlessVisual() {
   return (
-    <div className="relative mt-2 h-32 px-6 pb-6">
-      <div className="absolute left-6 right-6 top-0">
-        <div className="rounded-md border border-border bg-background/60 px-3 py-2 shadow-sm">
-          <div className="text-[10px] font-mono text-muted-foreground">
-            {"<WhiskSend />"}
+    <div className="relative h-36 px-5 pb-5 pt-2 sm:h-40 sm:px-7 sm:pb-7">
+      <div className="absolute left-7 right-7 top-2">
+        <div className="rounded-lg border border-border/70 bg-background/80 p-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] text-foreground/55">
+              {"<WhiskSend />"}
+            </span>
+            <span className="font-display text-[9px] uppercase tracking-wider text-foreground/40">
+              component
+            </span>
           </div>
-          <div className="mt-1 flex items-center gap-1">
-            <span className="h-1 w-12 rounded-full bg-foreground/40" />
-            <span className="ml-auto h-1.5 w-8 rounded-full bg-primary" />
+          <div className="mt-2 flex items-center gap-1.5">
+            <span className="h-1.5 w-12 rounded-full bg-foreground/40" />
+            <span className="ml-auto h-2 w-8 rounded-full bg-primary" />
           </div>
         </div>
       </div>
-      <div className="absolute left-12 right-2 top-12">
-        <div className="rounded-md border border-primary/40 bg-primary/8 px-3 py-2 shadow-sm">
-          <div className="font-mono text-[11px] text-foreground/80">
-            <span className="text-primary">const</span>
-            {" { state, actions } ="}
-            <br />
-            {"  "}
-            <span className="text-foreground">useWhisk</span>()
-          </div>
-        </div>
+      <div className="absolute left-14 right-2 top-16">
+        <CodeWindow
+          size="sm"
+          showLineNumbers={false}
+          lines={[
+            [
+              { t: "const", c: "keyword" },
+              { t: " { state, actions } =" },
+              { t: " " },
+              { t: "useWhisk", c: "fn" },
+              { t: "()" },
+            ],
+          ]}
+        />
       </div>
     </div>
   );
@@ -346,7 +345,7 @@ function HeadlessVisual() {
 
 /**
  * A small "pipeline" of resolver chips: input → address → ENS → custom →
- * resolved. Conveys composability without text-heavy explanation.
+ * resolved. With a real-looking code line below.
  */
 function ResolverPipelineVisual() {
   const stops = [
@@ -357,16 +356,16 @@ function ResolverPipelineVisual() {
     { label: "match", tone: "muted" as const },
   ];
   return (
-    <div className="px-6 pb-6 pt-2">
-      <div className="flex items-center gap-1.5">
+    <div className="px-5 pb-6 pt-2 sm:px-7 sm:pb-7">
+      <div className="flex flex-wrap items-center gap-1.5">
         {stops.map((s, i) => (
           <Fragment key={s.label}>
             <span
               className={cn(
-                "inline-flex h-7 items-center rounded-full border px-2.5 text-[10px] font-medium",
+                "inline-flex h-7 shrink-0 items-center rounded-full border px-2.5 font-display text-[10.5px] font-medium tracking-tight sm:h-8 sm:px-3 sm:text-[11px]",
                 s.tone === "primary"
                   ? "border-primary/40 bg-primary/15 text-primary"
-                  : "border-border bg-muted/60 text-muted-foreground",
+                  : "border-border bg-background/70 text-foreground/70",
                 s.dashed && "border-dashed",
               )}
             >
@@ -375,17 +374,34 @@ function ResolverPipelineVisual() {
             {i < stops.length - 1 ? (
               <span
                 aria-hidden="true"
-                className="h-px flex-1 bg-gradient-to-r from-border to-primary/40"
+                className="hidden h-px flex-1 bg-gradient-to-r from-border to-primary/50 sm:block"
               />
             ) : null}
           </Fragment>
         ))}
       </div>
-      <p className="mt-3 font-mono text-[10px] text-muted-foreground">
-        {"composeResolvers(addressResolver, ensResolver(), lensResolver())"}
-      </p>
+
+      <div className="mt-8">
+        <CodeWindow
+          size="sm"
+          showLineNumbers={false}
+          lines={[
+            [
+              { t: "composeResolvers", c: "fn" },
+              { t: "([", c: "bracket" },
+              { t: " " },
+              { t: "addressResolver", c: "string" },
+              { t: ",", c: "bracket" },
+              { t: " " },
+              { t: "ensResolver", c: "string" },
+              { t: ",", c: "bracket" },
+              { t: " " },
+              { t: "lensResolver", c: "string" },
+              { t: "])", c: "bracket" },
+            ],
+          ]}
+        />
+      </div>
     </div>
   );
 }
-
-import { Fragment } from "react";

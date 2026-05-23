@@ -21,7 +21,7 @@ import {
   NetworkUnichain,
   NetworkWorld,
 } from "@web3icons/react";
-import { cn } from "@/lib/utils";
+import { FramedSection } from "./framed-section";
 
 /**
  * Auto-scrolling marquee of the testnets Whisk ships with. Each chip
@@ -64,34 +64,22 @@ export function ChainMarquee({ className }: { className?: string }) {
 
   if (reduceMotion) {
     return (
-      <section
-        className={cn(
-          "border-y border-border/60 bg-background/50 py-8",
-          className,
-        )}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Routes USDC across these testnets today
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {CHAINS.map(({ name, Icon }) => (
-              <ChainChip key={name} name={name} Icon={Icon} />
-            ))}
-          </div>
+      <FramedSection className={className} innerClassName="py-8">
+        <p className="mb-4 text-center font-display text-xs font-medium uppercase tracking-[0.15em] text-primary/90">
+          Routes USDC across these testnets today
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {CHAINS.map(({ name, Icon }) => (
+            <ChainChip key={name} name={name} Icon={Icon} />
+          ))}
         </div>
-      </section>
+      </FramedSection>
     );
   }
 
   return (
-    <section
-      className={cn(
-        "border-y border-border/60 bg-background/50 py-8",
-        className,
-      )}
-    >
-      <p className="mb-5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <FramedSection className={className} innerClassName="py-8">
+      <p className="mb-5 text-center font-display text-xs font-medium uppercase tracking-[0.15em] text-primary/90">
         Routes USDC across these testnets today
       </p>
 
@@ -118,19 +106,16 @@ export function ChainMarquee({ className }: { className?: string }) {
           ))}
         </motion.div>
       </div>
-    </section>
+    </FramedSection>
   );
 }
 
 function ChainChip({ name, Icon }: { name: string; Icon: Web3Icon }) {
   return (
-    <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-foreground/80 shadow-sm">
-      <Icon
-        variant="branded"
-        size={18}
-        aria-hidden="true"
-        className="shrink-0"
-      />
+    <span className="inline-flex shrink-0 items-center gap-3 rounded-full border border-border/70 bg-card/80 py-1.5 pl-1.5 pr-5 text-[15px] font-medium text-foreground shadow-sm backdrop-blur-sm">
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background/90 ring-1 ring-border/50">
+        <Icon variant="branded" size={22} aria-hidden="true" />
+      </span>
       {name}
     </span>
   );

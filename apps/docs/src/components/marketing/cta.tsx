@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { InstallTabs } from "./install-tabs";
-import { cn } from "@/lib/utils";
+import { FramedSection } from "./framed-section";
 
 /**
  * Closing CTA — install snippet flanked by docs + GitHub CTAs.
@@ -10,21 +10,23 @@ import { cn } from "@/lib/utils";
  */
 export function CTA({ className }: { className?: string }) {
   return (
-    <section className={cn("py-24 sm:py-32", className)}>
-      <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-        <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+    <FramedSection
+      noBottom
+      className={className}
+      innerClassName="py-24 sm:py-32"
+    >
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-balance font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           Three lines and you're shipping.
         </h2>
-        <p className="mt-4 text-balance text-base text-muted-foreground sm:text-lg">
+        <p className="mt-4 text-balance text-base text-foreground/75 sm:text-lg">
           Install the package, mount the provider, render the widget. The rest
           of the docs is just helping you go further than the three-line
           version.
         </p>
 
         <div className="mx-auto mt-8 max-w-xl">
-          <InstallTabs
-            packages={["@signordev/whisk-react", "@signordev/whisk-core"]}
-          />
+          <InstallTabs packages={["@usewhisk/react", "@usewhisk/core"]} />
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -45,6 +47,6 @@ export function CTA({ className }: { className?: string }) {
           </a>
         </div>
       </div>
-    </section>
+    </FramedSection>
   );
 }

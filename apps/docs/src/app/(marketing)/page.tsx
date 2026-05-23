@@ -1,21 +1,27 @@
 import { Hero } from "@/components/marketing/hero";
 import { ChainMarquee } from "@/components/marketing/chain-marquee";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { BuiltFor } from "@/components/marketing/built-for";
 import { FeatureBento } from "@/components/marketing/feature-bento";
-import { Recipes } from "@/components/marketing/recipes";
+import { RecipesShowcase } from "@/components/marketing/recipes-showcase";
+import { Foundation } from "@/components/marketing/foundation";
 import { CTA } from "@/components/marketing/cta";
 
 /**
- * Marketing landing — composition root. Order matches the Phase 2
- * plan: hero → trust strip → features → recipes → CTA. Each section
- * is self-contained; remove or reorder freely.
+ * Marketing landing — composition root. Order:
+ *   hero → trust strip → how-it-works → why-whisk → built-for →
+ *   recipes → foundation → CTA.
  */
 export default function HomePage() {
   return (
     <>
       <Hero />
       <ChainMarquee />
+      <HowItWorks />
       <FeatureBento />
-      <Recipes />
+      <BuiltFor />
+      <RecipesShowcase />
+      <Foundation />
       <CTA />
     </>
   );
