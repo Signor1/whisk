@@ -1,23 +1,21 @@
 /**
  * Whisk fonts — opt-in stylesheet.
  *
- * Whisk's `styles.css` references Inter and Geist Mono in its font stack
- * but deliberately does not load them: a widget that auto-imports fonts
- * forces a network request from every host app it gets embedded in,
- * which is poor citizenship.
+ * Whisk's `styles.css` references Inter, Familjen Grotesk, and Geist Mono
+ * in its font stack but deliberately does not load them: a widget that
+ * auto-imports fonts forces a network request from every host app it
+ * gets embedded in, which is poor citizenship.
  *
  * Import this file separately if your host app does not already load
- * Inter / Geist Mono and you want Whisk to render in its intended type:
+ * these fonts and you want Whisk to render in its intended type:
  *
  * ```ts
- * import "@signordev/whisk-react/styles.css";
- * import "@signordev/whisk-react/fonts.css";
+ * import "@usewhisk/react/styles.css";
+ * import "@usewhisk/react/fonts.css";
  * ```
  *
- * Both fonts ship variable-weight files from the official Vercel /
- * rsms.me CDNs so you get the full weight range from one URL each.
- * If you self-host or already use a font CDN, skip this file and the
- * widget falls back gracefully to your existing fonts.
+ * The widget falls back gracefully to system fonts if you skip this
+ * file or if any single font fails to load.
  */
 
 /* ============================================================
@@ -40,6 +38,20 @@
   font-weight: 100 900;
   font-display: swap;
   src: url("https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.0")
+    format("woff2");
+}
+
+/* ============================================================
+   Familjen Grotesk — headlines, amount readouts, eyebrows
+   Variable font: weight 400–700
+   ============================================================ */
+
+@font-face {
+  font-family: "Familjen Grotesk";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/familjengrotesk/v6/Cn-jJsuGWQxOjaGwMQ6fOicyxLBEMRfDtkzl4G7N9SgIWZpwLBcrTQ.woff2")
     format("woff2");
 }
 
