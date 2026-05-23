@@ -17,13 +17,15 @@
 :root {
   /* Whisk brand tokens — consumed by our own marketing components */
   --background: 39 36% 91%; /* cream  #e4e2d4 */
-  --foreground: 354 18% 37%; /* wine   #6e4d54 */
+  --foreground: 354 22% 27%; /* deep wine #56363d — darker than the
+                                original 354 18% 37% so body copy
+                                holds its own on the cream backdrop. */
   --muted: 39 28% 86%;
-  --muted-foreground: 354 14% 47%;
+  --muted-foreground: 354 18% 38%;
   --card: 0 0% 100%;
-  --card-foreground: 354 18% 37%;
+  --card-foreground: 354 22% 27%;
   --popover: 0 0% 100%;
-  --popover-foreground: 354 18% 37%;
+  --popover-foreground: 354 22% 27%;
   --border: 14 36% 67%; /* rose   #ca9b8f */
   --input: 14 36% 67%;
   --ring: 14 64% 54%;
@@ -43,18 +45,20 @@
      `--color-fd-*` contract used by the docs shell, sidebar, search
      dialog, code blocks, etc. */
   --color-fd-background: hsl(39 36% 91%);
-  --color-fd-foreground: hsl(354 18% 37%);
+  --color-fd-foreground: hsl(354 22% 27%);
   --color-fd-muted: hsl(39 28% 86%);
-  --color-fd-muted-foreground: hsl(354 14% 47%);
+  /* Match marketing site body color (text-foreground/75) so docs prose
+     reads at the same weight as the landing page. */
+  --color-fd-muted-foreground: hsl(354 22% 27% / 0.75);
   --color-fd-popover: hsl(0 0% 100%);
-  --color-fd-popover-foreground: hsl(354 18% 37%);
+  --color-fd-popover-foreground: hsl(354 22% 27%);
   --color-fd-card: hsl(0 0% 100%);
-  --color-fd-card-foreground: hsl(354 18% 37%);
+  --color-fd-card-foreground: hsl(354 22% 27%);
   --color-fd-border: hsl(14 36% 67% / 0.7);
   --color-fd-primary: hsl(14 64% 54%);
   --color-fd-primary-foreground: hsl(39 36% 96%);
   --color-fd-secondary: hsl(39 28% 86%);
-  --color-fd-secondary-foreground: hsl(354 18% 37%);
+  --color-fd-secondary-foreground: hsl(354 22% 27%);
   --color-fd-accent: hsl(14 64% 54% / 0.12);
   --color-fd-accent-foreground: hsl(14 64% 40%);
   --color-fd-ring: hsl(14 64% 54%);
@@ -85,7 +89,7 @@
   --color-fd-background: hsl(354 21% 14%);
   --color-fd-foreground: hsl(39 36% 86%);
   --color-fd-muted: hsl(354 18% 22%);
-  --color-fd-muted-foreground: hsl(39 18% 60%);
+  --color-fd-muted-foreground: hsl(39 36% 86% / 0.75);
   --color-fd-popover: hsl(354 19% 18%);
   --color-fd-popover-foreground: hsl(39 36% 86%);
   --color-fd-card: hsl(354 19% 18%);
@@ -129,6 +133,9 @@
   --font-sans:
     var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
     sans-serif;
+  --font-display:
+    var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-mono-italic:
     var(--font-mono-italic), var(--font-mono), ui-monospace, monospace;
@@ -144,12 +151,30 @@
   }
 
   body {
-    background: hsl(var(--background));
+    background-color: hsl(var(--background));
+    /* Whisper-grid backdrop — adds intentional texture without fragmenting
+       the page into bg-color zones. The dot fades in dark mode (alpha
+       drops further) so it stays at the edge of perception. */
+    background-image: radial-gradient(
+      circle,
+      hsl(var(--border) / 0.18) 1px,
+      transparent 1px
+    );
+    background-size: 28px 28px;
+    background-position: 0 0;
     color: hsl(var(--foreground));
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 200ms ease;
+  }
+
+  .dark body {
+    background-image: radial-gradient(
+      circle,
+      hsl(var(--border) / 0.28) 1px,
+      transparent 1px
+    );
   }
 
   ::selection {
@@ -190,5 +215,87 @@
   .prose :not(pre) > code,
   article :not(pre) > code {
     font-weight: 500;
+  }
+
+  /* ================================================================
+     Docs MDX code blocks — mac-style chrome.
+     Fumadocs's CodeBlock renders:
+       <figure class="shiki …">
+         <div>{icon}<figcaption>title</figcaption>{copy}</div>  ← optional title row
+         <div role="region">                                    ← scroll viewport
+           <pre>…shiki tokens…</pre>
+         </div>
+         <button>copy</button>                                  ← when no title
+       </figure>
+     The figure always carries `.shiki`, so we hang chrome off that
+     class. Two cases:
+       a. with title  → restyle the existing title row + paint 3 dots
+       b. no title    → paint a separate dots strip at the top
+     ================================================================ */
+
+  figure.shiki {
+    background-color: #1a1216 !important;
+    border-color: rgb(255 255 255 / 0.15) !important;
+    border-radius: 1rem !important;
+    color: rgb(255 255 255 / 0.85);
+    box-shadow:
+      0 4px 6px -1px hsl(var(--foreground) / 0.05),
+      0 10px 15px -3px hsl(var(--foreground) / 0.05);
+  }
+
+  /* Three traffic-light dots painted as an inline SVG. Reused for both
+     the title-row case and the no-title case. Encoded as a data URI so
+     it ships with the rule and doesn't need a network fetch.
+     Colours: rose-400 / amber-400 / emerald-400 at full saturation —
+     they read clearly on the #1a1216 surface. */
+
+  /* Case A — title row (has figcaption). Re-skin + dots painted on the
+     left of the row via background-image. */
+  figure.shiki > div:first-child:has(figcaption) {
+    background-color: transparent !important;
+    border-color: rgb(255 255 255 / 0.1) !important;
+    color: rgb(255 255 255 / 0.55) !important;
+    padding-left: 5.5rem !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 14'><circle cx='7' cy='7' r='6' fill='%23fb7185'/><circle cx='30' cy='7' r='6' fill='%23fbbf24'/><circle cx='53' cy='7' r='6' fill='%2334d399'/></svg>") !important;
+    background-position: 1rem center !important;
+    background-repeat: no-repeat !important;
+    background-size: 3.75rem 0.875rem !important;
+  }
+
+  /* Case B — no title row. Add a top strip with dots + a divider, then
+     push the viewport down. */
+  figure.shiki:not(:has(figcaption)) {
+    padding-top: 2.5rem;
+    position: relative;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 14'><circle cx='7' cy='7' r='6' fill='%23fb7185'/><circle cx='30' cy='7' r='6' fill='%23fbbf24'/><circle cx='53' cy='7' r='6' fill='%2334d399'/></svg>") !important;
+    background-position: 1rem 0.8125rem !important;
+    background-repeat: no-repeat !important;
+    background-size: 3.75rem 0.875rem !important;
+  }
+  figure.shiki:not(:has(figcaption))::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 2.5rem;
+    height: 1px;
+    background-color: rgb(255 255 255 / 0.1);
+  }
+
+  /* Inner code surface — flip the bg dark; shiki tokens already use
+     dark colours in both modes because source.config.ts pins both
+     light + dark Shiki themes to `github-dark-default`. */
+  figure.shiki pre {
+    color: rgb(255 255 255 / 0.85);
+    background: transparent !important;
+  }
+
+  /* Copy button — light text on dark surface. */
+  figure.shiki button {
+    color: rgb(255 255 255 / 0.55) !important;
+  }
+  figure.shiki button:hover {
+    color: rgb(255 255 255 / 0.9) !important;
+    background: rgb(255 255 255 / 0.08) !important;
   }
 }

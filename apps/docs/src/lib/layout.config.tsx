@@ -29,7 +29,7 @@ export const baseOptions: BaseLayoutProps = {
     {
       type: "main",
       text: "npm",
-      url: "https://www.npmjs.com/package/@signordev/whisk-react",
+      url: "https://www.npmjs.com/package/@usewhisk/react",
       external: true,
     },
   ],

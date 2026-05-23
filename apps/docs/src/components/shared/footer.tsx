@@ -14,12 +14,12 @@ const FOOTER_GROUPS = [
     title: "Packages",
     links: [
       {
-        label: "@signordev/whisk-react",
-        href: "https://www.npmjs.com/package/@signordev/whisk-react",
+        label: "@usewhisk/react",
+        href: "https://www.npmjs.com/package/@usewhisk/react",
       },
       {
-        label: "@signordev/whisk-core",
-        href: "https://www.npmjs.com/package/@signordev/whisk-core",
+        label: "@usewhisk/core",
+        href: "https://www.npmjs.com/package/@usewhisk/core",
       },
     ],
   },
@@ -43,12 +43,12 @@ const FOOTER_GROUPS = [
 export function Footer() {
   return (
     <footer className="mt-auto w-full border-t border-border/60 bg-background">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-12 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-8 md:px-6">
+      <div className="mx-auto flex max-w-[90rem] flex-col gap-10 px-4 py-12 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-8 md:px-6">
         <div className="sm:max-w-xs">
           <Logo />
-          <p className="mt-3 text-sm text-muted-foreground md:text-base">
+          <p className="mt-3 text-sm text-foreground/75 md:text-base">
             Drop-in USDC send & bridge widget for React. Built on Circle App
-            Kit. MIT licensed.
+            Kit.
           </p>
         </div>
 
@@ -67,14 +67,14 @@ export function Footer() {
                         href={link.href}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-sm text-foreground/75 transition-colors hover:text-foreground"
                       >
                         {link.label}
                       </a>
                     ) : (
                       <Link
                         href={link.href}
-                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        className="text-sm text-foreground/75 transition-colors hover:text-foreground"
                       >
                         {link.label}
                       </Link>
@@ -88,7 +88,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/60">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-[90rem] flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-foreground/75 sm:flex-row sm:px-6">
           <span>© {new Date().getFullYear()} Whisk. MIT licensed.</span>
           <span>
             Made with{" "}

@@ -8,7 +8,7 @@ const config: NextConfig = {
   // Transpile our workspace packages so MDX live snippets and the
   // marketing page can reach into them from source during dev without
   // requiring a separate build step.
-  transpilePackages: ["@signordev/whisk-core", "@signordev/whisk-react"],
+  transpilePackages: ["@usewhisk/core", "@usewhisk/react"],
 };
 
 export default withMDX(config);
