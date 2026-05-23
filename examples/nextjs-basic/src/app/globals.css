@@ -1,7 +1,7 @@
 /* ============================================================
    Whisk playground — page chrome + control panel + event log
    ============================================================
-   The widget's own styles come from `@signordev/whisk-react/styles.css`
+   The widget's own styles come from `@usewhisk/react/styles.css`
    (imported in layout.tsx); everything here paints the surfaces
    AROUND the widget.
 
@@ -15,7 +15,9 @@
   color-scheme: light dark;
   --pg-bg: #f5f3e8;
   --pg-fg: #2a1d21;
-  --pg-fg-muted: #6e4d54;
+  /* Derive muted from fg at 75% so it tracks any palette change AND
+     matches the marketing site's text-foreground/75 body convention. */
+  --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
   --pg-border: #ca9b8f;
   --pg-card: #fbf8ee;
   --pg-card-fg: #6e4d54;
@@ -25,13 +27,16 @@
   --pg-info: #6e8aa8;
   --pg-shadow:
     0 1px 2px 0 rgba(42, 29, 33, 0.04), 0 8px 24px -8px rgba(42, 29, 33, 0.08);
+  /* Atmospheric body wash. Per-palette overrides below retint these. */
+  --pg-wash-top: rgba(214, 92, 60, 0.08);
+  --pg-wash-bottom: rgba(110, 77, 84, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --pg-bg: #1a1115;
     --pg-fg: #e4e2d4;
-    --pg-fg-muted: #b4ad97;
+    --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
     --pg-border: #5c3f46;
     --pg-card: #2a1d21;
     --pg-card-fg: #e4e2d4;
@@ -62,12 +67,12 @@ body {
   background:
     radial-gradient(
       ellipse at 50% -10%,
-      rgba(214, 92, 60, 0.08) 0%,
+      var(--pg-wash-top) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse at 50% 120%,
-      rgba(110, 77, 84, 0.06) 0%,
+      var(--pg-wash-bottom) 0%,
       transparent 60%
     ),
     var(--pg-bg);
@@ -566,4 +571,251 @@ body {
   color: var(--pg-fg-muted);
   font-size: 0.6875rem;
   text-align: right;
+}
+
+/* ============================================================
+   Palette swatches (Wine / Indigo / Emerald / Amber)
+   ============================================================ */
+
+.pg-palette-row {
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.125rem 0;
+}
+
+.pg-palette-swatch {
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--pg-fg) 14%, transparent);
+  padding: 0;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.pg-palette-swatch:hover {
+  transform: scale(1.08);
+}
+
+.pg-palette-swatch:focus-visible {
+  outline: 2px solid var(--pg-accent);
+  outline-offset: 2px;
+}
+
+.pg-palette-swatch[data-active="true"] {
+  border-color: var(--pg-fg);
+  box-shadow: 0 0 0 2px var(--pg-bg);
+  transform: scale(1.08);
+}
+
+/* ============================================================
+   Palette overrides — retune both --pg-* (chrome) and --whisk-*
+   (widget) when a palette is active on <html>. Wine is the default
+   already declared in :root above, so it has no block here.
+
+   The [data-palette="X"] [data-whisk] selector is (0,2,0), one
+   step more specific than the widget's own [data-whisk] (0,1,0),
+   so palette vars win on the widget element itself.
+   ============================================================ */
+
+/* ─── Indigo ─────────────────────────────────────────────────── */
+
+[data-palette="indigo"] {
+  --pg-bg: #eef0fa;
+  --pg-fg: #1e1b4b;
+  --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+  --pg-border: #c0c4ea;
+  --pg-card: #ffffff;
+  --pg-card-fg: #1e1b4b;
+  --pg-accent: #6366f1;
+  --pg-wash-top: rgba(99, 102, 241, 0.1);
+  --pg-wash-bottom: rgba(30, 27, 75, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="indigo"] {
+    --pg-bg: #0e1020;
+    --pg-fg: #e2e2f5;
+    --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+    --pg-border: #3d3f6e;
+    --pg-card: #1a1c3d;
+    --pg-card-fg: #e2e2f5;
+    --pg-accent: #818cf8;
+    --pg-wash-top: rgba(99, 102, 241, 0.18);
+    --pg-wash-bottom: rgba(30, 27, 75, 0.3);
+  }
+}
+
+[data-palette="indigo"] [data-whisk] {
+  --whisk-bg: #f5f6fc;
+  --whisk-fg: #1e1b4b;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #c0c4ea;
+  --whisk-input: #c0c4ea;
+  --whisk-card: #ffffff;
+  --whisk-card-fg: #1e1b4b;
+  --whisk-primary: #6366f1;
+  --whisk-primary-fg: #ffffff;
+  --whisk-ring: #6366f1;
+}
+
+[data-palette="indigo"] [data-whisk][data-whisk-theme="dark"],
+[data-palette="indigo"] [data-whisk].dark {
+  --whisk-bg: #1a1c3d;
+  --whisk-fg: #e2e2f5;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #3d3f6e;
+  --whisk-input: #3d3f6e;
+  --whisk-card: #232552;
+  --whisk-card-fg: var(--whisk-fg);
+  --whisk-primary: #818cf8;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="indigo"] [data-whisk]:not([data-whisk-theme="light"]) {
+    --whisk-bg: #1a1c3d;
+    --whisk-fg: #e2e2f5;
+    --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+    --whisk-border: #3d3f6e;
+    --whisk-input: #3d3f6e;
+    --whisk-card: #232552;
+    --whisk-card-fg: var(--whisk-fg);
+    --whisk-primary: #818cf8;
+  }
+}
+
+/* ─── Emerald ────────────────────────────────────────────────── */
+
+[data-palette="emerald"] {
+  --pg-bg: #ecfaf2;
+  --pg-fg: #064e3b;
+  --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+  --pg-border: #a7d4be;
+  --pg-card: #ffffff;
+  --pg-card-fg: #064e3b;
+  --pg-accent: #10b981;
+  --pg-wash-top: rgba(16, 185, 129, 0.1);
+  --pg-wash-bottom: rgba(6, 78, 59, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="emerald"] {
+    --pg-bg: #0a1714;
+    --pg-fg: #d1fae5;
+    --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+    --pg-border: #1e4a3a;
+    --pg-card: #0e2820;
+    --pg-card-fg: #d1fae5;
+    --pg-accent: #34d399;
+    --pg-wash-top: rgba(16, 185, 129, 0.18);
+    --pg-wash-bottom: rgba(6, 78, 59, 0.3);
+  }
+}
+
+[data-palette="emerald"] [data-whisk] {
+  --whisk-bg: #f3fbf6;
+  --whisk-fg: #064e3b;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #a7d4be;
+  --whisk-input: #a7d4be;
+  --whisk-card: #ffffff;
+  --whisk-card-fg: #064e3b;
+  --whisk-primary: #10b981;
+  --whisk-primary-fg: #ffffff;
+  --whisk-ring: #10b981;
+}
+
+[data-palette="emerald"] [data-whisk][data-whisk-theme="dark"],
+[data-palette="emerald"] [data-whisk].dark {
+  --whisk-bg: #0e2820;
+  --whisk-fg: #d1fae5;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #1e4a3a;
+  --whisk-input: #1e4a3a;
+  --whisk-card: #14342a;
+  --whisk-card-fg: var(--whisk-fg);
+  --whisk-primary: #34d399;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="emerald"] [data-whisk]:not([data-whisk-theme="light"]) {
+    --whisk-bg: #0e2820;
+    --whisk-fg: #d1fae5;
+    --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+    --whisk-border: #1e4a3a;
+    --whisk-input: #1e4a3a;
+    --whisk-card: #14342a;
+    --whisk-card-fg: var(--whisk-fg);
+    --whisk-primary: #34d399;
+  }
+}
+
+/* ─── Amber ──────────────────────────────────────────────────── */
+
+[data-palette="amber"] {
+  --pg-bg: #fef7e6;
+  --pg-fg: #451a03;
+  --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+  --pg-border: #e6c89a;
+  --pg-card: #fffaeb;
+  --pg-card-fg: #451a03;
+  --pg-accent: #f59e0b;
+  --pg-wash-top: rgba(245, 158, 11, 0.1);
+  --pg-wash-bottom: rgba(69, 26, 3, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="amber"] {
+    --pg-bg: #1a1408;
+    --pg-fg: #fef3c7;
+    --pg-fg-muted: color-mix(in srgb, var(--pg-fg) 75%, transparent);
+    --pg-border: #5c4424;
+    --pg-card: #2a2010;
+    --pg-card-fg: #fef3c7;
+    --pg-accent: #fbbf24;
+    --pg-wash-top: rgba(245, 158, 11, 0.18);
+    --pg-wash-bottom: rgba(69, 26, 3, 0.3);
+  }
+}
+
+[data-palette="amber"] [data-whisk] {
+  --whisk-bg: #fdf6e3;
+  --whisk-fg: #451a03;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #e6c89a;
+  --whisk-input: #e6c89a;
+  --whisk-card: #fffaeb;
+  --whisk-card-fg: #451a03;
+  --whisk-primary: #f59e0b;
+  --whisk-primary-fg: #ffffff;
+  --whisk-ring: #f59e0b;
+}
+
+[data-palette="amber"] [data-whisk][data-whisk-theme="dark"],
+[data-palette="amber"] [data-whisk].dark {
+  --whisk-bg: #2a2010;
+  --whisk-fg: #fef3c7;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #5c4424;
+  --whisk-input: #5c4424;
+  --whisk-card: #36281a;
+  --whisk-card-fg: var(--whisk-fg);
+  --whisk-primary: #fbbf24;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-palette="amber"] [data-whisk]:not([data-whisk-theme="light"]) {
+    --whisk-bg: #2a2010;
+    --whisk-fg: #fef3c7;
+    --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+    --whisk-border: #5c4424;
+    --whisk-input: #5c4424;
+    --whisk-card: #36281a;
+    --whisk-card-fg: var(--whisk-fg);
+    --whisk-primary: #fbbf24;
+  }
 }

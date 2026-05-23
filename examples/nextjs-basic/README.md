@@ -1,6 +1,6 @@
 # Whisk Playground
 
-The QA + testnet surface for `@signordev/whisk-react`. Renders the
+The QA + testnet surface for `@usewhisk/react`. Renders the
 widget in one column, the live config panel in the other, and pipes
 every state transition into a bottom event log. Five preset shapes
 flip the form between the integrations Whisk is built for (open form,
@@ -15,7 +15,7 @@ surface that drives it. The full checklist lives in
 ```
 src/app/
 ├── layout.tsx                 # Self-hosts Inter + Geist Mono via next/font;
-│                              # imports `@signordev/whisk-react/styles.css`.
+│                              # imports `@usewhisk/react/styles.css`.
 ├── globals.css                # Playground chrome + control panel + log styles.
 ├── page.tsx                   # Server component. Page header + footer +
 │                              # mounts <ClientGate />.
@@ -40,10 +40,10 @@ src/app/
 ```bash
 # from the repo root
 pnpm install
-pnpm --filter @signordev/whisk-core build   # one-time, for the workspace dep
+pnpm --filter @usewhisk/core build   # one-time, for the workspace dep
 cp examples/nextjs-basic/.env.example examples/nextjs-basic/.env.local
 # paste a WalletConnect Cloud project ID + (optional) a Circle Kit key
-pnpm --filter @signordev/whisk-example-nextjs-basic dev
+pnpm --filter @usewhisk/example-nextjs-basic dev
 ```
 
 Open <http://localhost:3000>.

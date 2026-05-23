@@ -28,7 +28,7 @@ component.
   --whisk-input: #1d3556;
   --whisk-ring: #14b8a6;
 
-  /* Shape — tighter for the fintech aesthetic */
+  /* Shape, tighter for the fintech aesthetic */
   --whisk-radius: 0.375rem;
   --whisk-radius-sm: 0.25rem;
   --whisk-radius-lg: 0.625rem;
@@ -40,7 +40,7 @@ component.
 Import the override _after_ Whisk's styles so it wins on cascade:
 
 ```tsx title="app/layout.tsx"
-import "@signordev/whisk-react/styles.css";
+import "@usewhisk/react/styles.css";
 import "./whisk-theme.css";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -54,7 +54,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 ```tsx title="app/(dashboard)/payouts/page.tsx"
 "use client";
-import { WhiskSend } from "@signordev/whisk-react";
+import { WhiskSend } from "@usewhisk/react";
 
 export default function PayoutsPage() {
   return (

@@ -1,51 +1,20 @@
 import type { Chain, ChainKind, ChainNetwork } from "../types/chain.js";
 
-/**
- * A single chain entry in Whisk's registry. Whisk only owns the data the
- * widget needs — App Kit owns the protocol/contract details.
- *
- * Adding a chain = adding one entry here. Every chain-aware module reads
- * from this registry via `chainInfo(chain)` rather than hard-coding chain
- * checks, which is what keeps the architecture modular.
- */
 export type ChainInfo = {
   chain: Chain;
-  // Display name shown in the picker.
   label: string;
   kind: ChainKind;
   network: ChainNetwork;
-  // Native gas token symbol — informational.
   nativeSymbol: string;
-  // Block-explorer base URL — `${explorerTxBase}<txHash>`.
   explorerTxBase: string;
-  // Block-explorer base URL for an address.
   explorerAddressBase: string;
-  /**
-   * Solana clusters need an explicit `?cluster=...` query string on every
-   * explorer link. Other chains leave this undefined.
-   */
+  /** Required for Solana (`?cluster=...`) and Sei (`?chain=atlantic-2`). */
   explorerQuery?: string;
-  /**
-   * Address format validator. Pure regex — no chain RPC required so this
-   * runs synchronously in onChange handlers.
-   */
   addressRegex: RegExp;
   addressHint: string;
-  /**
-   * EVM chain id — present for every `kind: "evm"` entry, undefined for
-   * Solana. Used by wagmi to bind balance / switch-chain calls.
-   */
   evmChainId?: number;
-  /**
-   * Canonical USDC contract / SPL mint address on this chain. Empty
-   * when the address isn't published or hasn't been verified yet — the
-   * UI gracefully hides the balance line in that case. App Kit owns
-   * the authoritative table; we mirror only what the UI shows.
-   */
   usdcAddress?: string;
-  /** EURC contract / mint address, when the chain hosts EURC. */
   eurcAddress?: string;
-  /** USDT contract / mint address, when the chain hosts USDT. */
   usdtAddress?: string;
 };
 
@@ -378,9 +347,7 @@ const CHAINS: ReadonlyArray<ChainInfo> = [
     kind: "evm",
     network: "testnet",
     nativeSymbol: "HYPE",
-    // Hyperliquid's testnet UI doesn't resolve HyperEVM tx hashes;
-    // `hyperevm-explorer.vercel.app` is the working community explorer
-    // for HyperEVM Testnet today.
+    // Hyperliquid's testnet UI doesn't resolve HyperEVM tx hashes; use the community explorer.
     explorerTxBase: "https://hyperevm-explorer.vercel.app/tx/",
     explorerAddressBase: "https://hyperevm-explorer.vercel.app/address/",
     addressRegex: EVM_RE,
@@ -555,10 +522,7 @@ const BY_EVM_CHAIN_ID: ReadonlyMap<number, ChainInfo> = new Map(
   ),
 );
 
-/**
- * Get the metadata entry for a chain. Throws if the chain is not registered
- * — registry coverage is a hard requirement, not a runtime fallback.
- */
+/** Throws if the chain is not registered. */
 export function chainInfo(chain: Chain): ChainInfo {
   const info = BY_CHAIN.get(chain);
   if (!info) {
@@ -567,11 +531,6 @@ export function chainInfo(chain: Chain): ChainInfo {
   return info;
 }
 
-/**
- * Reverse lookup by EVM chain id. Returns `undefined` when the id isn't
- * one of Whisk's registered EVM chains — used by the connected-account
- * hook to label the wallet's current network.
- */
 export function chainByEvmId(
   chainId: number | undefined,
 ): ChainInfo | undefined {
@@ -579,33 +538,20 @@ export function chainByEvmId(
   return BY_EVM_CHAIN_ID.get(chainId);
 }
 
-/** All registered chains. Use this rather than re-listing literals. */
 export function allChains(): ReadonlyArray<ChainInfo> {
   return CHAINS;
 }
 
-/** Filter helper — by network. */
 export function chainsByNetwork(
   network: ChainNetwork,
 ): ReadonlyArray<ChainInfo> {
   return CHAINS.filter((c) => c.network === network);
 }
 
-/** Filter helper — by kind (EVM / Solana). */
 export function chainsByKind(kind: ChainKind): ReadonlyArray<ChainInfo> {
   return CHAINS.filter((c) => c.kind === kind);
 }
 
-/**
- * Stablecoin token aliases the registry knows the mint / contract for
- * on a given chain. App Kit's Send accepts any registered token alias;
- * the picker only surfaces the ones we have addresses for so users
- * can't pick something that fails at quote time.
- *
- * `USDC` is universal across the registered chains (it's the widget's
- * native token). EURC and USDT are per-chain — App Kit ships addresses
- * for a subset; we mirror the ones that matter for the UI.
- */
 export type SupportedTokenAlias = "USDC" | "EURC" | "USDT";
 
 export function supportedTokensFor(chain: Chain): SupportedTokenAlias[] {
@@ -617,7 +563,6 @@ export function supportedTokensFor(chain: Chain): SupportedTokenAlias[] {
   return out;
 }
 
-/** Resolve a stablecoin alias to its on-chain address for a given chain. */
 export function tokenAddressFor(
   chain: Chain,
   token: SupportedTokenAlias,
@@ -633,11 +578,6 @@ export function tokenAddressFor(
   }
 }
 
-/**
- * Build an explorer URL for a transaction hash. Centralises the Solana
- * `?cluster=devnet` and Sei `?chain=atlantic-2` quirks so callers never
- * need to know about them.
- */
 export function explorerTxUrl(chain: Chain, txHash: string): string {
   const info = chainInfo(chain);
   return `${info.explorerTxBase}${txHash}${info.explorerQuery ?? ""}`;

@@ -2,7 +2,7 @@
   color-scheme: light dark;
   --app-bg: #f5f3e8;
   --app-fg: #2a1d21;
-  --app-fg-muted: rgba(42, 29, 33, 0.65);
+  --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
   --app-border: rgba(110, 77, 84, 0.18);
   --app-card: rgba(255, 255, 255, 0.7);
 }
@@ -11,7 +11,7 @@
   :root {
     --app-bg: #1a1115;
     --app-fg: #e4e2d4;
-    --app-fg-muted: rgba(228, 226, 212, 0.6);
+    --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
     --app-border: rgba(228, 226, 212, 0.12);
     --app-card: rgba(42, 29, 33, 0.55);
   }
@@ -186,7 +186,7 @@ body {
 }
 
 .payee__amount {
-  font-family: "Geist Mono", ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 0.875rem;
   font-weight: 500;
 }

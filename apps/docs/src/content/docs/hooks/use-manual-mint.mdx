@@ -37,7 +37,7 @@ function useManualMint(): {
 
 ```ts
 type ManualMintInput = {
-  /** Where to mint. Must be an EVM chain — Solana destinations return "unsupported". */
+  /** Where to mint. Must be an EVM chain. Solana destinations return "unsupported". */
   destinationChain: Chain;
 
   /** Iris payloads. If omitted, the hook polls Iris using burnSourceChain + burnTxHash. */
@@ -87,7 +87,7 @@ import {
   useWhisk,
   useManualMint,
   type ManualMintResult,
-} from "@signordev/whisk-react";
+} from "@usewhisk/react";
 
 export function CustomFailureSurface() {
   const { state } = useWhisk();

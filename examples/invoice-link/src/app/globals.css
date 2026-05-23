@@ -11,7 +11,7 @@ body {
   margin: 0;
   padding: 0;
   font-family:
-    var(--font-inter),
+    var(--font-sans),
     -apple-system,
     BlinkMacSystemFont,
     system-ui,
@@ -81,7 +81,7 @@ main {
 }
 
 .page__footer code {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.6875rem;
 }
 
@@ -109,7 +109,7 @@ main {
   opacity: 0.55;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 .invoice__head h1 {
@@ -207,7 +207,7 @@ main {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.6;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 .create__head h1 {
@@ -310,7 +310,7 @@ main {
 }
 
 .create__url {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   background: rgba(110, 77, 84, 0.08);
   padding: 0.625rem 0.75rem;

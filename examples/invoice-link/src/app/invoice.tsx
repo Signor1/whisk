@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { WhiskSend, allChains, type Chain } from "@signordev/whisk-react";
+import { WhiskSend, allChains, type Chain } from "@usewhisk/react";
 
 /**
  * The merchant generates a link like:

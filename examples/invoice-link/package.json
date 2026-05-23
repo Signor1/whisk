@@ -1,5 +1,5 @@
 {
-  "name": "@signordev/whisk-example-invoice-link",
+  "name": "@usewhisk/example-invoice-link",
   "version": "0.0.0",
   "private": true,
   "description": "Invoice payment links. The merchant shares /pay?to=…&amount=…&chain=…; Whisk reads the params and pre-fills.",
@@ -14,8 +14,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@signordev/whisk-core": "workspace:*",
-    "@signordev/whisk-react": "workspace:*",
+    "@usewhisk/core": "workspace:*",
+    "@usewhisk/react": "workspace:*",
     "@tanstack/react-query": "^5.59.0",
     "next": "^15.5.18",
     "react": "^19.0.0",

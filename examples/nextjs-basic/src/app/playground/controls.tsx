@@ -1,11 +1,16 @@
 "use client";
 
 import type { Dispatch } from "react";
-import { chainInfo, type Chain } from "@signordev/whisk-react";
+import { chainInfo, type Chain } from "@usewhisk/react";
 import { PLAYGROUND_CHAINS } from "./providers";
 import { PRESETS, type PresetId } from "./presets";
 import { ADDRESS_BOOK } from "./address-book";
-import type { PlaygroundAction, PlaygroundConfig, Theme } from "./store";
+import type {
+  Palette,
+  PlaygroundAction,
+  PlaygroundConfig,
+  Theme,
+} from "./store";
 
 /**
  * The control panel that drives every adjustable prop on `<WhiskSend>`.
@@ -61,6 +66,13 @@ export function Controls({
         <ThemePicker
           value={config.theme}
           onChange={(theme) => set({ theme })}
+        />
+      </Section>
+
+      <Section title="Palette">
+        <PalettePicker
+          value={config.palette}
+          onChange={(palette) => set({ palette })}
         />
       </Section>
 
@@ -203,6 +215,40 @@ function ThemePicker({
         >
           {opt}
         </button>
+      ))}
+    </div>
+  );
+}
+
+const PALETTE_SWATCHES: Array<{ id: Palette; label: string; color: string }> = [
+  { id: "wine", label: "Wine", color: "#d65c3c" },
+  { id: "indigo", label: "Indigo", color: "#6366f1" },
+  { id: "emerald", label: "Emerald", color: "#10b981" },
+  { id: "amber", label: "Amber", color: "#f59e0b" },
+];
+
+function PalettePicker({
+  value,
+  onChange,
+}: {
+  value: Palette;
+  onChange: (p: Palette) => void;
+}) {
+  return (
+    <div role="radiogroup" className="pg-palette-row" aria-label="Palette">
+      {PALETTE_SWATCHES.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          role="radio"
+          aria-checked={value === p.id}
+          aria-label={p.label}
+          title={p.label}
+          className="pg-palette-swatch"
+          data-active={value === p.id ? "true" : "false"}
+          style={{ background: p.color }}
+          onClick={() => onChange(p.id)}
+        />
       ))}
     </div>
   );

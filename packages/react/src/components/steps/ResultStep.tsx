@@ -8,7 +8,7 @@ import {
   ExternalLink,
   Wrench,
 } from "lucide-react";
-import type { Quote, Step, WhiskError } from "@signordev/whisk-core";
+import type { Quote, Step, WhiskError } from "@usewhisk/core";
 import type { ManualMintResult } from "../../hooks/useManualMint.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
@@ -27,32 +27,12 @@ export type ResultStepProps =
       error: WhiskError;
       steps?: ReadonlyArray<Step>;
       onReset: () => void;
-      /**
-       * When set, the failure is recoverable — the burn succeeded but
-       * the destination mint didn't. Surfacing a "Complete the mint"
-       * action lets the user resume via `engine.retry` instead of
-       * starting a fresh bridge (which would re-burn). Pre-burn
-       * failures pass `undefined` and only the "Try again" reset CTA
-       * shows.
-       */
+      /** Set when the burn succeeded but mint didn't — resumes via `engine.retry`. */
       onRetry?: () => void;
-      /**
-       * Direct-CCTP escape hatch — bypasses App Kit's retry path and
-       * submits `MessageTransmitter.receiveMessage` ourselves. Only
-       * pass when retry has been wired and we have the source burn
-       * tx hash + destination chain (so the hook can poll Iris and
-       * build the call). The user pays the same gas as a successful
-       * retry would have cost — CCTP's nonce tracking on the
-       * destination prevents a duplicate mint.
-       */
+      /** Direct `MessageTransmitter.receiveMessage` path. CCTP nonces prevent duplicate mint. */
       onManualMint?: () => Promise<ManualMintResult>;
     };
 
-/**
- * Terminal state of the wizard — either succeeded or failed. The success
- * variant surfaces the destination tx hash; the failure variant surfaces a
- * typed `WhiskError` with a Reset CTA.
- */
 export function ResultStep(props: ResultStepProps) {
   if (props.kind === "success") {
     return (
@@ -148,18 +128,6 @@ export function ResultStep(props: ResultStepProps) {
   );
 }
 
-/**
- * Direct-CCTP escape hatch button. Hidden by default beneath the
- * primary "Complete the mint" CTA — most users never need it. Surfaces
- * when the App Kit retry path keeps failing despite a healthy Iris
- * attestation; clicking submits `MessageTransmitter.receiveMessage`
- * directly from the user's wallet on the destination chain.
- *
- * Tracks the call lifecycle locally so the parent component doesn't
- * need to thread submitting/success/failure state through the step
- * machine — manual mint is intentionally side-channel, outside the
- * primary state-machine flow.
- */
 function ManualMintButton({
   onManualMint,
 }: {
@@ -254,8 +222,3 @@ function shortenHash(h: string): string {
   if (h.length <= 14) return h;
   return `${h.slice(0, 8)}…${h.slice(-6)}`;
 }
-
-// Type-level reference so the import isn't tree-shaken away in headless
-// builds where ExternalLink might end up unused after future edits.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _icon = ExternalLink;

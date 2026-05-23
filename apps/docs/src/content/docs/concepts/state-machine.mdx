@@ -31,12 +31,10 @@ exist in each branch:
 const { state } = useWhisk();
 
 if (state.kind === "review") {
-  // state.quote is defined here. state.error isn't.
   console.log("Sending", state.quote.amountIn, "USDC");
 }
 
 if (state.kind === "error") {
-  // state.error is defined here. state.quote isn't.
   toast.error(state.error.message);
 }
 ```
@@ -74,12 +72,10 @@ Common uses:
 ```tsx
 <WhiskSend
   onStateChange={(state) => {
-    // Loading toast lifecycle
     if (state.kind === "sending") toast.loading("Sending…");
     if (state.kind === "success") toast.success("Done.");
     if (state.kind === "error") toast.dismiss();
 
-    // Sync into your store
     appStore.setWhiskState(state.kind);
   }}
 />

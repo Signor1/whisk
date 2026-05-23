@@ -11,7 +11,7 @@
 [data-whisk] {
   --whisk-bg: #f6f9fc;
   --whisk-fg: #0f1f3d;
-  --whisk-fg-muted: #4a5b7a;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
   --whisk-border: #d8e1ee;
   --whisk-primary: #1f6feb; /* navy-ish blue */
   --whisk-primary-fg: #ffffff;
@@ -27,7 +27,7 @@
 [data-whisk].dark {
   --whisk-bg: #0c1322;
   --whisk-fg: #e6edf6;
-  --whisk-fg-muted: #94a3c1;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
   --whisk-border: #1f2c47;
   --whisk-primary: #4d8bff;
   --whisk-primary-fg: #0c1322;
@@ -42,7 +42,7 @@
   color-scheme: light dark;
   --app-bg: #f1f4fa;
   --app-fg: #0f1f3d;
-  --app-fg-muted: #4a5b7a;
+  --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
   --app-border: #d8e1ee;
   --app-card: #ffffff;
   --app-accent: #1f6feb;
@@ -52,7 +52,7 @@
   :root {
     --app-bg: #060a14;
     --app-fg: #e6edf6;
-    --app-fg-muted: #94a3c1;
+    --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
     --app-border: #1f2c47;
     --app-card: #0c1322;
   }
@@ -67,7 +67,7 @@ body {
   margin: 0;
   padding: 0;
   font-family:
-    var(--font-inter),
+    var(--font-sans),
     -apple-system,
     BlinkMacSystemFont,
     system-ui,
@@ -116,7 +116,7 @@ main {
 
 .dashboard__pill {
   font-size: 0.6875rem;
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.04em;
   padding: 0.25rem 0.625rem;
   border: 1px solid var(--app-border);
@@ -233,7 +233,7 @@ main {
 .dashboard__row-meta {
   font-size: 0.75rem;
   color: var(--app-fg-muted);
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
 }
 
 .dashboard__row-time {

@@ -27,7 +27,7 @@ import {
   StepRail,
   // Status
   Banner,
-} from "@signordev/whisk-react";
+} from "@usewhisk/react";
 ```
 
 Every primitive reads from the same `[data-whisk]` token contract,
@@ -48,15 +48,16 @@ import {
   Banner,
   ChainPicker,
   useWhisk,
-} from "@signordev/whisk-react";
+} from "@usewhisk/react";
 
 export function MyShell() {
   const { state, actions } = useWhisk();
+  const [sourceChain, setSourceChain] = useState<Chain>("Arc_Testnet");
 
   return (
     <Card data-whisk>
-      {state.kind === "error" && (
-        <Banner tone="destructive">{state.error.message}</Banner>
+      {state.kind === "failed" && (
+        <Banner variant="warning">{state.error.message}</Banner>
       )}
 
       <Field label="Amount">
@@ -70,18 +71,18 @@ export function MyShell() {
       </Field>
 
       <ChainPicker
-        chains={["Arc_Testnet", "Base_Sepolia"]}
-        onSelect={(chain) => {
-          /* … */
-        }}
+        label="From"
+        value={sourceChain}
+        options={["Arc_Testnet", "Base_Sepolia"]}
+        onChange={setSourceChain}
       />
 
       <Button
         variant="primary"
         onClick={() => actions.send()}
-        loading={state.kind === "sending"}
+        disabled={state.kind === "sending"}
       >
-        Send
+        {state.kind === "sending" ? "Sending…" : "Send"}
       </Button>
     </Card>
   );

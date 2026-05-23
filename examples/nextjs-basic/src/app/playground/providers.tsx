@@ -7,7 +7,7 @@ import {
   evm,
   solana,
   type Chain,
-} from "@signordev/whisk-react";
+} from "@usewhisk/react";
 
 /**
  * Every testnet App Kit currently supports. The playground exposes

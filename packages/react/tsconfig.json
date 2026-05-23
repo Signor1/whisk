@@ -5,7 +5,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     /*
-     * Source-to-source resolution for the sibling `@signordev/whisk-core`
+     * Source-to-source resolution for the sibling `@usewhisk/core`
      * package. Without this, TypeScript follows the workspace symlink
      * to `packages/core/package.json` and reads its `types` field
      * (`./dist/index.d.ts`) — meaning `pnpm typecheck` on a fresh
@@ -20,17 +20,17 @@
      * `noEmit`, rootDir's only effect is the cross-rootDir error — we
      * don't need it at all.
      *
-     * The runtime build (tsup) is unaffected: `@signordev/whisk-core` is
+     * The runtime build (tsup) is unaffected: `@usewhisk/core` is
      * declared as a dependency, so tsup treats it as external and the
      * compiled bundle still imports the published package the normal
      * way.
      */
     "baseUrl": ".",
     "paths": {
-      "@signordev/whisk-core": ["../core/src/index.ts"],
-      "@signordev/whisk-core/errors": ["../core/src/errors/index.ts"],
-      "@signordev/whisk-core/resolvers": ["../core/src/resolvers/index.ts"],
-      "@signordev/whisk-core/types": ["../core/src/types/index.ts"]
+      "@usewhisk/core": ["../core/src/index.ts"],
+      "@usewhisk/core/errors": ["../core/src/errors/index.ts"],
+      "@usewhisk/core/resolvers": ["../core/src/resolvers/index.ts"],
+      "@usewhisk/core/types": ["../core/src/types/index.ts"]
     }
   },
   "include": ["src/**/*"],

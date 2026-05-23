@@ -13,7 +13,7 @@ the rest of Whisk is just children of it.
 ```tsx title="app/providers.tsx"
 "use client";
 
-import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@usewhisk/react";
 
 const config = createWhiskConfig({
   wallets: [
@@ -33,7 +33,7 @@ Then use it at the root of your tree:
 
 ```tsx title="app/layout.tsx"
 import { Providers } from "./providers";
-import "@signordev/whisk-react/styles.css";
+import "@usewhisk/react/styles.css";
 
 export default function RootLayout({
   children,
@@ -62,7 +62,7 @@ explicitly:
 
 ```tsx
 createWhiskConfig({
-  mode: "testnet", // optional — inferred from chains
+  mode: "testnet", // optional, inferred from chains
   chains: ["Arc_Testnet", "Base_Sepolia"],
   // ...
 });
@@ -93,7 +93,7 @@ mounts the Solana provider stack when this adapter is present, so
 EVM-only apps don't pay for code they won't run.
 
 ```tsx
-import { createWhiskConfig, evm, solana } from "@signordev/whisk-react";
+import { createWhiskConfig, evm, solana } from "@usewhisk/react";
 
 const config = createWhiskConfig({
   wallets: [

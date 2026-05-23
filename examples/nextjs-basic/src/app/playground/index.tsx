@@ -1,22 +1,42 @@
 "use client";
 
+import { useEffect } from "react";
 import { PlaygroundProviders } from "./providers";
 import { Controls } from "./controls";
 import { Stage } from "./stage";
 import { EventLog } from "./event-log";
-import { usePlaygroundStore } from "./store";
+import { usePlaygroundStore, type Palette } from "./store";
 
-/**
- * The composition root for the playground. Holds the single store
- * the panel + the stage + the log all read from / dispatch into, and
- * routes the current theme up to `<PlaygroundProviders>` so toggling
- * theme from the controls panel actually re-themes the widget below.
- *
- * Dynamically imported by `client-gate.tsx` with `ssr: false` so the
- * wagmi / IndexedDB stack never runs on the server.
- */
+const PALETTE_STORAGE_KEY = "whisk-playground-palette";
+
 export function Playground() {
   const [state, dispatch] = usePlaygroundStore();
+  const { palette } = state.config;
+
+  // Restore persisted palette on first mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem(
+      PALETTE_STORAGE_KEY,
+    ) as Palette | null;
+    if (stored && stored !== palette && isValidPalette(stored)) {
+      dispatch({ type: "SET_CONFIG", patch: { palette: stored } });
+    }
+    // Intentionally first-mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reflect the chosen palette onto <html> so the [data-palette="…"]
+  // selectors in globals.css retune both --pg-* and --whisk-* variables.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.dataset.palette = palette;
+    try {
+      window.localStorage.setItem(PALETTE_STORAGE_KEY, palette);
+    } catch {
+      /* ignore quota / private-mode failures */
+    }
+  }, [palette]);
 
   return (
     <PlaygroundProviders theme={state.config.theme}>
@@ -28,5 +48,14 @@ export function Playground() {
         <EventLog events={state.events} dispatch={dispatch} />
       </div>
     </PlaygroundProviders>
+  );
+}
+
+function isValidPalette(value: string): value is Palette {
+  return (
+    value === "wine" ||
+    value === "indigo" ||
+    value === "emerald" ||
+    value === "amber"
   );
 }

@@ -6,7 +6,7 @@ description: The pure, framework-agnostic core that the React layer wraps.
 The engine is the part of Whisk that decides things: how to resolve
 a recipient, what route to take, what the quote looks like, and how
 to walk a CCTP bridge from burn to mint. It lives in
-`@signordev/whisk-core` and has zero React dependencies. The React
+`@usewhisk/core` and has zero React dependencies. The React
 package wraps it; that's all.
 
 Most apps never import the engine directly. You'll reach for it when:
@@ -20,7 +20,7 @@ Most apps never import the engine directly. You'll reach for it when:
 ## What `createWhisk` returns
 
 ```ts
-import { createWhisk } from "@signordev/whisk-core";
+import { createWhisk } from "@usewhisk/core";
 
 const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia"],

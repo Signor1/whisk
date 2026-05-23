@@ -41,44 +41,21 @@ import type {
   WhiskEngine,
 } from "./types.js";
 
-/**
- * Instantiate a Whisk engine bound to the given config. The engine wraps a
- * single `AppKit` instance — the same kit is reused across `quote` / `send`
- * so SDK-internal caches stay warm.
- *
- * The engine is stateless beyond holding the AppKit instance; concurrent
- * sends are safe (each call creates its own listener bag). The React layer
- * does not need to memoise the engine across renders, but doing so saves
- * AppKit construction cost.
- */
 export function createWhisk(config: WhiskConfig): WhiskEngine {
   if (!config.chains || config.chains.length === 0) {
     throw new ConfigError("createWhisk: at least one chain is required.");
   }
 
-  // Resolve mode up front and bake it into the engine's exposed
-  // config. Consumers read `engine.config.mode` to drive UI (the
-  // visible "Testnet" pill), recovery storage namespacing, and the
-  // default resolver composition in the React layer.
   const resolvedMode = resolveMode(config.mode, config.chains);
   const resolvedConfig: WhiskConfig = { ...config, mode: resolvedMode };
 
-  // App Kit 1.5.0 introduced unhandled-error telemetry that POSTs to
-  // Circle's collection endpoint. Whisk is an embeddable widget — host
-  // apps don't expect the underlying SDK to send their error events
-  // anywhere, so we opt out by default. Consumers who want it can fork
-  // or open an issue; flipping a default-on telemetry channel without
-  // surfacing it in our own config would be a trust violation.
+  // Opt out of App Kit 1.5.0's default-on error telemetry POSTs.
   const kit = new AppKit({ disableErrorReporting: true });
   const defaultToken = resolvedConfig.token ?? DEFAULT_TOKEN;
   const resolver = resolvedConfig.resolver ?? addressResolver;
 
   const engine: WhiskEngine = {
     config: resolvedConfig,
-
-    /* ---------------------------------------------------------------- *
-     *  resolve                                                          *
-     * ---------------------------------------------------------------- */
 
     async resolve(input, chain): Promise<ResolvedRecipient> {
       const trimmed = input.trim();
@@ -94,17 +71,10 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
       }
     },
 
-    /* ---------------------------------------------------------------- *
-     *  quote                                                            *
-     * ---------------------------------------------------------------- */
-
     async quote(params: QuoteParams): Promise<Quote> {
       const route = decideRoute(params.sourceChain, params.destinationChain);
       const adapter = params.adapter.appKitAdapter;
-      // Same-chain sends honour the user's token choice; cross-chain
-      // bridges always use USDC (App Kit Bridge is USDC-only). The
-      // `effectiveToken` we surface in the Quote reflects what's
-      // actually being moved on-chain.
+      // Bridge is USDC-only; same-chain sends honour the user's token choice.
       const requested = params.token ?? defaultToken;
       const effectiveToken = route.kind === "bridge" ? "USDC" : requested;
       const customFees = buildCustomFeeEntries(
@@ -121,8 +91,6 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
             amount: params.amount,
             token: effectiveToken,
           };
-          // estimateSend returns gas-only (`EstimatedGas`); same-chain
-          // sends carry no protocol fees worth surfacing in the breakdown.
           await kit.estimateSend(appKitParams);
           const breakdown = sumFees([...customFees], effectiveToken);
           return {
@@ -160,8 +128,6 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
           amountOut: params.amount,
           token: effectiveToken,
           fees: breakdown,
-          // CCTP fast-burn typically completes in <30s, varies in practice.
-          // The UI shows this as a hint, not a guarantee.
           estimatedDurationMs: 30_000,
         };
       } catch (err) {
@@ -169,17 +135,9 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
       }
     },
 
-    /* ---------------------------------------------------------------- *
-     *  send                                                             *
-     * ---------------------------------------------------------------- */
-
     async send(params: SendParams, listeners?: SendListeners) {
       return runSend(kit, resolvedConfig, params, listeners);
     },
-
-    /* ---------------------------------------------------------------- *
-     *  retry                                                            *
-     * ---------------------------------------------------------------- */
 
     async retry(params: RetryParams, listeners?: SendListeners) {
       try {
@@ -204,25 +162,15 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
       }
     },
 
-    /* ---------------------------------------------------------------- *
-     *  estimateSwap                                                     *
-     * ---------------------------------------------------------------- */
-
     async estimateSwap(params: SwapParams): Promise<SwapEstimate> {
       try {
         const appKitParams = buildAppKitSwapParams(params);
-        // App Kit's `estimateSwap` is the safe pre-flight; output and
-        // fees come from the swap provider's quote API.
         const estimate = await kit.estimateSwap(appKitParams);
         return mapAppKitSwapEstimate(estimate, params);
       } catch (err) {
         throw toWhiskError(err, "Swap estimate failed");
       }
     },
-
-    /* ---------------------------------------------------------------- *
-     *  swap                                                             *
-     * ---------------------------------------------------------------- */
 
     async swap(params: SwapParams): Promise<SwapResult> {
       try {
@@ -246,24 +194,8 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
   return engine;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Internal helpers                                                          */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Build the `BridgeParams` App Kit expects, choosing same-adapter mode for
- * same-ecosystem hops (EVM → EVM) and the **Forwarder** pattern for cross-
- * ecosystem hops (Solana ↔ EVM).
- *
- * Why: App Kit's adapters are ecosystem-scoped — a Viem adapter rejects
- * Solana chains, a SolanaKit adapter rejects EVM chains. Cross-ecosystem
- * estimates and sends therefore can't reuse the source adapter on the
- * destination side. The forwarder pattern (`to: { recipientAddress, chain,
- * useForwarder: true }`) lets Circle's Iris service do the destination mint
- * — the user signs only the source-side burn. Same-ecosystem callers can
- * still opt into the forwarder via `config.useForwarder` to skip the
- * destination-side gas; cross-ecosystem callers always get it.
- */
+// App Kit adapters are ecosystem-scoped (Viem rejects Solana chains and vice versa).
+// Cross-ecosystem hops must use the forwarder; same-ecosystem hops can opt in via config.
 function buildBridgeParams(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: any,
@@ -285,7 +217,6 @@ function buildBridgeParams(
     } as BridgeParams;
   }
 
-  // Forwarder path — destination has no adapter.
   return {
     from: { adapter, chain: sourceChain },
     to: { chain: destinationChain, recipientAddress, useForwarder: true },
@@ -293,11 +224,6 @@ function buildBridgeParams(
   } as BridgeParams;
 }
 
-/**
- * Translate Whisk's `SwapParams` into App Kit's `SwapParams`. The
- * shapes are 90% the same; we just pass through the adapter, chain,
- * tokens, and slippage / stop-limit if set.
- */
 function buildAppKitSwapParams(p: SwapParams): AppKitSwapParams {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cfg: any = { kitKey: p.kitKey };
@@ -314,11 +240,6 @@ function buildAppKitSwapParams(p: SwapParams): AppKitSwapParams {
   } as AppKitSwapParams;
 }
 
-/**
- * Map App Kit's `SwapEstimate` into Whisk's normalised shape. App Kit
- * returns `estimatedOutput` and `stopLimit` as `{ amount, token }` —
- * we flatten so consumers see a string-only API.
- */
 function mapAppKitSwapEstimate(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   estimate: any,
@@ -361,10 +282,6 @@ function addCustomFee(amount: string, customFee?: string): string {
   return sum.toFixed(6).replace(/\.?0+$/, "") || "0";
 }
 
-/**
- * Bridge lifecycle action names exposed by App Kit's event bus. We mirror
- * the union locally so the listener attachment loop is exhaustively typed.
- */
 type BridgeAction = "approve" | "burn" | "fetchAttestation" | "mint";
 const BRIDGE_ACTIONS: ReadonlyArray<BridgeAction> = [
   "approve",
@@ -373,11 +290,6 @@ const BRIDGE_ACTIONS: ReadonlyArray<BridgeAction> = [
   "mint",
 ];
 
-/**
- * Drive a send / bridge through App Kit and translate the result into
- * Whisk's normalised shape, streaming step updates to the optional
- * listener as App Kit emits them.
- */
 async function runSend(
   kit: AppKit,
   config: WhiskConfig,
@@ -385,8 +297,6 @@ async function runSend(
   listeners?: SendListeners,
 ): Promise<SendResult> {
   const route = params.quote.route;
-  // Bridge always operates on USDC; sends honour the user's token choice
-  // (params.token) and fall back to the engine default when omitted.
   const token =
     route.kind === "bridge"
       ? "USDC"
@@ -401,9 +311,6 @@ async function runSend(
       const handler = (payload: unknown) => {
         onStep(translateAppKitEvent(action, payload));
       };
-      // App Kit's `on` accepts string action names; payload is `unknown` to
-      // the consumer because App Kit doesn't publish a per-action payload
-      // schema. We narrow the relevant fields in `translateAppKitEvent`.
       kit.on(`bridge.${action}`, handler);
       detach.push(() => kit.off(`bridge.${action}`, handler));
     }
@@ -446,7 +353,6 @@ async function runSend(
       };
     }
 
-    // Bridge route
     const appKitParams = buildBridgeParams(
       adapter,
       route.sourceChain,
@@ -468,24 +374,7 @@ async function runSend(
   }
 }
 
-/**
- * Narrow shape we extract from App Kit's bridge event payload.
- *
- * The SDK dispatches each step event with this envelope:
- *
- *   {
- *     protocol: 'cctp',
- *     version: 'v2',
- *     traceId?: string,
- *     method: 'approve' | 'burn' | 'fetchAttestation' | 'mint',
- *     values: BridgeStep   // ← the actual step (state, txHash, etc.)
- *   }
- *
- * Events fire **once the step lands** — `values.state` is `'success'` or
- * `'error'`, not `'pending'`. The previous version of this function
- * defaulted to `'pending'` which is why the rail never flipped green
- * mid-flow. Now we pull the state straight off `payload.values`.
- */
+// Events fire once the step lands — read state off `payload.values` (never default to pending).
 type AppKitBridgeEventPayload = {
   protocol?: string;
   version?: string;
@@ -517,10 +406,6 @@ function translateAppKitEvent(name: BridgeAction, payload: unknown): Step {
   };
 }
 
-/**
- * Translate an App Kit `BridgeResult` into Whisk's `SendResult`,
- * preserving the raw result on failures so `retry()` can resume.
- */
 function mapAppKitBridgeResult(
   raw: BridgeResult,
   listeners?: SendListeners,
@@ -544,10 +429,6 @@ function mapAppKitBridgeResult(
     errorStep?.errorMessage ?? "Bridge failed without a step error.";
   return {
     kind: "failure",
-    // App Kit 1.4.2+ surfaces `errorCategory` on the failing step; we
-    // pass it through so `toWhiskError` picks the right typed subclass
-    // (UserRejectedError, OnchainRevertError, WalletCapabilityError, …)
-    // instead of falling back to regex string-matching.
     error: toWhiskError(message, undefined, errorStep?.errorCategory),
     steps,
     raw,
@@ -562,9 +443,7 @@ function stepFromBridgeStep(s: BridgeStep): Step {
     typeof (s.data as { explorerUrl?: unknown }).explorerUrl === "string"
       ? (s.data as { explorerUrl: string }).explorerUrl
       : undefined;
-  // App Kit's `BridgeStep.errorCategory` is typed in the SDK but we
-  // read it loosely to keep our Step type independent of any specific
-  // SDK version.
+  // Read errorCategory loosely to decouple from App Kit's SDK version.
   const rawCategory = (
     s as unknown as { errorCategory?: Step["errorCategory"] }
   ).errorCategory;

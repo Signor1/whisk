@@ -7,7 +7,7 @@ import {
   AlertCircle,
   AlertTriangle,
 } from "lucide-react";
-import { chainInfo, type Quote } from "@signordev/whisk-core";
+import { chainInfo, type Quote } from "@usewhisk/core";
 import type { PreflightResult } from "../../hooks/usePreflight.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
@@ -17,18 +17,7 @@ export type ReviewStepProps = {
   busy: boolean;
   onConfirm: () => void;
   onBack: () => void;
-  /**
-   * Pre-flight check results. When provided, blocking checks gate
-   * the Send button and warning checks render as inline notices.
-   * Omit to disable pre-flight UI entirely.
-   */
   preflight?: PreflightResult;
-  /**
-   * Cross-tab single-flight signal (P7). True when another tab on the
-   * same wallet + source chain is already mid-send. Disables Send and
-   * surfaces an inline notice so the user can't accidentally fire a
-   * second burn from a different tab.
-   */
   tabLockedByOther?: boolean;
 };
 
@@ -37,12 +26,6 @@ function shortenAddress(address: string): string {
   return `${address.slice(0, 8)}…${address.slice(-6)}`;
 }
 
-/**
- * Final pre-send confirmation. Shows what the recipient gets, the route,
- * and an itemised fee breakdown. The full custom-fee split (90% host /
- * 10% Arc) is rendered as separate rows so users see exactly where every
- * cent goes.
- */
 export function ReviewStep({
   quote,
   busy,
@@ -157,13 +140,6 @@ export function ReviewStep({
         </dd>
       </dl>
 
-      {/*
-       * Fees + total. The dashed separator only renders when there are
-       * actual fee entries above the "You pay" line — same-chain sends
-       * with no custom fee return an empty `entries` array and the
-       * separator would otherwise look like an empty divider above a
-       * single value, which reads as a UI bug rather than a feature.
-       */}
       <div
         style={{
           borderTop: "1px solid var(--whisk-border)",
@@ -217,10 +193,6 @@ export function ReviewStep({
         </Badge>
       ) : null}
 
-      {/*
-       * Cross-tab single-flight notice (P7). Shown when another tab on
-       * the same wallet + source chain is mid-send.
-       */}
       {blockedByTab ? (
         <p
           className="whisk-help whisk-help--error"
@@ -244,12 +216,6 @@ export function ReviewStep({
         </p>
       ) : null}
 
-      {/*
-       * Pre-flight notices. Renders one line per check above the Send
-       * button so the user sees "you'll fail this" warnings BEFORE they
-       * sign. Blocking checks (red) gate Send; warnings (amber) inform
-       * but don't block. Read-only — no extra gas to surface these.
-       */}
       {preflight && preflight.checks.length > 0 ? (
         <ul
           style={{

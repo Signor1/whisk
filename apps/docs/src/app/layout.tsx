@@ -1,25 +1,35 @@
 import type { Metadata } from "next";
 import {
-  Plus_Jakarta_Sans,
+  Familjen_Grotesk,
+  Inter,
   JetBrains_Mono,
   IBM_Plex_Mono,
 } from "next/font/google";
 import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
-// Body sans. Plus Jakarta Sans — modern, geometric with a slight
-// warmth, designed specifically for digital UI. Reads cleanly from
-// display sizes down to 12px, pairs naturally with JetBrains Mono
-// without competing for attention.
-const plusJakarta = Plus_Jakarta_Sans({
+// Body sans. Inter is the proven workhorse — maximally readable from
+// display sizes down to 12px and the default of every well-designed
+// dev tool. Pairs cleanly with Familjen Grotesk for headlines.
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
 
+// Display typeface — hero headlines, section titles. Familjen Grotesk
+// adds character (slightly humanist g, distinct a) without spoiling
+// readability the way more decorative display faces would.
+const familjenGrotesk = Familjen_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-display",
+  display: "swap",
+});
+
 // Code blocks. JetBrains Mono is the canonical choice for engineer-facing
-// docs — wide x-height, clear l/I/1 disambiguation, ligatures for `=>`
+// docs — wide x-height, clear l/I/1 disambiguation, ligatures for `=>`.
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -127,7 +137,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakarta.variable} ${jetBrainsMono.variable} ${ibmPlexMono.variable}`}
+      className={`${inter.variable} ${familjenGrotesk.variable} ${jetBrainsMono.variable} ${ibmPlexMono.variable}`}
       suppressHydrationWarning
     >
       <body>

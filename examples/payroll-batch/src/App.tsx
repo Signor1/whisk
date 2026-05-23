@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WhiskSend } from "@signordev/whisk-react";
+import { WhiskSend } from "@usewhisk/react";
 import { Providers } from "./providers";
 
 type Payee = {

@@ -2,7 +2,7 @@
  * Curated chain → (icon, label) mapping for the docs MDX surfaces.
  *
  * Kept local to the docs app instead of imported from
- * `@signordev/whisk-core` so the docs can ship without pulling the
+ * `@usewhisk/core` so the docs can ship without pulling the
  * widget package into the MDX bundle. The list mirrors the engine
  * registry; if a chain lands there it should land here too.
  */

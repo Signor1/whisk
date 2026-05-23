@@ -7,16 +7,10 @@ import {
   type SwapEstimate,
   type Token,
   type WhiskError,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import { useWhiskContext } from "./useWhiskContext.js";
 import { useWhiskAdapter } from "./useWhiskAdapter.js";
 
-/**
- * State machine for the Swap tab. Mirrors the Transfer machine in spirit
- * (idle → estimating → review → swapping → succeeded / failed) but lives
- * inside this hook because swap state is independent of the global send
- * flow — switching tabs shouldn't blow either state away.
- */
 export type SwapState =
   | { kind: "idle" }
   | { kind: "estimating" }
@@ -92,35 +86,18 @@ export type SwapInput = {
 
 export type UseWhiskSwapResult = {
   state: SwapState;
-  /** Build a quote and move to the review step. */
   estimate: (input: SwapInput) => Promise<void>;
-  /** Execute the swap currently in `review`. */
   swap: () => Promise<void>;
-  /** Go back from review to idle. */
   back: () => void;
-  /** Clear state — used after success/failure. */
   reset: () => void;
 };
 
-/**
- * Headless hook for Swap. Mirrors `useWhisk()` for transfers — both can
- * coexist in the same widget and share the same `WhiskAdapter` (they just
- * happen to call different App Kit endpoints).
- *
- * The Tabs UI uses this for the Swap tab content while `useWhisk()` drives
- * the Transfer tab.
- */
 export function useWhiskSwap(): UseWhiskSwapResult {
   const { engine } = useWhiskContext();
   const [state, dispatch] = useReducer(reduce, initial);
 
-  // The active chain comes from the most recent `estimate()` call. We
-  // build the adapter against it because swaps are same-chain — no need
-  // to track source/destination separately.
   const lastInputRef = useStableRef<SwapInput | null>(null);
 
-  // Pull adapter for the chain from the last estimate input (or
-  // undefined on first render — quote will set it).
   const sourceChain = lastInputRef.value?.chain;
   const adapter = useWhiskAdapter(sourceChain);
 
@@ -128,12 +105,6 @@ export function useWhiskSwap(): UseWhiskSwapResult {
     async (input) => {
       lastInputRef.value = input;
       dispatch({ type: "ESTIMATE_START" });
-      // We may have just set the chain for the first time — give the
-      // adapter hook a tick to rebuild before we ask for a quote, since
-      // `adapter` from the closure is captured at hook-call time.
-      // In practice React re-runs this callback after rerender so the
-      // captured `adapter` is current; only fully-new chain choices
-      // need the soft "click again" fallback handled at the UI layer.
       try {
         if (!adapter) {
           throw new Error(
@@ -204,11 +175,6 @@ export function useWhiskSwap(): UseWhiskSwapResult {
   return { state, estimate, swap, back, reset };
 }
 
-/**
- * `useState`-free mutable holder. Same lifetime as the component, no
- * re-render on write. Used here so the swap callbacks can read the
- * latest input without the caller having to keep `useState` mirrored.
- */
 function useStableRef<T>(initial: T): { value: T } {
   const [box] = useReducer(
     (s: { value: T }, next: T) => {

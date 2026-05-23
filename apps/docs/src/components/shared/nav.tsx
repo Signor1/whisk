@@ -17,7 +17,7 @@ export function Nav({ className }: { className?: string }) {
         className,
       )}
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-[80rem] items-center justify-between gap-4 px-6">
         <Link
           href="/"
           className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -26,7 +26,7 @@ export function Nav({ className }: { className?: string }) {
           <Logo />
         </Link>
 
-        <nav className="flex items-center gap-5 text-sm font-medium text-muted-foreground">
+        <nav className="flex items-center gap-5 text-sm font-medium text-foreground/75">
           <Link
             href="/docs"
             className="transition-colors hover:text-foreground"
@@ -40,7 +40,7 @@ export function Nav({ className }: { className?: string }) {
             Examples
           </Link>
           <a
-            href="https://www.npmjs.com/package/@signordev/whisk-react"
+            href="https://www.npmjs.com/package/@usewhisk/react"
             target="_blank"
             rel="noreferrer"
             className="hidden transition-colors hover:text-foreground sm:inline-flex"
@@ -52,7 +52,7 @@ export function Nav({ className }: { className?: string }) {
             target="_blank"
             rel="noreferrer"
             aria-label="Whisk on GitHub"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
           >
             <Github className="h-4 w-4" />
           </a>

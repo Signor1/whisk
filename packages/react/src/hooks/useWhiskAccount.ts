@@ -2,12 +2,11 @@
 
 import { useCallback, useMemo } from "react";
 import { useAccount, useChainId, useDisconnect, useSwitchChain } from "wagmi";
-import { chainByEvmId, chainInfo, type Chain } from "@signordev/whisk-core";
+import { chainByEvmId, chainInfo, type Chain } from "@usewhisk/core";
 import { viemChainForWhisk } from "../config/adapters/evm.js";
 import { useSolanaAccount } from "./useSolanaAccount.js";
 
 export type WhiskAccountInfo = {
-  /** Whether this ecosystem has a connected wallet right now. */
   isConnected: boolean;
   isConnecting: boolean;
   address?: string;
@@ -15,57 +14,23 @@ export type WhiskAccountInfo = {
   connectorName?: string;
   /** EVM only — undefined for Solana. */
   chainId?: number;
-  /** The Whisk Chain literal corresponding to this wallet's network. */
   currentChain?: Chain;
   chainName?: string;
   disconnect: () => Promise<void>;
 };
 
 export type UseWhiskAccountResult = {
-  /**
-   * EVM account — always populated (with `isConnected: false` when no
-   * wallet is connected) because the WagmiProvider is always mounted.
-   */
   evm: WhiskAccountInfo;
-  /**
-   * Solana account — populated only when the dev added `solana()` to
-   * config and a Solana wallet is available; otherwise an inert
-   * disconnected stub.
-   */
   solana: WhiskAccountInfo;
-  /**
-   * The account that matches a given chain. EVM source chains map to
-   * `evm`; Solana source chains map to `solana`. UI components call
-   * this with the active source chain to render the right account.
-   */
   accountFor: (chain: Chain) => WhiskAccountInfo;
-  /**
-   * Whichever account is currently connected. EVM wins if both are.
-   * Used by the top-of-card account chip when the source chain is
-   * still being chosen.
-   */
+  /** EVM wins when both ecosystems are connected. */
   primary: WhiskAccountInfo | undefined;
-  /**
-   * `true` when the wallet's actively-connected EVM chain doesn't match
-   * `target`. Returns `false` for Solana targets — Solana doesn't have
-   * the equivalent of `wallet_switchEthereumChain`.
-   */
+  /** Always false for Solana targets — no `wallet_switchEthereumChain` equivalent. */
   isWrongChain: (target: Chain) => boolean;
-  /**
-   * Programmatically switch the EVM wallet's network. No-op for Solana
-   * targets.
-   */
   switchChain: (target: Chain) => Promise<void>;
 };
 
-/**
- * Single source of truth for connected-wallet state. Wraps wagmi's hooks
- * for EVM and `@solana/wallet-adapter-react`'s `useWallet` for Solana,
- * exposing a unified shape so UI components never branch on the
- * underlying ecosystem.
- */
 export function useWhiskAccount(): UseWhiskAccountResult {
-  /* ── EVM ─────────────────────────────────────────────────────────── */
   const { address: evmAddress, connector, status } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -102,7 +67,6 @@ export function useWhiskAccount(): UseWhiskAccountResult {
     ],
   );
 
-  /* ── Solana ──────────────────────────────────────────────────────── */
   const sol = useSolanaAccount();
 
   const solana: WhiskAccountInfo = useMemo(
@@ -121,7 +85,6 @@ export function useWhiskAccount(): UseWhiskAccountResult {
     [sol],
   );
 
-  /* ── Helpers ─────────────────────────────────────────────────────── */
   const accountFor = useCallback(
     (chain: Chain): WhiskAccountInfo => {
       const info = chainInfo(chain);
@@ -150,9 +113,7 @@ export function useWhiskAccount(): UseWhiskAccountResult {
     async (target: Chain) => {
       const info = chainInfo(target);
       if (info.kind !== "evm" || info.evmChainId == null) return;
-      // Pass `addEthereumChainParameter` so MetaMask offers to add the
-      // network if it's not already configured. Without this, switching
-      // to a long-tail chain hard-fails on first use.
+      // Pass `addEthereumChainParameter` so MetaMask can add unknown long-tail chains.
       const viem = viemChainForWhisk(target);
       const addParam = viem
         ? {

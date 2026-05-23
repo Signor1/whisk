@@ -1,8 +1,8 @@
-# @signordev/whisk-react
+# @usewhisk/react
 
 Drop-in React widget for sending and bridging USDC. Powered by
 [Circle App Kit](https://developers.circle.com/w3s/docs/app-kit) and
-[`@signordev/whisk-core`](../core).
+[`@usewhisk/core`](../core).
 
 ```tsx
 <WhiskProvider config={config}>
@@ -17,7 +17,7 @@ sends and CCTP v2 cross-chain bridges share one UI.
 ## Install
 
 ```bash
-pnpm add @signordev/whisk-react @signordev/whisk-core
+pnpm add @usewhisk/react @usewhisk/core
 ```
 
 Peer requirements (the EVM stack is mandatory; Solana is opt-in):
@@ -40,8 +40,8 @@ import {
   createWhiskConfig,
   evm,
   solana,
-} from "@signordev/whisk-react";
-import "@signordev/whisk-react/styles.css";
+} from "@usewhisk/react";
+import "@usewhisk/react/styles.css";
 
 const config = createWhiskConfig({
   wallets: [
@@ -89,7 +89,7 @@ export function Checkout() {
 For full control over the UI:
 
 ```tsx
-import { useWhisk, useWhiskAccount } from "@signordev/whisk-react/headless";
+import { useWhisk, useWhiskAccount } from "@usewhisk/react/headless";
 
 function MyCustomFlow() {
   const { state, actions, connected } = useWhisk();
@@ -140,11 +140,11 @@ A Tailwind preset is also available:
 
 ```ts
 // tailwind.config.ts
-import whiskPreset from "@signordev/whisk-react/tailwind";
+import whiskPreset from "@usewhisk/react/tailwind";
 
 export default {
   presets: [whiskPreset],
-  content: ["./node_modules/@signordev/whisk-react/dist/**/*.{js,cjs}"],
+  content: ["./node_modules/@usewhisk/react/dist/**/*.{js,cjs}"],
 };
 ```
 
@@ -182,7 +182,7 @@ wallet-adapter don't try to initialise during prerender:
 import dynamic from "next/dynamic";
 
 const WhiskSend = dynamic(
-  () => import("@signordev/whisk-react").then((m) => m.WhiskSend),
+  () => import("@usewhisk/react").then((m) => m.WhiskSend),
   { ssr: false },
 );
 ```

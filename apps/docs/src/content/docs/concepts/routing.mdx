@@ -18,14 +18,14 @@ the engine routes through CCTP.
 | `send`       | Source chain = destination chain.             | Direct USDC ERC-20 transfer.               |
 | `bridge`     | Source ≠ destination, both supported by CCTP. | CCTP v2 burn + mint, optionally forwarded. |
 
-The decision lives in `decideRoute(...)` in `@signordev/whisk-core`.
+The decision lives in `decideRoute(...)` in `@usewhisk/core`.
 You almost never call it yourself, `engine.quote(...)` calls it
 and stamps the chosen route onto the returned `Quote.route`. But
 if you need to know what route a pair will take before quoting (a
 checkout summary, a route preview), call it directly:
 
 ```ts
-import { decideRoute, isBridgeRoute } from "@signordev/whisk-core";
+import { decideRoute, isBridgeRoute } from "@usewhisk/core";
 
 const route = decideRoute({
   sourceChain: "Arc_Testnet",

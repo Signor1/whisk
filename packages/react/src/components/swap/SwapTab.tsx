@@ -7,73 +7,75 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
-import { chainInfo, type Chain, type Token } from "@signordev/whisk-core";
+import {
+  chainInfo,
+  type Chain,
+  type SupportedTokenAlias,
+  type Token,
+} from "@usewhisk/core";
 import { useWhiskContext } from "../../hooks/useWhiskContext.js";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 import { useWhiskAdapter } from "../../hooks/useWhiskAdapter.js";
 import { useWhiskSwap } from "../../hooks/useWhiskSwap.js";
+import { useChainBalance } from "../../hooks/useChainBalance.js";
+import { BalanceLine } from "../ui/BalanceLine.js";
 import { Button } from "../ui/Button.js";
 import { ChainPicker } from "../ui/ChainPicker.js";
 import { FieldBox } from "../ui/FieldBox.js";
 import { TokenPicker } from "../ui/TokenPicker.js";
 
-/**
- * Swap tab — same-chain token swap powered by App Kit's Swap kit.
- *
- * `kitKey` is required (Circle Console issues it free). Without it, the
- * swap provider rejects every request.
- *
- * Token list is App Kit's recognised aliases — for custom contract
- * addresses, the host can pass `tokenInAddress` / `tokenOutAddress` props
- * (deferred to a follow-up; v0.1 ships with the alias set).
- */
 export type SwapTabProps = {
-  /** Required Circle Console kit key for the swap provider. */
   kitKey?: string;
-  /** Pre-fill the source chain. */
   defaultChain?: Chain;
-  /** Pre-fill tokenIn. */
   defaultTokenIn?: Token;
-  /** Pre-fill tokenOut. */
   defaultTokenOut?: Token;
-  /** Fires for every swap state transition (idle → estimating → review → swapping → succeeded/failed). */
   onStateChange?: (
     state: import("../../hooks/useWhiskSwap.js").SwapState,
   ) => void;
-  /** Fires once when a swap completes successfully. */
   onSuccess?: (result: {
     txHash?: string;
     explorerUrl?: string;
     amountOut?: string;
   }) => void;
-  /** Fires once when a swap fails terminally. */
   onError?: (error: Error) => void;
 };
 
-/**
- * Tokens available in the swap picker.
- *
- * Whisk is testnet-only at the moment, and App Kit's swap on testnet
- * runs exclusively on Arc Testnet. The docs list `cirBTC` alongside
- * USDC/EURC, but Circle's own product page (circle.com/cirbtc) marks
- * cirBTC as "coming soon, subject to applicable regulatory approvals"
- * — estimates and swaps both fail in practice. Dropped from the
- * picker until it lands.
- *
- * When mainnet support flips on, swap this constant for a per-chain
- * map (e.g. Arc Testnet → testnet pair, mainnet chains → full
- * stablecoin set + wrapped tokens + NATIVE).
- */
-const SWAP_TOKENS: Token[] = ["USDC", "EURC"];
+// Swap-capable chains and their token lists, per Arc App Kit docs.
+// Mainnet chains share the broad stablecoin set + NATIVE. Arc Testnet is the
+// only testnet that supports Swap and is limited to USDC / EURC / cirBTC.
+const MAINNET_SWAP_TOKENS: Token[] = [
+  "USDC",
+  "EURC",
+  "USDT",
+  "USDe",
+  "DAI",
+  "PYUSD",
+  "NATIVE",
+];
 
-/**
- * Chains available in the swap picker.
- *
- * Same reasoning as `SWAP_TOKENS` — Arc Testnet is the only testnet
- * App Kit supports swap on. Listed as a single-entry array so the
- * picker structure is in place for the day mainnet support flips on.
- */
-const SWAP_CHAINS: Chain[] = ["Arc_Testnet"];
+const SWAP_TOKENS_BY_CHAIN: Partial<Record<Chain, Token[]>> = {
+  // Arc App Kit docs list cirBTC as supported on Arc Testnet, but Circle
+  // hasn't published a faucet or contract address for it — quote attempts
+  // 404. Re-add once Circle ships testnet infrastructure for cirBTC.
+  Arc_Testnet: ["USDC", "EURC"],
+  Arbitrum: MAINNET_SWAP_TOKENS,
+  Avalanche: MAINNET_SWAP_TOKENS,
+  Base: MAINNET_SWAP_TOKENS,
+  Ethereum: MAINNET_SWAP_TOKENS,
+  HyperEVM: MAINNET_SWAP_TOKENS,
+  Ink: MAINNET_SWAP_TOKENS,
+  Linea: MAINNET_SWAP_TOKENS,
+  Monad: MAINNET_SWAP_TOKENS,
+  Optimism: MAINNET_SWAP_TOKENS,
+  Plume: MAINNET_SWAP_TOKENS,
+  Polygon: MAINNET_SWAP_TOKENS,
+  Sei: MAINNET_SWAP_TOKENS,
+  Solana: MAINNET_SWAP_TOKENS,
+  Sonic: MAINNET_SWAP_TOKENS,
+  Unichain: MAINNET_SWAP_TOKENS,
+  World_Chain: MAINNET_SWAP_TOKENS,
+  XDC: MAINNET_SWAP_TOKENS,
+};
 
 export function SwapTab({
   kitKey,
@@ -84,13 +86,10 @@ export function SwapTab({
   onSuccess,
   onError,
 }: SwapTabProps) {
-  const { config, engine } = useWhiskContext();
+  const { engine, config } = useWhiskContext();
   const account = useWhiskAccount();
   const swap = useWhiskSwap();
 
-  // Lifecycle bridge — mirrors the transfer side in WhiskSend. Consumers
-  // pass useCallback-stabilised handlers; the effect re-fires on every
-  // state transition without identity churn.
   useEffect(() => {
     onStateChange?.(swap.state);
   }, [swap.state, onStateChange]);
@@ -107,25 +106,75 @@ export function SwapTab({
     }
   }, [swap.state, onSuccess, onError]);
 
-  // Swap is currently testnet-only via Arc Testnet. The dev's
-  // `config.chains` array drives every other surface (transfer,
-  // bridge); the swap picker stays anchored to `SWAP_CHAINS` until
-  // mainnet support flips on. If the host hasn't registered Arc
-  // Testnet at all, we still surface it here — the engine will fail
-  // loudly if the adapter isn't wired, which is the correct error.
-  const chainOptions = SWAP_CHAINS;
+  // Chains the dev configured ∩ App Kit's swap-capable set ∩ the active mode.
+  // The mode filter is a defensive belt — if the dev mis-scoped `chains` for
+  // their mode (e.g. mainnet mode with Arc_Testnet listed), the swap UI still
+  // won't surface the off-mode chain.
+  const mode = engine.config.mode;
+  const chainOptions = useMemo<Chain[]>(
+    () =>
+      config.chains.filter((c) => {
+        if (!SWAP_TOKENS_BY_CHAIN[c]) return false;
+        if (mode && chainInfo(c).network !== mode) return false;
+        return true;
+      }),
+    [config.chains, mode],
+  );
 
   const [chain, setChain] = useState<Chain>(
-    () => defaultChain ?? chainOptions[0] ?? "Arc_Testnet",
+    () =>
+      (defaultChain && SWAP_TOKENS_BY_CHAIN[defaultChain]
+        ? defaultChain
+        : chainOptions[0]) ?? "Arc_Testnet",
   );
+
+  // Tokens supported by the active chain. Falls back to Arc Testnet's set if
+  // the chain isn't in the map (shouldn't happen with chainOptions gating).
+  const tokenOptions = useMemo<Token[]>(
+    () => SWAP_TOKENS_BY_CHAIN[chain] ?? ["USDC", "EURC"],
+    [chain],
+  );
+
   const [tokenIn, setTokenIn] = useState<Token>(defaultTokenIn);
   const [tokenOut, setTokenOut] = useState<Token>(defaultTokenOut);
   const [amount, setAmount] = useState("");
   const [keyInput, setKeyInput] = useState("");
 
+  // Snap tokens back to a valid pair when the chain changes and the previous
+  // selection isn't available on the new chain.
+  useEffect(() => {
+    if (!tokenOptions.includes(tokenIn)) {
+      setTokenIn(tokenOptions[0] ?? "USDC");
+    }
+    if (!tokenOptions.includes(tokenOut)) {
+      const fallback = tokenOptions.find((t) => t !== (tokenIn as Token));
+      setTokenOut(fallback ?? tokenOptions[0] ?? "EURC");
+    }
+  }, [tokenOptions, tokenIn, tokenOut]);
+
   const effectiveKey = kitKey ?? keyInput;
-  const isConnected = account.evm.isConnected;
+  // Swap is per-chain — use the wallet matching the active chain's ecosystem
+  // (Solana mainnet swap needs a Solana wallet; everything else needs EVM).
+  const swapAccount = account.accountFor(chain);
+  const isConnected = swapAccount.isConnected;
   const wrongChain = isConnected && account.isWrongChain(chain);
+
+  // Balance lookup for the You-pay token. Only meaningful when `tokenIn` is a
+  // recognized alias (USDC / EURC / USDT); contract-address inputs skip the
+  // line since useChainBalance can't price arbitrary tokens.
+  const tokenInAlias: SupportedTokenAlias | undefined =
+    tokenIn === "USDC" || tokenIn === "EURC" || tokenIn === "USDT"
+      ? tokenIn
+      : undefined;
+  const balance = useChainBalance(
+    chain,
+    swapAccount.address,
+    tokenInAlias ?? "USDC",
+  );
+  const onMax = () => {
+    const max = balance.selected?.formatted;
+    if (max) setAmount(sanitiseAmount(max));
+  };
 
   const canEstimate =
     isConnected &&
@@ -134,12 +183,7 @@ export function SwapTab({
     parseFloat(amount || "0") > 0 &&
     tokenIn !== tokenOut;
 
-  /* ─── Live "You receive" preview ──────────────────────────────────── *
-   * Calls `engine.estimateSwap` from a debounced effect so the
-   * destination amount fills in as the user types — same UX as Uniswap
-   * / 1inch. Doesn't touch the swap state machine; the real
-   * estimate-and-commit flow still runs when the user clicks "Get quote".
-   */
+  // Debounced preview — fills "You receive" as the user types without touching the swap machine.
   const previewAdapter = useWhiskAdapter(chain);
   const [previewOut, setPreviewOut] = useState<string>("");
   const [previewBusy, setPreviewBusy] = useState(false);
@@ -169,8 +213,7 @@ export function SwapTab({
           setPreviewBusy(false);
         }
       } catch {
-        // Quiet on preview errors — the real "Get quote" path surfaces
-        // them. Clear the value so the user isn't left with stale data.
+        // Preview errors are silent — the real "Get quote" path surfaces them.
         if (!cancelled) {
           setPreviewOut("");
           setPreviewBusy(false);
@@ -193,7 +236,21 @@ export function SwapTab({
     canEstimate,
   ]);
 
-  /* ─── Result / failed ─────────────────────────────────────────────── */
+  if (chainOptions.length === 0) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <header>
+          <h2 style={{ margin: 0, fontSize: "1.0625rem", fontWeight: 600 }}>
+            Swap
+          </h2>
+        </header>
+        <p className="whisk-help" style={{ margin: 0 }}>
+          None of the chains in your config support Swap. Add a swap-capable
+          chain (Arc Testnet, or any supported mainnet) to enable this tab.
+        </p>
+      </div>
+    );
+  }
 
   if (swap.state.kind === "succeeded") {
     return (
@@ -213,8 +270,6 @@ export function SwapTab({
       <FailureView message={swap.state.error.message} onReset={swap.reset} />
     );
   }
-
-  /* ─── Review (estimate ready) ─────────────────────────────────────── */
 
   if (swap.state.kind === "review" || swap.state.kind === "swapping") {
     const e = swap.state.estimate;
@@ -261,12 +316,7 @@ export function SwapTab({
           <Row label="Network" value={chainInfo(chain).label} />
         </div>
 
-        {/* Re-check wrong-chain at submission time. App Kit's permit
-         *  flow requires the wallet to be ACTIVE on the swap chain;
-         *  if the user switched networks between getting a quote and
-         *  clicking swap, the signature would otherwise blow up with
-         *  a viem "Provided chainId X must match the active chainId Y"
-         *  error. Surfacing the switch CTA here recovers cleanly. */}
+        {/* App Kit's permit flow requires the wallet to be active on the swap chain. */}
         {wrongChain ? (
           <Button
             variant="primary"
@@ -306,8 +356,6 @@ export function SwapTab({
     );
   }
 
-  /* ─── Idle / estimating ───────────────────────────────────────────── */
-
   const busy = swap.state.kind === "estimating";
 
   return (
@@ -344,10 +392,9 @@ export function SwapTab({
         onChange={setChain}
       />
 
-      <div className="whisk-amount-row">
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
         <FieldBox
           label="You pay"
-          className="whisk-amount-row__input"
           type="text"
           value={amount}
           onChange={(e) => setAmount(sanitiseAmount(e.target.value))}
@@ -355,12 +402,21 @@ export function SwapTab({
           placeholder="0.0"
           autoComplete="off"
           amount
+          suffix={
+            <TokenPicker
+              value={tokenIn}
+              options={tokenOptions}
+              onChange={setTokenIn}
+            />
+          }
         />
-        <TokenPicker
-          value={tokenIn}
-          options={SWAP_TOKENS}
-          onChange={setTokenIn}
-        />
+        {tokenInAlias && balance.selected ? (
+          <BalanceLine
+            balance={balance.selected.formatted}
+            symbol={balance.selected.symbol}
+            onMax={onMax}
+          />
+        ) : null}
       </div>
 
       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -377,23 +433,22 @@ export function SwapTab({
         </button>
       </div>
 
-      <div className="whisk-amount-row">
-        <FieldBox
-          label="You receive (estimated)"
-          className="whisk-amount-row__input"
-          type="text"
-          value={previewOut}
-          readOnly
-          placeholder={previewBusy ? "Calculating…" : "—"}
-          tabIndex={-1}
-          amount
-        />
-        <TokenPicker
-          value={tokenOut}
-          options={SWAP_TOKENS}
-          onChange={setTokenOut}
-        />
-      </div>
+      <FieldBox
+        label="You receive (estimated)"
+        type="text"
+        value={previewOut}
+        readOnly
+        placeholder={previewBusy ? "Calculating…" : "—"}
+        tabIndex={-1}
+        amount
+        suffix={
+          <TokenPicker
+            value={tokenOut}
+            options={tokenOptions}
+            onChange={setTokenOut}
+          />
+        }
+      />
 
       {wrongChain ? (
         <div className="whisk-banner" role="status">
@@ -444,7 +499,6 @@ export function SwapTab({
 }
 
 function sanitiseAmount(input: string): string {
-  // Allow only digits + a single dot. Strip leading zeros but preserve "0."
   const cleaned = input.replace(/[^0-9.]/g, "");
   const parts = cleaned.split(".");
   if (parts.length <= 1) return cleaned;

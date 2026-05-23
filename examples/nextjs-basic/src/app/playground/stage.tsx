@@ -1,11 +1,7 @@
 "use client";
 
 import { useCallback, type Dispatch } from "react";
-import {
-  WhiskSend,
-  type SwapState,
-  type WhiskState,
-} from "@signordev/whisk-react";
+import { WhiskSend, type SwapState, type WhiskState } from "@usewhisk/react";
 import type { PlaygroundAction, PlaygroundConfig } from "./store";
 
 const KIT_KEY = process.env.NEXT_PUBLIC_CIRCLE_KIT_KEY;

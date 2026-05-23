@@ -1,15 +1,3 @@
-/**
- * Recovery primitives — surfaces that close fund-loss gaps when
- * something fails between source-side burn and destination-side mint.
- *
- * - `persistence` — localStorage-backed restore across browser refresh.
- * - `iris` — direct Circle Iris attestation polling, longer than App
- *   Kit's internal window. Read-only; never costs gas.
- *
- * Coming soon: `cctp` for direct MessageTransmitter mints when App
- * Kit's retry path is exhausted.
- */
-
 export {
   saveInflight,
   loadInflight,
@@ -38,8 +26,6 @@ export type {
   PollAttestationOptions,
 } from "./iris.js";
 
-// Manual mint recovery — submit MessageTransmitter.receiveMessage
-// directly when App Kit's retry path is exhausted.
 export {
   buildReceiveMessageCall,
   messageTransmitterAddress,

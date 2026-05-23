@@ -30,7 +30,7 @@ export function Logo({
         className="h-7 w-auto"
       />
       {showWordmark ? (
-        <span className="font-semibold font-jetbrains tracking-tight text-[1.0625rem] text-foreground">
+        <span className="font-display text-[1.125rem] font-bold tracking-tight text-foreground">
           whisk
         </span>
       ) : null}

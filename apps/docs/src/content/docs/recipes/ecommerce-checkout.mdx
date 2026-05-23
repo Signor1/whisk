@@ -12,7 +12,7 @@ collect a signature.
 ```tsx title="app/checkout/[orderId]/page.tsx"
 "use client";
 
-import { WhiskSend } from "@signordev/whisk-react";
+import { WhiskSend } from "@usewhisk/react";
 import { useRouter } from "next/navigation";
 import { useOrder } from "@/lib/orders";
 
@@ -82,9 +82,8 @@ export async function POST(req, { params }) {
     return new Response("Tx not landed", { status: 400 });
   }
 
-  // Parse the USDC Transfer event from receipt.logs and
-  // confirm amount + recipient match the order.
-  // …
+  // Parse the USDC Transfer event from receipt.logs
+  // and confirm amount + recipient match the order.
 
   await markOrderPaid(params.id, tx);
   return Response.json({ ok: true });

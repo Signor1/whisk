@@ -1,8 +1,4 @@
-/**
- * Headless entry point. Pulls only the engine + hooks — no UI components,
- * no CSS. For host apps that render their own UI on top of Whisk's state
- * machine.
- */
+// Headless entry: engine + hooks only, no UI/CSS.
 export { WhiskProvider } from "./provider/WhiskProvider.js";
 export type { WhiskProviderProps } from "./provider/WhiskProvider.js";
 
@@ -38,4 +34,4 @@ export type {
   Step,
   WhiskState,
   WhiskError,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";

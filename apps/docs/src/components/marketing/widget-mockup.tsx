@@ -90,7 +90,7 @@ export function WidgetMockup({ className }: { className?: string }) {
           parent section, so a soft glow is all that bleeds out). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute lg:-inset-12 -inset-6 -z-10 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_60%)]"
+        className="pointer-events-none absolute lg:-inset-6 -inset-4 -z-10 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_100%)]"
       />
     </div>
   );
@@ -192,7 +192,7 @@ function StageConnect() {
         <Wallet className="h-4 w-4" />
         <span className="font-semibold">Connect to continue</span>
       </div>
-      <p className="mx-auto max-w-xs text-xs text-muted-foreground">
+      <p className="mx-auto max-w-xs text-xs text-foreground/75">
         Send, bridge, or swap USDC across any chain. Whisk never holds your
         keys.
       </p>
@@ -235,7 +235,7 @@ function StageCompose() {
         <TokenPickerStatic />
       </div>
 
-      <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+      <div className="flex items-center justify-between px-1 text-[11px] text-foreground/75">
         <span>
           Balance:{" "}
           <span className="font-mono text-foreground/80">36.178034 USDC</span>
@@ -274,8 +274,8 @@ function StageReview() {
         <span className="text-base font-semibold">Review transfer</span>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        One-hop CCTP bridge — auto-relayed mint on destination.
+      <p className="text-xs text-foreground/75">
+        One-hop CCTP bridge. Auto-relayed mint on destination.
       </p>
 
       <dl className="space-y-1.5 text-[13px]">
@@ -285,7 +285,7 @@ function StageReview() {
       </dl>
 
       <div className="border-t border-dashed border-border/60 pt-2 text-[13px]">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-foreground/75">
           <span>Provider fee</span>
           <span className="font-mono">0.00022 USDC</span>
         </div>
@@ -295,7 +295,7 @@ function StageReview() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-md bg-muted/60 px-2.5 py-1.5 text-[11px] text-foreground/75">
         <Loader2 className="h-3 w-3 animate-spin" />
         <span>~30s · forwarder enabled</span>
       </div>
@@ -327,7 +327,7 @@ function StageSuccess() {
         <h3 className="text-xl font-semibold tracking-tight">
           6 USDC delivered
         </h3>
-        <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+        <p className="mt-0.5 font-mono text-xs text-foreground/75">
           0x0a133e…eb01cd
         </p>
       </div>
@@ -336,7 +336,7 @@ function StageSuccess() {
         <StepRow label="Authorize" done explorer />
         <StepRow label="Burn on source" done explorer />
         <StepRow label="Wait for confirmation" done />
-        <StepRow label="Mint on destination" done explorer accent />
+        <StepRow label="Mint on destination" done explorer />
       </ol>
 
       <button
@@ -353,12 +353,10 @@ function StepRow({
   label,
   done,
   explorer,
-  accent,
 }: {
   label: string;
   done?: boolean;
   explorer?: boolean;
-  accent?: boolean;
 }) {
   return (
     <li className="flex items-center justify-between gap-2">
@@ -367,20 +365,18 @@ function StepRow({
           className={cn(
             "inline-flex h-4 w-4 items-center justify-center rounded-full border",
             done
-              ? accent
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-emerald-500/70 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-              : "border-border text-muted-foreground",
+              ? "border-emerald-500/70 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+              : "border-border text-foreground/75",
           )}
         >
           {done ? <Check className="h-2.5 w-2.5" strokeWidth={3} /> : null}
         </span>
-        <span className={done ? "text-foreground" : "text-muted-foreground"}>
+        <span className={done ? "text-foreground" : "text-foreground/75"}>
           {label}
         </span>
       </span>
       {explorer ? (
-        <span className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground">
+        <span className="inline-flex items-center gap-0.5 text-[11px] text-foreground/75">
           tx <ExternalLink className="h-2.5 w-2.5" />
         </span>
       ) : null}
@@ -412,7 +408,7 @@ function FieldBoxStatic({
         className,
       )}
     >
-      <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="text-[10px] font-medium uppercase tracking-wider text-foreground/75">
         {label}
       </div>
       <div
@@ -451,7 +447,7 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dt className="text-xs text-foreground/75">{label}</dt>
       <dd className={cn(mono && "font-mono", "text-foreground")}>{value}</dd>
     </div>
   );

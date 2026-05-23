@@ -7,9 +7,7 @@ Whisk lives in two packages. The React package pulls in the core
 engine automatically and re-exports the helpers you'll touch most
 often, so installing it once is usually enough:
 
-<InstallCommand
-  packages={["@signordev/whisk-react", "@signordev/whisk-core"]}
-/>
+<InstallCommand packages={["@usewhisk/react", "@usewhisk/core"]} />
 
 The React package speaks to wallets through `wagmi` (EVM) and
 `@solana/wallet-adapter-react` (Solana). If your app already uses
@@ -31,14 +29,14 @@ they never collide with the rest of your app. Import the stylesheet
 at the root of your tree and forget about it:
 
 ```tsx title="app/layout.tsx"
-import "@signordev/whisk-react/styles.css";
+import "@usewhisk/react/styles.css";
 ```
 
 If your bundler refuses CSS imports from `node_modules` (some older
 Webpack setups), reach for the explicit path:
 
 ```tsx
-import "@signordev/whisk-react/dist/styles.css";
+import "@usewhisk/react/dist/styles.css";
 ```
 
 ## Grab a WalletConnect project ID
@@ -62,7 +60,7 @@ Quick sanity check before you move on. Add this to any page in your
 app:
 
 ```tsx
-import { allChains } from "@signordev/whisk-react";
+import { allChains } from "@usewhisk/react";
 
 console.log(allChains().map((c) => c.id));
 ```

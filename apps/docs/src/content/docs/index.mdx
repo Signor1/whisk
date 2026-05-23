@@ -16,8 +16,8 @@ import {
   WhiskSend,
   createWhiskConfig,
   evm,
-} from "@signordev/whisk-react";
-import "@signordev/whisk-react/styles.css";
+} from "@usewhisk/react";
+import "@usewhisk/react/styles.css";
 
 const config = createWhiskConfig({
   wallets: [evm({ projectId: process.env.WALLETCONNECT_PROJECT_ID! })],
@@ -40,8 +40,8 @@ through CCTP; if it's the same chain, it skips the bridge.
 
 ## Two packages
 
-`@signordev/whisk-react` ships the components, hooks, and provider.
-`@signordev/whisk-core` ships the engine that drives them; pure
+`@usewhisk/react` ships the components, hooks, and provider.
+`@usewhisk/core` ships the engine that drives them; pure
 TypeScript, no React import. The React package re-exports the few
 helpers most apps need (`chainInfo`, `composeResolvers`,
 `WhiskError` subclasses), so you almost never have to import from

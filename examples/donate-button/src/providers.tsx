@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from "react";
-import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@usewhisk/react";
 
 /**
  * The donor picks the chain — donations are accepted on every CCTP

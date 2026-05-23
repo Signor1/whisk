@@ -19,7 +19,7 @@ type Quote = {
   amountIn: string; // what the user types
   amountOut: string; // what the recipient receives
   fees: FeeBreakdown; // every line item
-  expiresAt: number; // ms-epoch — quotes get stale
+  expiresAt: number; // ms-epoch, quotes get stale
   recipient: ResolvedRecipient;
   token: Token;
 };
@@ -54,7 +54,7 @@ const config = createWhiskConfig({
   feePolicy: {
     flat: "0.05", // 5¢ flat
     percent: 0.001, // plus 0.1%
-    recipient: "0xYourTreasury…", // your fee wallet
+    recipient: "0xYourTreasury…", // fee wallet
     label: "Platform fee", // shown in the review UI
   },
 });

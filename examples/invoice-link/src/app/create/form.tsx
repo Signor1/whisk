@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { allChains, chainsByNetwork, type Chain } from "@signordev/whisk-react";
+import { allChains, chainsByNetwork, type Chain } from "@usewhisk/react";
 
 const CHAIN_OPTIONS: Chain[] = chainsByNetwork("testnet").map((c) => c.chain);
 

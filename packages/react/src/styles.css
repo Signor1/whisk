@@ -19,10 +19,13 @@
   /* ==========================================================
      Brand surfaces  (override these to match your app)
      ========================================================== */
-  --whisk-bg: #e4e2d4; /* cream */
-  --whisk-fg: #6e4d54; /* wine — primary text */
-  --whisk-fg-muted: #7a5c63; /* soft wine — labels, hints */
-  --whisk-border: #ca9b8f; /* rose */
+  --whisk-bg: #cdc3a3; /* deeper cream */
+  --whisk-fg: #56363d; /* deep wine — primary text */
+  /* Body text — fg at 75% over bg. Matches the marketing site's
+     `text-foreground/75` so the widget reads at the same weight as the
+     surrounding docs / landing surfaces. */
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
+  --whisk-border: #b09382; /* deeper rose */
 
   /* ==========================================================
      Brand accent  (CTA, primary button)
@@ -56,13 +59,17 @@
   --whisk-border-w: 0.5px; /* refined hairline borders */
 
   /* ==========================================================
-     Type  (host apps that already load Plus Jakarta Sans /
-     JetBrains Mono get them; others fall back to native system
-     fonts cleanly. No font files are bundled by the widget —
-     this is just the preferred stack.)
+     Type. The preferred stack matches the marketing site and docs:
+     Inter for body, Familjen Grotesk for display (headlines, amount
+     readouts), JetBrains Mono for code / addresses. Host apps that
+     already load these fonts get them; others fall back cleanly to
+     system fonts. No font files are bundled by the widget itself.
      ========================================================== */
   --whisk-font:
-    "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+  --whisk-font-display:
+    "Familjen Grotesk", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
     system-ui, sans-serif;
   --whisk-font-mono:
     "JetBrains Mono", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
@@ -92,7 +99,7 @@
   [data-whisk]:not([data-whisk-theme="light"]) {
     --whisk-bg: #2a1d21; /* deep wine */
     --whisk-fg: #e4e2d4; /* cream becomes text */
-    --whisk-fg-muted: #b4ad97; /* sage */
+    --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
     --whisk-border: #5c3f46; /* mid wine */
     --whisk-input: #5c3f46;
     --whisk-card: #33232a;
@@ -112,7 +119,7 @@
 [data-whisk].dark {
   --whisk-bg: #2a1d21;
   --whisk-fg: #e4e2d4;
-  --whisk-fg-muted: #b4ad97;
+  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
   --whisk-border: #5c3f46;
   --whisk-input: #5c3f46;
   --whisk-card: #33232a;
@@ -269,6 +276,18 @@
   font-size: 0.6875rem;
   font-weight: 500;
   color: var(--whisk-fg-muted);
+}
+
+/* When the suffix slot holds an interactive control (TokenPicker), the
+   field's `align-items: baseline` would clip the pill at the input's
+   baseline. Center the control vertically instead and let it size itself. */
+[data-whisk] .whisk-fieldbox__control:has(.whisk-token-picker) {
+  align-items: center;
+}
+
+[data-whisk] .whisk-fieldbox__suffix:has(.whisk-token-picker) {
+  margin: 0;
+  padding: 0;
 }
 
 [data-whisk] .whisk-fieldbox--amount .whisk-fieldbox__control input {
@@ -1016,6 +1035,91 @@
   color: var(--whisk-fg-muted);
 }
 
+[data-whisk] .whisk-dialog__back {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--whisk-fg-muted);
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+[data-whisk] .whisk-dialog__back:hover {
+  background: color-mix(in srgb, var(--whisk-fg) 6%, transparent);
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-dialog__back:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 1px;
+}
+
+[data-whisk] .whisk-dialog__eco-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+[data-whisk] .whisk-dialog__eco-card {
+  appearance: none;
+  background: var(--whisk-card);
+  border: 1px solid var(--whisk-border);
+  border-radius: var(--whisk-radius);
+  padding: 0.875rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  text-align: left;
+  color: var(--whisk-fg);
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+[data-whisk] .whisk-dialog__eco-card:hover {
+  border-color: var(--whisk-primary);
+  box-shadow: 0 0 0 1px var(--whisk-primary);
+}
+
+[data-whisk] .whisk-dialog__eco-card:focus-visible {
+  outline: 2px solid var(--whisk-primary);
+  outline-offset: 1px;
+}
+
+[data-whisk] .whisk-dialog__eco-label {
+  grid-column: 1;
+  grid-row: 1;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--whisk-fg);
+}
+
+[data-whisk] .whisk-dialog__eco-desc {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 0.75rem;
+  color: var(--whisk-fg-muted);
+}
+
+[data-whisk] .whisk-dialog__eco-chev {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--whisk-fg-muted);
+}
+
 @keyframes whisk-fade-in {
   from {
     opacity: 0;
@@ -1048,14 +1152,34 @@
   flex-wrap: wrap;
 }
 
-/* Mode indicator row — always sits above everything else so the
- * "Testnet" pill is the first thing the user sees on the card.
- * No bottom margin: the Card's flex gap handles spacing to the
- * next row. */
+/* Mode indicator row — kept for legacy callers but no longer used by
+ * WhiskSend itself, which now ships a single top row instead. */
 [data-whisk] .whisk-mode-row {
   display: flex;
   align-items: center;
   margin: 0;
+}
+
+/* Top row: Testnet pill on the left, account chip + network pill on the
+ * right. Single row using space-between so each side anchors to its
+ * edge. Empty slots are fine — they just don't render children. */
+[data-whisk] .whisk-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+[data-whisk] .whisk-top-row__slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+[data-whisk] .whisk-top-row__slot--end {
+  justify-content: flex-end;
 }
 
 [data-whisk] .whisk-account-chip {
@@ -1276,7 +1400,7 @@
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.4375rem;
+  gap: 0.25rem;
   padding: 0.4375rem 0.625rem 0.4375rem 0.75rem;
   /* Match `whisk-fieldbox` so the token pill reads as a peer of the
      amount input — same border + background tokens, same hairline
@@ -1318,6 +1442,25 @@
 
 [data-whisk] .whisk-token-picker__menu {
   min-width: 8rem;
+}
+
+/* Nested-in-field variant — when the TokenPicker sits inside a FieldBox
+   suffix slot, shrink the height and drop the heavy outer border so it
+   reads as a child of the field rather than competing with it. */
+[data-whisk] .whisk-fieldbox__suffix .whisk-token-picker {
+  height: 1.75rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background: color-mix(in srgb, var(--whisk-fg) 5%, var(--whisk-bg));
+  border-color: color-mix(in srgb, var(--whisk-fg) 8%, transparent);
+}
+
+/* Token picker dropdown row: icon + label as a unit, indicator on the right. */
+[data-whisk] .whisk-select-item__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 /* Hide the native number-input spin buttons inside the amount field.

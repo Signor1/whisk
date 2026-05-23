@@ -1,61 +1,28 @@
 import type { Adapter } from "@solana/wallet-adapter-base";
 import type { SolanaAdapterFactory } from "../types.js";
 
-/**
- * Solana network the adapter targets. Renamed from `SolanaCluster` —
- * "network" reads more naturally alongside EVM chain identifiers in
- * the same config block. The Solana ecosystem calls these "clusters";
- * we keep `cluster` as a deprecated alias on the factory options for
- * one release.
- */
 export type SolanaNetwork = "mainnet-beta" | "devnet" | "testnet";
 
 /** @deprecated Use {@link SolanaNetwork}. */
 export type SolanaCluster = SolanaNetwork;
 
-/**
- * Resolved config the WhiskProvider feeds into
- * `<ConnectionProvider>` + `<WalletProvider>`.
- */
 export type SolanaConfig = {
   network: SolanaNetwork;
   endpoint: string;
   autoConnect: boolean;
-  /**
-   * Explicit wallet adapters. Leave empty (the default) — modern wallets
-   * (Phantom, Solflare, Backpack, ...) advertise themselves via the
-   * Solana Wallet Standard, which `wallet-adapter-react` auto-discovers
-   * at runtime. Adapters here are only needed for legacy / custom
-   * wallets that don't implement the standard.
-   */
+  /** Modern wallets advertise via Wallet Standard; only needed for legacy adapters. */
   wallets: Adapter[];
 };
 
 export type SolanaFactoryOptions = {
-  /** Solana network to target. Defaults to `devnet`. */
+  /** Defaults to `devnet`. */
   network?: SolanaNetwork;
-  /**
-   * @deprecated Renamed to `network`. Still accepted for backward
-   * compatibility; `network` wins when both are passed. Will be
-   * removed in v0.3.
-   */
+  /** @deprecated Renamed to `network`. Removed in v0.3. */
   cluster?: SolanaNetwork;
-  /**
-   * Custom RPC endpoint. Defaults to the public network endpoint, which
-   * is fine for development but rate-limited in production — pass a
-   * paid RPC URL (Helius, Triton, QuickNode) for live apps.
-   */
+  /** Defaults to the public network endpoint — pass a paid RPC for production. */
   endpoint?: string;
-  /**
-   * Auto-reconnect on mount. Off by default — explicit user action is
-   * a saner default for embedded payment widgets where surprising
-   * wallet popups erode trust.
-   */
+  /** Default `false` — explicit user action is saner for embedded widgets. */
   autoConnect?: boolean;
-  /**
-   * Legacy wallet adapters to register alongside Wallet Standard
-   * auto-discovery. Empty by default; modern wallets don't need this.
-   */
   wallets?: Adapter[];
 };
 
@@ -65,19 +32,9 @@ const NETWORK_RPC: Record<SolanaNetwork, string> = {
   testnet: "https://api.testnet.solana.com",
 };
 
-/**
- * Create a Solana wallet adapter factory. Pair with `evm()` in
- * `createWhiskConfig({ wallets: [evm({...}), solana()] })` to enable
- * Solana send + bridge flows.
- *
- * The factory itself is lightweight — it just packages the config the
- * WhiskProvider needs to mount `<ConnectionProvider>` + `<WalletProvider>`.
- * No network calls happen here.
- */
 export function solana(
   options: SolanaFactoryOptions = {},
 ): SolanaAdapterFactory {
-  // `network` wins; `cluster` is the deprecated alias.
   const network = options.network ?? options.cluster ?? "devnet";
   const config: SolanaConfig = {
     network,

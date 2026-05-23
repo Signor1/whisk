@@ -9,7 +9,7 @@ all you need to render a working transfer + bridge widget:
 ```tsx title="app/send/page.tsx"
 "use client";
 
-import { WhiskSend } from "@signordev/whisk-react";
+import { WhiskSend } from "@usewhisk/react";
 
 export default function SendPage() {
   return (
@@ -34,7 +34,8 @@ wallet and the widget walks through the rest:
     breakdown.
   </Step>
   <Step>
-    The user confirms. Whisk submits the transaction and renders a step rail
+    The user confirms. Whisk submits the transaction and renders a step rail{" "}
+    <br />
     (`authorize → burn → wait → mint`) for bridges.
   </Step>
   <Step>
