@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  transpilePackages: ["@signordev/whisk-core", "@signordev/whisk-react"],
+  transpilePackages: ["@usewhisk/core", "@usewhisk/react"],
   webpack: (config) => {
     config.resolve = config.resolve ?? {};
     config.resolve.fallback = {

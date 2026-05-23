@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
-import "@signordev/whisk-react/styles.css";
+import { Familjen_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import "@usewhisk/react/styles.css";
 import "./globals.css";
 
 /**
- * Self-host Plus Jakarta Sans + JetBrains Mono via Next's font API.
- * The widget reads the `--whisk-font` / `--whisk-font-mono` stack,
- * which now lists these two as the preferred families — so loading
- * them here means the widget picks them up automatically without any
- * extra wiring.
+ * Self-host the project's three fonts via Next's font API: Inter for
+ * body, Familjen Grotesk for display, JetBrains Mono for code /
+ * addresses. The widget reads these via its `--whisk-font` /
+ * `--whisk-font-display` / `--whisk-font-mono` stack, so loading them
+ * here means the widget picks them up automatically.
  */
-const sans = Plus_Jakarta_Sans({
+const sans = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const display = Familjen_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -35,7 +42,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+    <html
+      lang="en"
+      className={`${sans.variable} ${display.variable} ${mono.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

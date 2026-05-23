@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from "react";
-import { WhiskProvider, createWhiskConfig, evm } from "@signordev/whisk-react";
+import { WhiskProvider, createWhiskConfig, evm } from "@usewhisk/react";
 
 export function Providers({ children }: { children: ReactNode }) {
   const config = useMemo(

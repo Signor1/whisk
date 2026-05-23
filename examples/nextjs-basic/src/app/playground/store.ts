@@ -1,15 +1,18 @@
 "use client";
 
 import { useReducer } from "react";
-import type { Chain } from "@signordev/whisk-react";
+import type { Chain } from "@usewhisk/react";
 
 export type Theme = "system" | "light" | "dark";
+
+export type Palette = "wine" | "indigo" | "emerald" | "amber";
 
 export type EventKind = "state" | "success" | "error" | "info";
 
 export type PlaygroundConfig = {
   /* Provider-level — drives <WhiskProvider theme=…> */
   theme: Theme;
+  palette: Palette;
 
   /* Surface toggles */
   showFooter: boolean;
@@ -52,6 +55,7 @@ export type PlaygroundAction =
  * starting points. Theme stays "system" so first paint matches the OS. */
 export const INITIAL_CONFIG: PlaygroundConfig = {
   theme: "system",
+  palette: "wine",
   showFooter: true,
   swapEnabled: true,
   lockAmount: false,
@@ -83,13 +87,14 @@ function reducer(
 
     case "APPLY_PRESET":
       // Reset to initial first, then layer the preset — keeps the user
-      // from inheriting stale locks from the previous preset. Theme is
-      // preserved because it's a UI preference, not a payment shape.
+      // from inheriting stale locks from the previous preset. Theme and
+      // palette are preserved because they're UI preferences, not payment shape.
       return {
         ...state,
         config: {
           ...INITIAL_CONFIG,
           theme: state.config.theme,
+          palette: state.config.palette,
           ...action.config,
         },
       };
