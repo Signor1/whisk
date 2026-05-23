@@ -3,22 +3,26 @@ title: ConnectModal
 description: The wallet picker dialog. Used inside WhiskSend; exposed so you can mount it in your own UI.
 ---
 
-`<ConnectModal>` is the Radix Dialog that lists every wallet in your
-config (EVM and Solana) and runs the connect flow on click.
+`<ConnectModal>` is the Radix Dialog that drives wallet selection.
+It's an **ecosystem-first** two-step picker: the user first chooses
+an ecosystem (EVM / Solana — Stellar and Starknet slots later), then
+picks a wallet within that ecosystem. The wallet list is scoped to
+the chosen branch so MetaMask under EVM and MetaMask Snap under
+Solana can never get crossed.
+
 `<WhiskSend>` opens it when the user clicks the connect CTA. Import
 it directly only if you're building your own shell.
 
 ```tsx
-import { ConnectModal } from "@signordev/whisk-react";
+import { ConnectModal } from "@usewhisk/react";
 ```
 
 ## Props
 
-| Prop           | Type                      | Notes                                    |
-| -------------- | ------------------------- | ---------------------------------------- |
-| `open`         | `boolean`                 | Whether the modal is open.               |
-| `onOpenChange` | `(open: boolean) => void` | Fires on every open/close.               |
-| `trigger`      | `ReactNode`               | Optional Radix `Dialog.Trigger` element. |
+| Prop           | Type                      | Notes                      |
+| -------------- | ------------------------- | -------------------------- |
+| `open`         | `boolean`                 | Whether the modal is open. |
+| `onOpenChange` | `(open: boolean) => void` | Fires on every open/close. |
 
 ## Controlled
 
@@ -29,13 +33,21 @@ const [open, setOpen] = useState(false);
 <ConnectModal open={open} onOpenChange={setOpen} />
 ```
 
-## With a trigger
+## Behaviour
 
-```tsx
-<ConnectModal
-  trigger={<Button variant="primary">Sign in with wallet</Button>}
-/>
-```
+- **Ecosystem step** — shown when the provider config registers more
+  than one ecosystem (e.g. both `evm()` and `solana()`). If only one
+  is configured, the modal skips straight to that ecosystem's wallet
+  list (no pointless extra click).
+- **Back button** — visible on the wallet-list step when both
+  ecosystems are configured. Returns to the ecosystem picker.
+- **Auto-close** — fires when the connection on the ecosystem the
+  user picked completes. Connections on the _other_ ecosystem (e.g.
+  wagmi auto-reconnect mid-Solana flow) don't close the modal, so
+  the picked flow can finish.
+- **Errors surface inline.** EVM connector errors and Solana
+  adapter errors render under the wallet list rather than being
+  swallowed.
 
 Once the user connects, the modal closes itself. From there, your
 own UI (or any Whisk component) can read connection state from

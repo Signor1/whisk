@@ -38,7 +38,7 @@ type TabLockOptions = {
   /** BroadcastChannel name. Default: "whisk-tab-lock". */
   channelName?: string;
 
-  /** Heartbeat interval (ms) — holder re-broadcasts HELD at this cadence. Default 3000. */
+  /** Heartbeat interval (ms). Holder re-broadcasts HELD at this cadence. Default 3000. */
   heartbeatMs?: number;
 
   /** Stale timeout (ms). Locks not heard from in this window are presumed dead. Default 15000. */
@@ -64,7 +64,7 @@ type TabLock = {
   /** True when *another* tab currently holds the lock for this scope. */
   isLockedByOther: boolean;
 
-  /** Local tab ID — useful for debugging / telemetry. */
+  /** Local tab ID. Useful for debugging / telemetry. */
   tabId: string;
 };
 ```
@@ -78,7 +78,7 @@ disabled?" without needing to know who holds the lock.
 ```tsx
 "use client";
 
-import { useWhisk, useTabLock } from "@signordev/whisk-react";
+import { useWhisk, useTabLock } from "@usewhisk/react";
 
 export function CustomSend({ sourceChain }: { sourceChain: Chain }) {
   const { state, actions, address } = useWhisk();
@@ -87,7 +87,7 @@ export function CustomSend({ sourceChain }: { sourceChain: Chain }) {
   );
 
   const handleSend = async () => {
-    if (!lock.acquire()) return; // another tab beat us to it
+    if (!lock.acquire()) return; // another tab holds the lock
     try {
       await actions.send();
     } finally {

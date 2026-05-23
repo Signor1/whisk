@@ -1,6 +1,6 @@
 ---
 title: User-controlled wallets
-description: Onboard users with email, Google, or PIN — give them a Circle MPC wallet, then drive sends from your backend with @signordev/whisk-core handling the routing.
+description: Onboard users with email, Google, or PIN — give them a Circle MPC wallet, then drive sends from your backend with @usewhisk/core handling the routing.
 ---
 
 If you're building for an audience that has never touched a crypto
@@ -56,7 +56,7 @@ Four moving parts, plus your own app code:
    always). Mints device + user session tokens, initialises wallets,
    requests transactions. Every Circle endpoint that needs the API
    key sits here.
-4. **`@signordev/whisk-core`.** Whisk's engine. Your backend calls it
+4. **`@usewhisk/core`.** Whisk's engine. Your backend calls it
    for recipient resolution (ENS, ENSIP-11) and route quoting
    (same-chain vs CCTP); you don't call `engine.send` against a UCW
    wallet today, the actual signing goes through Circle.
@@ -69,9 +69,7 @@ the challenge in the browser.
 
 ## Install
 
-<InstallCommand
-  packages={["@signordev/whisk-core", "@circle-fin/w3s-pw-web-sdk"]}
-/>
+<InstallCommand packages={["@usewhisk/core", "@circle-fin/w3s-pw-web-sdk"]} />
 
 ## Wire it up
 
@@ -208,7 +206,7 @@ export default function Onboard() {
       async (err, result) => {
         if (err || !result) return;
 
-        // Login succeeded — initialise user and create wallet
+        // Login succeeded. Initialise user and create wallet.
         const init = await call("initializeUser", {
           userToken: result.userToken,
         });
@@ -223,7 +221,7 @@ export default function Onboard() {
             userToken: result.userToken,
           });
           setWallet({ id: wallets[0].id, address: wallets[0].address });
-          // Persist `result.userToken` server-side; you'll need it for sends.
+          // Persist `result.userToken` server-side. Needed for sends.
         });
       },
     );
@@ -251,7 +249,7 @@ This is where Whisk's engine enters. You ask the engine to resolve the
 recipient and quote the route; you ask Circle to sign.
 
 ```ts title="lib/send-from-ucw.ts"
-import { createWhisk } from "@signordev/whisk-core";
+import { createWhisk } from "@usewhisk/core";
 
 const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia"],
@@ -271,20 +269,16 @@ export async function prepareUcwSend({
   amount: string;
   destinationChain: "Arc_Testnet" | "Base_Sepolia";
 }) {
-  // Engine handles ENS / ENSIP-11 / address validation against the
-  // destination chain.
   const resolved = await engine.resolve(recipient, destinationChain);
 
-  // Engine decides route (same-chain vs CCTP) and returns fee preview.
   const quote = await engine.quote({
     recipient: resolved,
     amount,
     sourceChain: "Arc_Testnet",
   });
 
-  // Circle's API signs the transaction. Returns a challengeId for the
-  // browser SDK to execute (which surfaces Circle's confirmation UI to
-  // the user).
+  // Circle signs server-side and returns a challengeId for the
+  // browser SDK to execute.
   const transfer = await fetch("/api/circle", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -315,9 +309,8 @@ const { challengeId, quote } = await prepareUcwSend({
 
 sdkRef.current!.execute(challengeId, (err, result) => {
   if (err) return;
-  // result.status === "COMPLETE" → tx submitted by Circle
-  // Poll your /transactions endpoint or subscribe to Circle webhooks
-  // for the on-chain confirmation.
+  // result.status === "COMPLETE" means Circle submitted. Poll
+  // /transactions or use a webhook for the on-chain receipt.
 });
 ```
 

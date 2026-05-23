@@ -9,11 +9,11 @@ it narrows in your editor, gives you autocomplete, and refuses bad
 input at compile time.
 
 ```ts
-import type { Chain } from "@signordev/whisk-react";
+import type { Chain } from "@usewhisk/react";
 
-const ok: Chain = "Base_Sepolia"; // ✓
-// @ts-expect-error
-const bad: Chain = "ethereum"; // ✗ — not in the union
+const ok: Chain = "Base_Sepolia";
+// @ts-expect-error: "ethereum" isn't in the Chain union
+const bad: Chain = "ethereum";
 ```
 
 The shape is `"Network_Variant"` for clarity:
@@ -29,7 +29,7 @@ The shape is `"Network_Variant"` for clarity:
 
 ## Helpers
 
-All re-exported from `@signordev/whisk-react`. Import from there
+All re-exported from `@usewhisk/react`. Import from there
 unless you're working inside core itself.
 
 ### `allChains(): ChainInfo[]`
@@ -53,7 +53,7 @@ All testnets, or all mainnets. Good for filtering chain pickers
 during development.
 
 ```ts
-import { chainsByNetwork } from "@signordev/whisk-react";
+import { chainsByNetwork } from "@usewhisk/react";
 
 const testnets = chainsByNetwork("testnet");
 ```
@@ -85,7 +85,7 @@ Build the block-explorer URL for an address.
 ## Putting them together
 
 ```tsx
-import { useWhisk, chainInfo, explorerTxUrl } from "@signordev/whisk-react";
+import { useWhisk, chainInfo, explorerTxUrl } from "@usewhisk/react";
 
 function SuccessLink() {
   const { state } = useWhisk();

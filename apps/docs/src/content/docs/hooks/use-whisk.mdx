@@ -8,7 +8,7 @@ reach for first when you need a custom UI. It returns the current
 state, a stable actions object, and shortcuts for connection state.
 
 ```tsx
-import { useWhisk } from "@signordev/whisk-react";
+import { useWhisk } from "@usewhisk/react";
 ```
 
 ## Returns
@@ -43,7 +43,7 @@ a `useEffect` dependency array; it won't trigger re-runs.
 ```tsx title="components/custom-send.tsx"
 "use client";
 import { useState } from "react";
-import { useWhisk } from "@signordev/whisk-react";
+import { useWhisk } from "@usewhisk/react";
 
 export function CustomSend() {
   const { state, actions, connected, address } = useWhisk();
@@ -82,8 +82,8 @@ export function CustomSend() {
       <button
         onClick={async () => {
           await actions.resolve(recipient, "Base_Sepolia");
-          // Read state.kind === "idle" + state.recipient,
-          // then call actions.quote(...) to push into review.
+          // Read state.recipient when state.kind === "idle",
+          // then actions.quote(...) to push into review.
         }}
       >
         Continue

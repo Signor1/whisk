@@ -37,14 +37,14 @@ needs to sign on behalf of a wallet you control, you want this page.
    the Circle API. Each wallet has an address per chain.
 2. **A Circle API key** that authorises your backend to sign
    transactions on that wallet.
-3. **The `@signordev/whisk-core` package.** No React. The engine is
+3. **The `@usewhisk/core` package.** No React. The engine is
    pure TypeScript.
 4. **The Circle Wallets adapter package**, `@circle-fin/adapter-circle-wallets`.
 
 ## Install
 
 <InstallCommand
-  packages={["@signordev/whisk-core", "@circle-fin/adapter-circle-wallets"]}
+  packages={["@usewhisk/core", "@circle-fin/adapter-circle-wallets"]}
 />
 
 ## Wire it up
@@ -52,34 +52,20 @@ needs to sign on behalf of a wallet you control, you want this page.
 Three steps: create the adapter, create the engine, send.
 
 ```ts title="server/usdc-sender.ts"
-import { createWhisk } from "@signordev/whisk-core";
+import { createWhisk } from "@usewhisk/core";
 import { createCircleWalletsAdapter } from "@circle-fin/adapter-circle-wallets";
 
-/**
- * Adapter — talks to Circle's Wallets API on your service's behalf.
- * The entity secret and API key never leave the server.
- */
 const adapter = await createCircleWalletsAdapter({
   apiKey: process.env.CIRCLE_API_KEY!,
   entitySecret: process.env.CIRCLE_ENTITY_SECRET!,
-  walletId: process.env.CIRCLE_WALLET_ID!, // the DCW that holds the USDC
+  walletId: process.env.CIRCLE_WALLET_ID!,
 });
 
-/**
- * Engine — same constructor the widget uses internally. Chains array
- * limits the routes the engine will consider; trim it to the
- * networks your treasury actually operates on.
- */
 const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia"],
   defaultSourceChain: "Arc_Testnet",
 });
 
-/**
- * Send 100 USDC to a recipient. Same `quote → send` shape the
- * widget uses — the engine doesn't know or care that no React tree
- * is mounted.
- */
 export async function sendUsdc(toAddress: string, amount: string) {
   const recipient = await engine.resolve(toAddress, "Base_Sepolia");
 

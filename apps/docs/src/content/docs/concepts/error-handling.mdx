@@ -79,8 +79,8 @@ Mount `<WhiskSend>` and you get all of this without writing a line:
 
 For most apps, the defaults are enough. When you want to build custom
 UI, headless flows, or back-office tooling, the primitives are public.
-All live in `@signordev/whisk-core/recovery` (server-friendly, no React
-dependency) and are re-exported from `@signordev/whisk-core` for
+All live in `@usewhisk/core/recovery` (server-friendly, no React
+dependency) and are re-exported from `@usewhisk/core` for
 convenience.
 
 ### Persistence
@@ -92,7 +92,7 @@ import {
   clearInflight,
   listInflightSnapshots,
   type InflightSnapshot,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 ```
 
 `saveInflight(snapshot)` writes a recovery snapshot to localStorage,
@@ -113,7 +113,7 @@ import {
   pollAttestation,
   fetchAttestationOnce,
   type IrisMessage,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 ```
 
 `pollAttestation(sourceChain, burnTxHash, options)` polls Circle's Iris
@@ -129,7 +129,7 @@ const result = await pollAttestation("Avalanche_Fuji", burnTxHash, {
   onUpdate: (msg) => console.log("Iris status:", msg.status),
 });
 if (result.status === "complete") {
-  // result.message + result.attestation are ready to submit
+  // result.message + result.attestation ready to submit
 }
 ```
 
@@ -144,7 +144,7 @@ import {
   messageTransmitterAddress,
   RECEIVE_MESSAGE_ABI,
   type ReceiveMessageCall,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 ```
 
 `buildReceiveMessageCall(destinationChain, message, attestation)`
@@ -162,7 +162,7 @@ const call = buildReceiveMessageCall(
   attestation,
 );
 if (!call) {
-  // No MessageTransmitter registered for this chain — fall back to
+  // No MessageTransmitter registered for this chain. Fall back to
   // App Kit retry or surface the attestation copy-paste escape hatch.
   return;
 }
@@ -180,7 +180,7 @@ call.
 ### Domain helpers
 
 ```ts
-import { cctpDomainFor, chainForCctpDomain } from "@signordev/whisk-core";
+import { cctpDomainFor, chainForCctpDomain } from "@usewhisk/core";
 ```
 
 CCTP identifies chains by _domain_ numbers (Ethereum is 0, Base is 6,
@@ -213,7 +213,7 @@ import {
   saveInflight,
   clearInflight,
   serializeError,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 
 const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia", "Polygon_Amoy_Testnet"],
@@ -247,7 +247,7 @@ async function bridgeWithRecovery({
     (s) => s.name === "mint" && s.state === "success",
   );
   if (!burned || minted || !result.raw) {
-    // Pre-burn failure or already fully landed — propagate.
+    // Pre-burn failure or already fully landed. Propagate.
     return result;
   }
 
@@ -286,9 +286,8 @@ async function bridgeWithRecovery({
     timeout: 5 * 60_000,
   });
   if (iris.status !== "complete" || !iris.message || !iris.attestation) {
-    // Iris itself failed. Surface the snapshot so the user can resume
-    // later — clearInflight is NOT called here. The widget would
-    // restore on next mount.
+    // Iris failed. Surface the snapshot so the user can resume later.
+    // clearInflight is NOT called here. The widget restores on next mount.
     return retried;
   }
 
@@ -297,8 +296,7 @@ async function bridgeWithRecovery({
 
   // Submit `receiveMessage` via your own wallet plumbing here.
   // CCTP's nonce tracking on `MessageTransmitter` makes this safe to
-  // retry — duplicate submissions revert at the protocol level.
-  // ...
+  // retry. Duplicate submissions revert at the protocol level.
 }
 ```
 

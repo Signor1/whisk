@@ -20,7 +20,7 @@ class WhiskError extends Error {
   readonly retryable: boolean;
   readonly step?: StepName; // present for bridge step failures
   readonly category?: WhiskErrorCategory; // machine-readable cause
-  readonly cause?: unknown; // original throw
+  readonly cause?: unknown; // underlying throw
 }
 ```
 
@@ -68,7 +68,7 @@ type WhiskErrorCategory =
   | "reverted_onchain" // mined and reverted on chain
   | "partial_reverted" // some calls in a batch reverted
   | "chain_revert" // chain-level revert (reorg / dropped)
-  | "unknown"; // App Kit couldn't categorise
+  | "unknown"; // uncategorised
 ```
 
 The `polling_timeout` category is what you'd see for the Polygon Amoy →
@@ -87,7 +87,7 @@ import {
   InsufficientBalanceError,
   WalletCapabilityError,
   OnchainRevertError,
-} from "@signordev/whisk-react";
+} from "@usewhisk/react";
 
 const { state } = useWhisk();
 
@@ -95,7 +95,7 @@ if (state.kind === "failed") {
   const err = state.error;
 
   if (err instanceof UserRejectedError) {
-    // The user already knows they cancelled. Don't yell at them.
+    // User already knows they cancelled. Silent.
     return null;
   }
 
@@ -104,8 +104,7 @@ if (state.kind === "failed") {
   }
 
   if (err instanceof WalletCapabilityError) {
-    // Wallet rejected an EIP-5792 / atomic-batch flow. Suggest a wallet
-    // that supports it, or guide them through manual recovery.
+    // Wallet rejected an EIP-5792 / atomic-batch flow.
     return (
       <p>
         Your wallet doesn't support batched signing on this chain. Try
@@ -122,7 +121,7 @@ if (state.kind === "failed") {
     return <Banner tone="destructive">{err.message}</Banner>;
   }
 
-  // Shouldn't happen — the engine wraps unknowns into a WhiskError.
+  // Shouldn't happen. The engine wraps unknowns into a WhiskError.
   Sentry.captureException(err);
   return <p>Something went wrong.</p>;
 }
@@ -138,7 +137,7 @@ matching on `message`:
 if (state.kind === "failed" && state.error.category) {
   switch (state.error.category) {
     case "user_rejected":
-      return null; // silent abort
+      return null;
     case "polling_timeout":
       return (
         <p>Submission is taking longer than expected; check the explorer.</p>
@@ -169,12 +168,12 @@ when you have an App Kit `BridgeStep.errorCategory` available — the
 helper will pick the right subclass:
 
 ```ts
-import { toWhiskError } from "@signordev/whisk-core";
+import { toWhiskError } from "@usewhisk/core";
 
 try {
   await engine.send({ quote, adapter });
 } catch (raw) {
-  throw toWhiskError(raw); // always a WhiskError after this point
+  throw toWhiskError(raw); // always a WhiskError after this
 }
 ```
 

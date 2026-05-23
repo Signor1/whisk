@@ -3,9 +3,9 @@ title: Types
 description: The shape of every value Whisk hands you.
 ---
 
-All types are exported from `@signordev/whisk-react`. The
+All types are exported from `@usewhisk/react`. The
 engine-level ones (`Chain`, `Quote`, `WhiskState`, etc.) are
-re-exports of the same types from `@signordev/whisk-core`.
+re-exports of the same types from `@usewhisk/core`.
 
 ## `Chain`, `ChainKind`, `ChainNetwork`
 
@@ -21,7 +21,7 @@ type Chain = "Arc" | "Arc_Testnet" | "Base" | "Base_Sepolia";
 ## `Token`
 
 ```ts
-type Token = "USDC"; // USDC for now; widens as more tokens land
+type Token = "USDC"; // USDC for now, widens as more tokens land
 ```
 
 ## `ResolvedRecipient`
@@ -32,7 +32,7 @@ What a resolver returns and what `engine.quote(...)` accepts.
 type ResolvedRecipient = {
   chain: Chain;
   address: string;
-  /** Display label — typically the original ENS name. */
+  /** Display label, typically the original ENS name. */
   display?: string;
 };
 ```
@@ -99,7 +99,7 @@ type Quote = {
 
 ```ts
 type FeePolicy = {
-  flat?: string; // "0.05" — flat fee in USDC
+  flat?: string; // "0.05", flat fee in USDC
   percent?: number; // 0.001 = 0.1%
   recipient?: string;
   label?: string; // shown in the review UI
