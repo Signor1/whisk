@@ -8,7 +8,7 @@ export type ResolverContext = {
 export type Resolver = {
   name: string;
 
-  /** Cheap synchronous check. First-match wins; later resolvers never see the input. */
+  /** Synchronous check. First-match wins; later resolvers never see the input. */
   matches: (input: string) => boolean;
 
   /** Return `null` for "tried and gave up". Throw `ResolverError` on unexpected failure. */
