@@ -1,15 +1,6 @@
-import { ConfigError } from "@signordev/whisk-core";
+import { ConfigError } from "@usewhisk/core";
 import type { CreateWhiskConfigOptions, WhiskClientConfig } from "./types.js";
 
-/**
- * Validate and freeze the options passed by the host app. The provider
- * reads from this object once on mount; misconfigurations surface
- * immediately at config time rather than at first send.
- *
- * Keeping the function tiny on purpose — most fields are pass-through.
- * The validations focus on combinations that produce confusing runtime
- * failures (empty chains, defaults not in the chain list, etc.).
- */
 export function createWhiskConfig(
   options: CreateWhiskConfigOptions,
 ): WhiskClientConfig {

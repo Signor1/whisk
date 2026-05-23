@@ -15,22 +15,12 @@ import {
 } from "wagmi/chains";
 import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
 import { defineChain, fallback, http, type Chain as ViemChain } from "viem";
-import type { Chain } from "@signordev/whisk-core";
+import type { Chain } from "@usewhisk/core";
 import type { EvmAdapterFactory } from "../types.js";
 
-/**
- * Whisk → viem chain mapping. Every Whisk EVM chain has a viem `Chain`
- * counterpart so wagmi knows which RPCs to use, what the chain ID is, etc.
- *
- * For chains where viem ships a built-in entry whose `id` matches App
- * Kit's chain ID, we reuse the viem export. For chains where there's a
- * mismatch (e.g. Sonic Testnet — App Kit uses 14601, viem ships 57054)
- * or no viem entry at all (Arc Testnet, HyperEVM Testnet, etc.) we
- * `defineChain` inline. The chain IDs here MUST match App Kit's table —
- * any drift breaks `useSwitchChain` / wallet-side network detection.
- */
-
-/* ─── Custom EVM chain definitions (App Kit-aligned) ─────────────────── */
+// Chain IDs MUST match App Kit's table — drift breaks `useSwitchChain` and
+// wallet-side network detection. For chains where viem's built-in id disagrees
+// (e.g. Sonic Testnet) or has no entry, `defineChain` inline.
 
 const ARC_TESTNET = defineChain({
   id: 5_042_002,
@@ -41,16 +31,6 @@ const ARC_TESTNET = defineChain({
     default: { name: "Arc Explorer", url: "https://testnet.arcscan.app" },
   },
   testnet: true,
-});
-
-const ARC_MAINNET = defineChain({
-  id: 5_042_001,
-  name: "Arc",
-  nativeCurrency: { name: "Arc", symbol: "ARC", decimals: 18 },
-  rpcUrls: { default: { http: ["https://rpc.arc.network"] } },
-  blockExplorers: {
-    default: { name: "Arc Explorer", url: "https://arcscan.app" },
-  },
 });
 
 const CODEX_MAINNET = defineChain({
@@ -309,8 +289,6 @@ const XDC_APOTHEM = defineChain({
   testnet: true,
 });
 
-/* ─── Whisk → viem mapping ────────────────────────────────────────────── */
-
 const VIEM_CHAIN_BY_WHISK: Partial<Record<Chain, ViemChain>> = {
   // Mainnets
   Arbitrum: arbitrum,
@@ -349,91 +327,23 @@ const VIEM_CHAIN_BY_WHISK: Partial<Record<Chain, ViemChain>> = {
   Unichain_Sepolia: UNICHAIN_SEPOLIA,
   World_Chain_Sepolia: WORLD_CHAIN_SEPOLIA,
   XDC_Apothem: XDC_APOTHEM,
-  // Arc mainnet — also defined here in case devs opt in via createWhiskConfig
-  // even though no Whisk Chain literal currently exposes it; kept around so
-  // we can add an "Arc" Chain literal without re-touching this file.
-  // (referenced by `arcMainnet` but not bound to a Whisk Chain key yet)
 };
 
-// Suppress unused-variable warning for the Arc mainnet definition kept
-// for future re-binding. eslint-disable-next-line is intentional.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _arcMainnet = ARC_MAINNET;
-
-/**
- * Look up the viem `Chain` definition for a Whisk chain.
- *
- * Used by `useWhiskAccount.switchChain` to build a
- * `wallet_addEthereumChain` parameter so MetaMask offers to add the
- * network when the user doesn't already have it configured. Without
- * this, switching to a long-tail chain (Arc Testnet, Monad Testnet,
- * HyperEVM Testnet, etc.) hard-fails on first use.
- */
+/** Source for `wallet_addEthereumChain` so MetaMask can add unknown long-tail chains. */
 export function viemChainForWhisk(chain: Chain): ViemChain | undefined {
   return VIEM_CHAIN_BY_WHISK[chain];
 }
 
 export type EvmFactoryOptions = {
-  /**
-   * The Whisk chains this EVM adapter should be configured for. Only EVM
-   * chains in this list get a viem chain entry in the wagmi config; non-
-   * EVM chains (Solana) are silently ignored. If omitted, the wagmi
-   * config will include a balanced set of common testnets.
-   */
   chains?: Chain[];
-
-  /**
-   * WalletConnect Cloud project ID — required for WalletConnect connector.
-   * Free at https://cloud.walletconnect.com. Omit it to disable
-   * WalletConnect; injected (MetaMask, Rabby, browser-extension wallets)
-   * and Coinbase Wallet still work.
-   */
+  /** WalletConnect Cloud project ID — free at https://cloud.walletconnect.com. */
   projectId?: string;
-
-  /**
-   * Override the default RPC for one or more chains. Strongly
-   * recommended for production — public RPCs are rate-limited and
-   * frequently the cause of timeouts.
-   *
-   * Pass a single URL string to replace the default; pass an array of
-   * URLs to install a viem `fallback` transport that tries them in
-   * order with automatic re-ranking, so a stuck RPC doesn't kill
-   * the whole flow.
-   *
-   * ```ts
-   * rpcUrls: {
-   *   // single
-   *   Base_Sepolia: "https://base-sepolia.infura.io/v3/<KEY>",
-   *   // fallback chain
-   *   Arc_Testnet: [
-   *     "https://rpc.testnet.arc.network",
-   *     "https://arc-testnet.drpc.org",
-   *     "https://rpc.blockdaemon.testnet.arc.network",
-   *   ],
-   * }
-   * ```
-   */
+  /** Pass an array for a viem `fallback` transport with latency ranking. */
   rpcUrls?: Partial<Record<Chain, string | string[]>>;
-
-  /**
-   * Display name shown to users in WalletConnect / Coinbase wallet
-   * pairing dialogs.
-   */
+  /** Shown in WalletConnect / Coinbase pairing dialogs. */
   appName?: string;
 };
 
-/**
- * Create an EVM wallet adapter factory backed by wagmi v2.
- *
- * Connectors enabled:
- * - **injected** — MetaMask, Rabby, Brave, Frame, any EIP-1193 extension.
- * - **coinbaseWallet** — Coinbase Wallet (mobile + extension).
- * - **walletConnect** — only when `projectId` is provided.
- *
- * The function returns an opaque marker that `WhiskProvider` consumes to
- * mount `WagmiProvider`. Importing `evm()` is what brings wagmi into your
- * app's bundle; apps that don't call it don't pay for wagmi at all.
- */
 export function evm(options: EvmFactoryOptions = {}): EvmAdapterFactory {
   const chainList = options.chains ?? [
     "Arc_Testnet",
@@ -445,9 +355,7 @@ export function evm(options: EvmFactoryOptions = {}): EvmAdapterFactory {
     .filter((c): c is ViemChain => Boolean(c));
 
   if (viemChains.length === 0) {
-    // No EVM chains supplied — the factory still returns a valid (but
-    // empty) wagmi config so the provider can mount; the engine refuses
-    // to operate on these chains until the dev adds at least one.
+    // wagmi requires at least one chain to construct a Config.
     viemChains.push(sepolia);
   }
 
@@ -456,13 +364,6 @@ export function evm(options: EvmFactoryOptions = {}): EvmAdapterFactory {
       const whiskKey = whiskKeyForViemChain(chain.id, chainList);
       const configured = whiskKey ? options.rpcUrls?.[whiskKey] : undefined;
 
-      // String → single HTTP transport.
-      // Array → viem `fallback`: tries each in order, automatically
-      //   re-ranks by latency (sampleInterval defaults to ~10s), and
-      //   drops to the next if one returns a 5xx, times out, or
-      //   throws a network error. Pure win over a single URL.
-      // Undefined → viem picks up the default RPC declared on the
-      //   viem chain (see VIEM_CHAIN_BY_WHISK above).
       if (Array.isArray(configured) && configured.length > 0) {
         return [
           chain.id,
@@ -478,10 +379,7 @@ export function evm(options: EvmFactoryOptions = {}): EvmAdapterFactory {
     }),
   );
 
-  // wagmi's createConfig has overloads with non-empty tuple constraints on
-  // `chains`. We've already guaranteed at least one chain above so the
-  // cast is safe — it's a known limitation of TS narrowing across array
-  // .filter calls.
+  // Cast: wagmi requires a non-empty tuple, but TS can't narrow it through `.filter`.
   const config = createConfig({
     chains: viemChains as [ViemChain, ...ViemChain[]],
     transports,

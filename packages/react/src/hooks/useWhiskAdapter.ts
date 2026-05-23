@@ -9,11 +9,7 @@ import { createViemAdapterFromProvider } from "@circle-fin/adapter-viem-v2";
 import { SolanaKitAdapter } from "@circle-fin/adapter-solana-kit";
 import { Solana, SolanaDevnet } from "@circle-fin/app-kit/chains";
 import { address as kitAddress, createSolanaRpc } from "@solana/kit";
-import {
-  chainInfo,
-  type Chain,
-  type WhiskAdapter,
-} from "@signordev/whisk-core";
+import { chainInfo, type Chain, type WhiskAdapter } from "@usewhisk/core";
 import { safeUseConnection, safeUseWallet } from "./internal/safeSolana.js";
 
 export function useWhiskAdapter(

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType, SVGAttributes } from "react";
-import type { Chain } from "@signordev/whisk-core";
+import type { Chain } from "@usewhisk/core";
 
 import {
   NetworkArbitrumOne,

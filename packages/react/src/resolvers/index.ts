@@ -5,7 +5,7 @@ import {
   composeResolvers,
   type Resolver,
   type WhiskMode,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import {
   createEnsResolver,
   ensResolver,

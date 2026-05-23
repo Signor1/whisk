@@ -1,8 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-import type { Chain, Quote, Token, WhiskState } from "@signordev/whisk-core";
+import type { Chain, Quote, Token, WhiskState } from "@usewhisk/core";
 import type { SwapState } from "../hooks/useWhiskSwap.js";
 import { useWhisk } from "../hooks/useWhisk.js";
 import { useWhiskContext } from "../hooks/useWhiskContext.js";
@@ -97,6 +103,31 @@ export function WhiskSend({
   const { manualMint } = useManualMint();
   const mode = engine.config.mode ?? "testnet";
 
+  // Remember the chains the user picked, so a reset after a successful send
+  // re-seeds InputStep with their last selection instead of the config default.
+  // Lives here (above InputStep) so it survives InputStep unmounts.
+  const [rememberedSource, setRememberedSource] = useState<Chain | undefined>(
+    undefined,
+  );
+  const [rememberedDest, setRememberedDest] = useState<Chain | undefined>(
+    undefined,
+  );
+
+  const handleSourceChainChange = useCallback(
+    (chain: Chain) => {
+      setRememberedSource(chain);
+      onSourceChainChange?.(chain);
+    },
+    [onSourceChainChange],
+  );
+  const handleDestinationChainChange = useCallback(
+    (chain: Chain) => {
+      setRememberedDest(chain);
+      onDestinationChainChange?.(chain);
+    },
+    [onDestinationChainChange],
+  );
+
   const reviewQuote = state.kind === "review" ? state.quote : undefined;
   const preflight = usePreflight(reviewQuote, address);
 
@@ -175,7 +206,6 @@ export function WhiskSend({
   const transferContent = renderTransfer(
     state,
     actions,
-    connected,
     manualMint,
     preflight,
     tabLock.isLockedByOther,
@@ -187,10 +217,12 @@ export function WhiskSend({
       destinationChain,
       defaultAmount,
       defaultRecipient,
+      initialSourceChain: rememberedSource,
+      initialDestinationChain: rememberedDest,
       onAmountChange,
       onRecipientChange,
-      onSourceChainChange,
-      onDestinationChainChange,
+      onSourceChainChange: handleSourceChainChange,
+      onDestinationChainChange: handleDestinationChainChange,
     },
   );
 
@@ -206,6 +238,42 @@ export function WhiskSend({
     />
   );
 
+  // Whisk is testnet-only today. When a dev configures mainnet mode, render
+  // a clear "coming soon" notice instead of letting the engine try real-money
+  // flows against not-yet-ready upstream services. Headless hooks still work
+  // for devs prepping their integration; this gate is the UI layer only.
+  if (mode === "mainnet") {
+    return (
+      <Card
+        className={className}
+        style={{
+          maxWidth: "26rem",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.875rem",
+          textAlign: "center",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Badge variant="warning">
+            <FlaskConical size={11} strokeWidth={2.5} />
+            Mainnet coming soon
+          </Badge>
+        </div>
+        <h2 style={{ margin: 0, fontSize: "1.0625rem", fontWeight: 600 }}>
+          Whisk is testnet-only today
+        </h2>
+        <p className="whisk-help" style={{ margin: 0, textAlign: "center" }}>
+          Mainnet support is in development. To use the widget right now, set{" "}
+          <code>mode: "testnet"</code> on your config or list testnet chains
+          (Arc Testnet, Base Sepolia, etc.).
+        </p>
+        {showFooter ? <Footer /> : null}
+      </Card>
+    );
+  }
+
   return (
     <Card
       className={className}
@@ -217,52 +285,71 @@ export function WhiskSend({
         gap: "1rem",
       }}
     >
-      {/* Mainnet renders no pill on purpose — absence is the signal that real money is moving. */}
-      {mode === "testnet" ? (
-        <div className="whisk-mode-row" aria-label="Mode: testnet">
-          <Badge variant="warning">
-            <FlaskConical size={11} strokeWidth={2.5} />
-            Testnet
-          </Badge>
+      {/* Top row: Testnet pill on the left (mainnet renders nothing — absence is
+          the signal that real money is moving) + account chip + network pill
+          on the right when connected. One row, space-between. */}
+      {mode === "testnet" || (connected && state.kind !== "disconnected") ? (
+        <div className="whisk-top-row" aria-label="Mode and account">
+          <div className="whisk-top-row__slot">
+            {mode === "testnet" ? (
+              <Badge variant="warning">
+                <FlaskConical size={11} strokeWidth={2.5} />
+                Testnet
+              </Badge>
+            ) : null}
+          </div>
+          <div className="whisk-top-row__slot whisk-top-row__slot--end">
+            {connected && state.kind !== "disconnected" ? (
+              <>
+                <NetworkPill />
+                <AccountChip explorerChain={sourceChain} />
+              </>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
-      {connected && state.kind !== "disconnected" ? (
-        <div className="whisk-account-row">
-          <NetworkPill />
-          <AccountChip explorerChain={sourceChain} />
-        </div>
-      ) : null}
-
-      {showTabs ? (
-        <Tabs.Root defaultValue={initialTab} className="whisk-tabs">
-          <Tabs.List className="whisk-tabs__list" aria-label="Whisk operations">
-            {visibleTabs.includes("transfer") ? (
-              <Tabs.Trigger value="transfer" className="whisk-tabs__trigger">
-                Transfer
-              </Tabs.Trigger>
-            ) : null}
-            {visibleTabs.includes("swap") ? (
-              <Tabs.Trigger value="swap" className="whisk-tabs__trigger">
-                Swap
-              </Tabs.Trigger>
-            ) : null}
-          </Tabs.List>
-          {visibleTabs.includes("transfer") ? (
-            <Tabs.Content value="transfer" className="whisk-tabs__content">
-              {transferContent}
-            </Tabs.Content>
-          ) : null}
-          {visibleTabs.includes("swap") ? (
-            <Tabs.Content value="swap" className="whisk-tabs__content">
-              {swapContent}
-            </Tabs.Content>
-          ) : null}
-        </Tabs.Root>
-      ) : visibleTabs[0] === "swap" ? (
-        swapContent
+      {!connected || state.kind === "disconnected" ? (
+        <ConnectStep />
       ) : (
-        transferContent
+        <>
+          {showTabs ? (
+            <Tabs.Root defaultValue={initialTab} className="whisk-tabs">
+              <Tabs.List
+                className="whisk-tabs__list"
+                aria-label="Whisk operations"
+              >
+                {visibleTabs.includes("transfer") ? (
+                  <Tabs.Trigger
+                    value="transfer"
+                    className="whisk-tabs__trigger"
+                  >
+                    Transfer
+                  </Tabs.Trigger>
+                ) : null}
+                {visibleTabs.includes("swap") ? (
+                  <Tabs.Trigger value="swap" className="whisk-tabs__trigger">
+                    Swap
+                  </Tabs.Trigger>
+                ) : null}
+              </Tabs.List>
+              {visibleTabs.includes("transfer") ? (
+                <Tabs.Content value="transfer" className="whisk-tabs__content">
+                  {transferContent}
+                </Tabs.Content>
+              ) : null}
+              {visibleTabs.includes("swap") ? (
+                <Tabs.Content value="swap" className="whisk-tabs__content">
+                  {swapContent}
+                </Tabs.Content>
+              ) : null}
+            </Tabs.Root>
+          ) : visibleTabs[0] === "swap" ? (
+            swapContent
+          ) : (
+            transferContent
+          )}
+        </>
       )}
 
       {showFooter ? <Footer /> : null}
@@ -280,25 +367,26 @@ type ControlledFieldProps = Pick<
   | "defaultRecipient"
   | "onAmountChange"
   | "onRecipientChange"
-  | "onSourceChainChange"
-  | "onDestinationChainChange"
->;
+> & {
+  initialSourceChain?: Chain;
+  initialDestinationChain?: Chain;
+  onSourceChainChange?: (chain: Chain) => void;
+  onDestinationChainChange?: (chain: Chain) => void;
+};
 
 function renderTransfer(
   state: WhiskState,
   actions: ReturnType<typeof useWhisk>["actions"],
-  connected: boolean,
   manualMint: ReturnType<typeof useManualMint>["manualMint"],
   preflight: ReturnType<typeof usePreflight>,
   tabLockedByOther: boolean,
   guardedSend: () => Promise<void>,
   fields: ControlledFieldProps,
 ): ReactNode {
-  if (!connected || state.kind === "disconnected") {
-    return <ConnectStep />;
-  }
-
   switch (state.kind) {
+    case "disconnected":
+      // Parent gates this; defensive case for switch exhaustiveness.
+      return null;
     case "idle":
       return (
         <InputStep

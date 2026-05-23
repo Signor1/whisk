@@ -3,7 +3,7 @@
 import { createPublicClient, fallback, http, type PublicClient } from "viem";
 import { mainnet, sepolia } from "viem/chains";
 import { normalize } from "viem/ens";
-import { ResolverError, chainInfo, type Resolver } from "@signordev/whisk-core";
+import { ResolverError, chainInfo, type Resolver } from "@usewhisk/core";
 
 export type EnsResolverChain = "mainnet" | "sepolia";
 

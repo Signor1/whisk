@@ -2,7 +2,9 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
-import type { Token } from "@signordev/whisk-core";
+import type { Token } from "@usewhisk/core";
+import { TokenIcon } from "./TokenIcon.js";
+import { WhiskScope } from "./WhiskScope.js";
 
 export type TokenPickerProps = {
   value: Token;
@@ -40,6 +42,7 @@ export function TokenPicker({
         aria-label="Token"
         title={hint}
       >
+        <TokenIcon token={value} size={18} />
         <Select.Value placeholder="Token" />
         <Select.Icon asChild>
           <ChevronDown size={12} strokeWidth={2.5} />
@@ -47,7 +50,7 @@ export function TokenPicker({
       </Select.Trigger>
 
       <Select.Portal>
-        <div data-whisk="">
+        <WhiskScope>
           <Select.Content
             className="whisk-select-content whisk-token-picker__menu"
             position="popper"
@@ -57,7 +60,10 @@ export function TokenPicker({
             <Select.Viewport className="whisk-select-viewport">
               {options.map((t) => (
                 <Select.Item key={t} value={t} className="whisk-select-item">
-                  <Select.ItemText>{t}</Select.ItemText>
+                  <span className="whisk-select-item__main">
+                    <TokenIcon token={t} size={18} />
+                    <Select.ItemText>{t}</Select.ItemText>
+                  </span>
                   <Select.ItemIndicator className="whisk-select-item-indicator">
                     <Check size={14} strokeWidth={2.5} />
                   </Select.ItemIndicator>
@@ -65,7 +71,7 @@ export function TokenPicker({
               ))}
             </Select.Viewport>
           </Select.Content>
-        </div>
+        </WhiskScope>
       </Select.Portal>
     </Select.Root>
   );

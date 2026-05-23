@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useAccount, useChainId, useDisconnect, useSwitchChain } from "wagmi";
-import { chainByEvmId, chainInfo, type Chain } from "@signordev/whisk-core";
+import { chainByEvmId, chainInfo, type Chain } from "@usewhisk/core";
 import { viemChainForWhisk } from "../config/adapters/evm.js";
 import { useSolanaAccount } from "./useSolanaAccount.js";
 

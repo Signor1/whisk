@@ -5,13 +5,6 @@ import { Wallet } from "lucide-react";
 import { Button } from "../ui/Button.js";
 import { ConnectModal } from "../ui/ConnectModal.js";
 
-/**
- * Pre-connect surface. Shows a single, focused "Connect Wallet" CTA;
- * clicking opens the `ConnectModal` (Radix Dialog) with the actual
- * wallet list. The Reown / RainbowKit / ConnectKit shape — one entry
- * point, modal handles the choice. Putting wallet buttons inline floods
- * the user with options before they've engaged.
- */
 export function ConnectStep() {
   const [open, setOpen] = useState(false);
 

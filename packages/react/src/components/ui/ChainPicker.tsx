@@ -2,9 +2,10 @@
 
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import type { Chain } from "@signordev/whisk-core";
-import { chainInfo } from "@signordev/whisk-core";
+import type { Chain } from "@usewhisk/core";
+import { chainInfo } from "@usewhisk/core";
 import { ChainIcon } from "./ChainIcon.js";
+import { WhiskScope } from "./WhiskScope.js";
 
 export type ChainPickerProps = {
   id?: string;
@@ -62,8 +63,7 @@ export function ChainPicker({
         </Select.Trigger>
 
         <Select.Portal>
-          {/* Re-establish Whisk theme scope inside the portal. */}
-          <div data-whisk="">
+          <WhiskScope>
             <Select.Content
               className="whisk-select-content"
               position="popper"
@@ -90,7 +90,7 @@ export function ChainPicker({
                 <ChevronDown size={14} strokeWidth={2.5} />
               </Select.ScrollDownButton>
             </Select.Content>
-          </div>
+          </WhiskScope>
         </Select.Portal>
       </Select.Root>
     </label>

@@ -1,5 +1,5 @@
 /**
- * `@signordev/whisk-react` — embeddable USDC send & bridge widget.
+ * `@usewhisk/react` — embeddable USDC send & bridge widget.
  *
  * The drop-in entry point. Most apps:
  *
@@ -9,8 +9,8 @@
  *   WhiskSend,
  *   createWhiskConfig,
  *   evm,
- * } from "@signordev/whisk-react";
- * import "@signordev/whisk-react/styles.css";
+ * } from "@usewhisk/react";
+ * import "@usewhisk/react/styles.css";
  *
  * const config = createWhiskConfig({
  *   wallets: [evm({ projectId: process.env.WALLETCONNECT_PROJECT_ID })],
@@ -21,7 +21,7 @@
  * ```
  *
  * For headless control (custom UI on top of the engine + state machine),
- * import from `@signordev/whisk-react/headless`.
+ * import from `@usewhisk/react/headless`.
  */
 
 // Provider
@@ -54,6 +54,8 @@ export {
   Badge,
   ChainPicker,
   ChainIcon,
+  TokenIcon,
+  TokenPicker,
   StepRail,
   AccountChip,
   NetworkPill,
@@ -75,6 +77,8 @@ export type {
   BadgeProps,
   ChainPickerProps,
   ChainIconProps,
+  TokenIconProps,
+  TokenPickerProps,
   StepRailProps,
   BannerProps,
   BalanceLineProps,
@@ -101,10 +105,10 @@ export type {
 } from "./resolvers/index.js";
 // Re-export core's address resolver and `composeResolvers` helper so
 // host apps don't need a second import to wire a custom chain.
-export { addressResolver, composeResolvers } from "@signordev/whisk-core";
+export { addressResolver, composeResolvers } from "@usewhisk/core";
 
 // Chain registry helpers — same reason: avoid forcing apps to depend
-// on `@signordev/whisk-core` for routine lookups.
+// on `@usewhisk/core` for routine lookups.
 export {
   allChains,
   chainInfo,
@@ -113,8 +117,8 @@ export {
   chainByEvmId,
   supportedTokensFor,
   tokenAddressFor,
-} from "@signordev/whisk-core";
-export type { ChainInfo, SupportedTokenAlias } from "@signordev/whisk-core";
+} from "@usewhisk/core";
+export type { ChainInfo, SupportedTokenAlias } from "@usewhisk/core";
 
 // Hooks (also exposed in /headless for tree-shake-friendly imports)
 export {
@@ -163,4 +167,4 @@ export type {
   Resolver,
   WhiskState,
   WhiskError,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";

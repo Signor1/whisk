@@ -7,7 +7,7 @@ import {
   type SwapEstimate,
   type Token,
   type WhiskError,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import { useWhiskContext } from "./useWhiskContext.js";
 import { useWhiskAdapter } from "./useWhiskAdapter.js";
 

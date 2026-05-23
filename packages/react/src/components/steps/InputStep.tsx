@@ -9,7 +9,7 @@ import {
   type ResolvedRecipient,
   type SupportedTokenAlias,
   type Token,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import { useWhiskContext } from "../../hooks/useWhiskContext.js";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 import { useChainBalance } from "../../hooks/useChainBalance.js";
@@ -42,6 +42,9 @@ export type InputStepProps = {
   /* Uncontrolled defaults */
   defaultAmount?: string;
   defaultRecipient?: string;
+  /* Initial chain seeds — used on mount, do NOT lock the picker. */
+  initialSourceChain?: Chain;
+  initialDestinationChain?: Chain;
 
   /* Reactive callbacks */
   onAmountChange?: (value: string) => void;
@@ -50,15 +53,6 @@ export type InputStepProps = {
   onDestinationChainChange?: (chain: Chain) => void;
 };
 
-/**
- * Compose-the-transfer step. Layout (top → bottom):
- *
- * 1. From / To chain pickers
- * 2. Chain-mismatch banner if wallet is on a different chain than `from`
- * 3. Recipient field
- * 4. Amount field + live balance line + low-gas warning
- * 5. Continue / Review CTA
- */
 export function InputStep({
   resolvedRecipient,
   busy,
@@ -71,6 +65,8 @@ export function InputStep({
   destinationChain: destinationChainProp,
   defaultAmount,
   defaultRecipient,
+  initialSourceChain,
+  initialDestinationChain,
   onAmountChange,
   onRecipientChange,
   onSourceChainChange,
@@ -80,9 +76,15 @@ export function InputStep({
   const account = useWhiskAccount();
 
   const initialSource =
-    sourceChainProp ?? config.defaultSourceChain ?? config.chains[0]!;
+    sourceChainProp ??
+    initialSourceChain ??
+    config.defaultSourceChain ??
+    config.chains[0]!;
   const initialDest =
-    destinationChainProp ?? config.defaultDestinationChain ?? initialSource;
+    destinationChainProp ??
+    initialDestinationChain ??
+    config.defaultDestinationChain ??
+    initialSource;
 
   const [sourceChainState, setSourceChainState] =
     useState<Chain>(initialSource);
@@ -102,22 +104,12 @@ export function InputStep({
   const amount = amountProp ?? amountState;
   const amountLocked = amountProp !== undefined;
 
-  // Token choice. The picker offers only stablecoins the registry has
-  // an address for on the active source chain — `supportedTokensFor`
-  // checks `usdcAddress` / `eurcAddress` / `usdtAddress` and returns
-  // the aliases that resolve. NATIVE is intentionally absent from
-  // the Transfer flow (this is a stablecoin widget; NATIVE belongs in
-  // Swap, where exchanging ETH/SOL for USDC is a legit use case).
-  //
-  // Cross-chain bridges always run on USDC (App Kit Bridge is USDC-
-  // only) and the picker locks with a hint.
   const supportedTokens = useMemo<SupportedTokenAlias[]>(
     () => supportedTokensFor(sourceChain),
     [sourceChain],
   );
   const [token, setToken] = useState<Token>("USDC");
-  // If the user picked EURC on Arc and switches to a chain that
-  // doesn't have EURC, snap back to USDC.
+  // Snap back to USDC if the chain switch dropped support for the picked token.
   useEffect(() => {
     if (
       token !== "USDC" &&
@@ -132,11 +124,6 @@ export function InputStep({
 
   const destInfo = chainInfo(destChain);
 
-  // Show balance for the wallet matching the source chain's ecosystem
-  // (EVM source → EVM wallet, Solana source → Solana wallet). When the
-  // user hasn't connected the right wallet yet, balance hides. The
-  // balance tracks whichever token is currently picked so the user
-  // sees what they're actually about to spend.
   const sourceAccount = account.accountFor(sourceChain);
   const balance = useChainBalance(
     sourceChain,
@@ -158,22 +145,8 @@ export function InputStep({
     }
   }, [destChain, resolvedRecipient, recipientLocked]);
 
-  // After a successful resolve, swap the input field to show the
-  // resolved address. Two distinct cases:
-  //
-  //  1. ENS / TLD input → resolver returns the 0x… address. Without
-  //     this swap, the input stays as "vitalik.eth", which never
-  //     matches `resolvedRecipient.address`, so the Continue button
-  //     never flips into "quote" mode — the user is stuck re-resolving
-  //     the same name on every click.
-  //  2. Re-mount on `resolved` state (after Back from review) where
-  //     the field is initially empty.
-  //
-  // The guard `recipientState !== resolvedRecipient.address` handles
-  // both: if the field already matches (raw-address path), it's a
-  // no-op; if it differs (ENS path or empty re-mount), it updates.
-  // Doesn't stomp mid-edit because the effect only re-runs when
-  // `resolvedRecipient` changes, not on every keystroke.
+  // Swap field to the resolved address after resolve so the ENS input ("vitalik.eth")
+  // doesn't keep the Continue button stuck in "resolve" mode.
   useEffect(() => {
     if (
       resolvedRecipient &&
@@ -186,16 +159,8 @@ export function InputStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedRecipient]);
 
-  // What the input field actually renders. For unlocked inputs this is
-  // always `recipientInput` (which is `recipientState` and gets swapped
-  // to the resolved address by the effect above). For LOCKED inputs we
-  // can't mutate the host-controlled value, but we still want the user
-  // to see "vitalik.eth" become "0xd8dA…e3eA" after resolve as visible
-  // confirmation that resolution succeeded. So when locked + resolved +
-  // the resolved address differs from the pinned value (the ENS case),
-  // override the displayed value with the resolved address. The
-  // host-facing `recipientInput` is unchanged; only the visible string
-  // in the FieldBox swaps.
+  // Locked-ENS preset: visibly swap the pinned name to the resolved address.
+  // The host-facing `recipientInput` is unchanged; only the FieldBox display swaps.
   const displayedRecipient =
     recipientLocked &&
     resolvedRecipient &&
@@ -203,10 +168,6 @@ export function InputStep({
       ? resolvedRecipient.address
       : recipientInput;
 
-  // Accept either a valid raw address for the destination chain OR
-  // anything domain-shaped (`*.eth`, `*.com`, etc.) — the latter is
-  // resolved by the ENS resolver on Continue. We only mark the input
-  // visually invalid when it's neither.
   const recipientLooksValid = useMemo(() => {
     const trimmed = recipientInput.trim();
     if (!trimmed) return true;
@@ -217,18 +178,8 @@ export function InputStep({
   const amountValue = parseFloat(amount);
   const amountValid = !Number.isNaN(amountValue) && amountValue > 0;
 
-  // The resolved recipient is "still valid" while the input matches
-  // its address. The moment the user starts editing — typically after
-  // clicking Back from review — we treat the resolved tag as stale and
-  // route the CTA back to "Continue" so they can re-resolve.
-  //
-  // Locked-input exception: when the recipient is host-controlled,
-  // the user can't edit the field, so the input value can't drift
-  // away from what was resolved. The literal-string match also fails
-  // for ENS names (input="vitalik.eth", resolved address="0xd8dA…"),
-  // which used to leave the Continue button perpetually stuck in
-  // "resolve" mode on locked-ENS presets like the e-commerce checkout.
-  // Treat a locked, resolved recipient as matched by construction.
+  // Locked recipient counts as matched by construction — covers locked-ENS where
+  // input="vitalik.eth" never literal-matches the resolved 0x… address.
   const recipientMatchesResolved = Boolean(
     resolvedRecipient &&
     (recipientLocked || resolvedRecipient.address === recipientInput.trim()),
@@ -239,9 +190,10 @@ export function InputStep({
   );
 
   const wrongChain = account.isWrongChain(sourceChain);
-  // Solana source chains need the Solana wallet, not the EVM one.
+  const sourceKind = chainInfo(sourceChain).kind;
   const wrongEcosystem =
-    chainInfo(sourceChain).kind === "solana" && !account.solana.isConnected;
+    (sourceKind === "solana" && !account.solana.isConnected) ||
+    (sourceKind === "evm" && !account.evm.isConnected);
   const canResolve =
     !busy &&
     !wrongChain &&
@@ -287,12 +239,7 @@ export function InputStep({
       <div
         style={{
           display: "grid",
-          // `minmax(0, 1fr)` is the critical bit — without the explicit
-          // 0-min, grid columns size to their content's intrinsic width
-          // and a long chain name like "World Chain Sepolia" pushes the
-          // column past the card edge. With minmax(0, …) the column can
-          // shrink, the trigger respects its `min-width: 0`, and the
-          // value span truncates with ellipsis instead.
+          // `minmax(0, 1fr)` — without explicit 0-min, long chain names overflow the card.
           gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
           gap: "0.5rem",
         }}
@@ -315,8 +262,9 @@ export function InputStep({
 
       {wrongEcosystem ? (
         <Banner variant="warning">
-          Sending from {chainInfo(sourceChain).label} needs a Solana wallet —
-          connect Phantom / Solflare / Backpack from the wallet menu.
+          {sourceKind === "solana"
+            ? `Sending from ${chainInfo(sourceChain).label} needs a Solana wallet — connect Phantom / Solflare / Backpack from the wallet menu.`
+            : `Sending from ${chainInfo(sourceChain).label} needs an EVM wallet — connect MetaMask / Coinbase / WalletConnect from the wallet menu.`}
         </Banner>
       ) : wrongChain ? (
         <Banner
@@ -334,12 +282,6 @@ export function InputStep({
         </Banner>
       ) : null}
 
-      {/* Recipient stays editable even when a previous resolution is on
-          file. When the user hits Back from review, the field shouldn't
-          freeze on them — they should be able to fix the address or
-          amount and re-quote. The "Recipient resolved" tag still
-          appears, but we drop it the moment the input diverges from the
-          resolved address. */}
       <FieldBox
         label={
           recipientLocked ? (
@@ -374,34 +316,33 @@ export function InputStep({
         </div>
       ) : null}
 
-      <div className="whisk-amount-row">
-        <FieldBox
-          className="whisk-amount-row__input"
-          label={amountLocked ? <LockedLabel text="Amount" /> : "Amount"}
-          amount
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => handleAmountChange(e.target.value)}
-          invalid={Boolean(amount && !amountValid)}
-          disabled={busy || amountLocked}
-          readOnly={amountLocked}
-        />
-        <TokenPicker
-          value={effectiveToken}
-          options={supportedTokens as Token[]}
-          onChange={setToken}
-          disabled={busy || isBridge}
-          hint={
-            isBridge
-              ? "Bridges support USDC only — choose a single chain to swap tokens."
-              : undefined
-          }
-        />
-      </div>
+      <FieldBox
+        label={amountLocked ? <LockedLabel text="Amount" /> : "Amount"}
+        amount
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        min="0"
+        placeholder="0.00"
+        value={amount}
+        onChange={(e) => handleAmountChange(e.target.value)}
+        invalid={Boolean(amount && !amountValid)}
+        disabled={busy || amountLocked}
+        readOnly={amountLocked}
+        suffix={
+          <TokenPicker
+            value={effectiveToken}
+            options={supportedTokens as Token[]}
+            onChange={setToken}
+            disabled={busy || isBridge}
+            hint={
+              isBridge
+                ? "Bridges support USDC only — choose a single chain to swap tokens."
+                : undefined
+            }
+          />
+        }
+      />
       {balance.selected ? (
         <BalanceLine
           balance={balance.selected.formatted}

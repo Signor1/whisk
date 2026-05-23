@@ -2,28 +2,17 @@
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react";
-import { explorerAddressUrl, type Chain } from "@signordev/whisk-core";
+import { explorerAddressUrl, type Chain } from "@usewhisk/core";
 import { useWhiskAccount } from "../../hooks/useWhiskAccount.js";
 import { ChainIcon } from "./ChainIcon.js";
+import { WhiskScope } from "./WhiskScope.js";
 
 function shorten(address: string): string {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
-/**
- * Connected-wallet chip. Click opens a Radix DropdownMenu with the
- * connector name, "copy address", "view on explorer", and "disconnect."
- *
- * Radix gives us focus management, keyboard nav (arrow keys / type-to-
- * select), and proper ARIA wiring for free.
- */
-export function AccountChip({
-  /** Chain used for the explorer link in the menu. Defaults to current. */
-  explorerChain,
-}: {
-  explorerChain?: Chain;
-}) {
+export function AccountChip({ explorerChain }: { explorerChain?: Chain }) {
   const account = useWhiskAccount();
   const primary = account.primary;
   const address = primary?.address;
@@ -42,7 +31,7 @@ export function AccountChip({
     try {
       await navigator.clipboard.writeText(address);
     } catch {
-      // ignore — host can wire a toast via `onAccountAction` later
+      /* ignore */
     }
   };
 
@@ -59,9 +48,7 @@ export function AccountChip({
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
-        {/* Re-establish the Whisk theme scope inside the portal so the
-            CSS variables and component rules reach our menu. */}
-        <div data-whisk="">
+        <WhiskScope>
           <DropdownMenu.Content
             className="whisk-account-menu"
             align="end"
@@ -104,16 +91,12 @@ export function AccountChip({
               Disconnect
             </DropdownMenu.Item>
           </DropdownMenu.Content>
-        </div>
+        </WhiskScope>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
 }
 
-/**
- * Read-only network pill — shows the chain the wallet is currently on.
- * Pairs with `AccountChip` in the card header.
- */
 export function NetworkPill() {
   const account = useWhiskAccount();
   const primary = account.primary;

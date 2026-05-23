@@ -1,83 +1,99 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Wallet, X } from "lucide-react";
+import { ArrowLeft, ChevronRight, Wallet, X } from "lucide-react";
 import { useAccount, useConnect, type Connector } from "wagmi";
 import { type Wallet as SolanaWallet } from "@solana/wallet-adapter-react";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { Button } from "./Button.js";
+import { WhiskScope } from "./WhiskScope.js";
 import { safeUseWallet } from "../../hooks/internal/safeSolana.js";
+import { useWhiskContext } from "../../hooks/useWhiskContext.js";
 
 export type ConnectModalProps = {
-  /** Controls visibility. */
   open: boolean;
-  /** Called when the dialog requests close (X click, ESC, outside click). */
   onOpenChange: (open: boolean) => void;
 };
 
-/**
- * Wallet selection modal — Radix Dialog hosting the connector list.
- *
- * Pattern is the one Reown / RainbowKit / ConnectKit settled on: a
- * single "Connect Wallet" CTA on the page, click → modal lists every
- * available wallet (EVM connectors + Solana Wallet-Standard wallets),
- * click a wallet → wagmi / wallet-adapter handle the actual handshake.
- *
- * Auto-closes on successful connection so the host UI doesn't have to
- * track the status separately.
- */
+type Ecosystem = "evm" | "solana";
+
 export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
+  const { config } = useWhiskContext();
   const { connectors, connect, status, error } = useConnect();
   const { isConnected: evmConnected } = useAccount();
-
-  // Returns `undefined` when `solana()` isn't in the Whisk config (no
-  // WalletProvider mounted). Wrapping the property reads via `safeUseWallet`
-  // is the only reliable way — wallet-adapter's default context is a
-  // sentinel whose property *getters* throw, so a try/catch around the
-  // hook call doesn't help.
   const solana = safeUseWallet();
 
+  // Ecosystems this widget was configured for. Drives both the picker and the
+  // auto-skip-when-only-one rule.
+  const ecosystems = useMemo<Ecosystem[]>(() => {
+    const out: Ecosystem[] = [];
+    if (config.wallets.some((w) => w.kind === "evm")) out.push("evm");
+    if (config.wallets.some((w) => w.kind === "solana")) out.push("solana");
+    return out;
+  }, [config.wallets]);
+
+  const initialEco: Ecosystem | "pick" =
+    ecosystems.length === 1 ? ecosystems[0]! : "pick";
+  const [step, setStep] = useState<Ecosystem | "pick">(initialEco);
+
+  // Reset the step whenever the modal closes so a re-open starts from scratch.
+  useEffect(() => {
+    if (!open) setStep(initialEco);
+  }, [open, initialEco]);
+
   const [pendingSolana, setPendingSolana] = useState<WalletName | null>(null);
+  const [solanaError, setSolanaError] = useState<string | null>(null);
   const evmPending = status === "pending";
   const isPending = evmPending || pendingSolana !== null;
 
-  // After `select()`, the wallet context populates `wallet`; we then
-  // call `connect()`. Splitting them keeps select/connect race-free.
+  // After `select()`, the wallet context populates `wallet`; we then call `connect()`.
   useEffect(() => {
     if (!solana || !pendingSolana) return;
     if (solana.wallet?.adapter.name !== pendingSolana) return;
     if (solana.connecting || solana.connected) return;
     void solana
       .connect()
-      .catch(() => {})
+      .catch((err: unknown) => {
+        setSolanaError(
+          err instanceof Error ? err.message : "Solana wallet connect failed.",
+        );
+      })
       .finally(() => setPendingSolana(null));
   }, [solana, pendingSolana]);
 
-  // Auto-close on successful connection. The host doesn't need to wire
-  // an effect to dismiss the modal — once a wallet returns, we drop.
+  // Scope auto-close to the ecosystem the user picked. Otherwise wagmi's
+  // auto-reconnect can fire `evmConnected` mid-Solana-flow and yank the modal
+  // closed before the Solana adapter finishes.
   useEffect(() => {
-    if (open && (evmConnected || solana?.connected)) {
-      onOpenChange(false);
-    }
-  }, [evmConnected, solana?.connected, open, onOpenChange]);
+    if (!open) return;
+    const finished =
+      step === "evm"
+        ? evmConnected
+        : step === "solana"
+          ? solana?.connected
+          : evmConnected || solana?.connected;
+    if (finished) onOpenChange(false);
+  }, [step, evmConnected, solana?.connected, open, onOpenChange]);
+
+  // Clear Solana error when the user picks a different wallet or backs out.
+  useEffect(() => {
+    setSolanaError(null);
+  }, [step, pendingSolana]);
 
   const onSolana = (w: SolanaWallet) => {
     if (!solana) return;
+    setSolanaError(null);
     setPendingSolana(w.adapter.name);
     solana.select(w.adapter.name);
   };
 
+  const canGoBack = step !== "pick" && ecosystems.length > 1;
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        {/*
-         * Radix portals render outside the WhiskProvider scope, which means
-         * `[data-whisk]` styles wouldn't reach the modal. We re-establish
-         * the scope here so the same CSS variables and component rules
-         * apply to dialog content.
-         */}
-        <div data-whisk="">
+        <WhiskScope>
           <Dialog.Overlay className="whisk-dialog__overlay" />
           <Dialog.Content
             className="whisk-dialog__content"
@@ -85,9 +101,24 @@ export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
           >
             <header className="whisk-dialog__header">
               <div className="whisk-dialog__title-wrap">
-                <Wallet size={18} strokeWidth={2} />
+                {canGoBack ? (
+                  <button
+                    type="button"
+                    className="whisk-dialog__back"
+                    onClick={() => setStep("pick")}
+                    aria-label="Back to ecosystem picker"
+                  >
+                    <ArrowLeft size={14} strokeWidth={2.5} />
+                  </button>
+                ) : (
+                  <Wallet size={18} strokeWidth={2} />
+                )}
                 <Dialog.Title className="whisk-dialog__title">
-                  Connect a wallet
+                  {step === "pick"
+                    ? "Connect a wallet"
+                    : step === "evm"
+                      ? "EVM wallets"
+                      : "Solana wallets"}
                 </Dialog.Title>
               </div>
               <Dialog.Close asChild>
@@ -101,74 +132,138 @@ export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
               </Dialog.Close>
             </header>
 
-            <p className="whisk-help whisk-dialog__lede">
-              Whisk never holds your keys. Connect to send, bridge or swap USDC
-              across the chains your dev configured.
-            </p>
+            {step === "pick" ? (
+              <>
+                <p className="whisk-help whisk-dialog__lede">
+                  Pick the ecosystem you want to connect to. Whisk never holds
+                  your keys.
+                </p>
+                <div className="whisk-dialog__eco-grid">
+                  {ecosystems.includes("evm") ? (
+                    <EcosystemCard
+                      label="EVM"
+                      description="Ethereum, Base, Arbitrum, Polygon, and more"
+                      onClick={() => setStep("evm")}
+                    />
+                  ) : null}
+                  {ecosystems.includes("solana") ? (
+                    <EcosystemCard
+                      label="Solana"
+                      description="Phantom, Solflare, Backpack"
+                      onClick={() => setStep("solana")}
+                    />
+                  ) : null}
+                </div>
+              </>
+            ) : step === "evm" ? (
+              <>
+                <p className="whisk-help whisk-dialog__lede">
+                  Choose an EVM wallet to connect.
+                </p>
+                <div className="whisk-dialog__list">
+                  {connectors.map((c) => (
+                    <ConnectorButton
+                      key={c.uid}
+                      connector={c}
+                      pending={evmPending}
+                      disabled={isPending}
+                      onConnect={() => connect({ connector: c })}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="whisk-help whisk-dialog__lede">
+                  Choose a Solana wallet to connect.
+                </p>
+                <div className="whisk-dialog__list">
+                  {solana?.wallets?.length ? (
+                    solana.wallets.map((w) => {
+                      const installed = w.readyState === "Installed";
+                      const thisPending = pendingSolana === w.adapter.name;
+                      return (
+                        <Button
+                          key={w.adapter.name}
+                          variant="outline"
+                          className="whisk-dialog__row"
+                          onClick={() => onSolana(w)}
+                          disabled={isPending || !installed}
+                          title={
+                            installed
+                              ? undefined
+                              : `${w.adapter.name} not installed`
+                          }
+                        >
+                          <span className="whisk-dialog__row-main">
+                            {w.adapter.icon ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={w.adapter.icon}
+                                alt=""
+                                width={20}
+                                height={20}
+                                className="whisk-dialog__row-icon"
+                              />
+                            ) : null}
+                            <span className="whisk-dialog__row-name">
+                              {w.adapter.name}
+                            </span>
+                          </span>
+                          {thisPending ? (
+                            <span className="whisk-spinner" />
+                          ) : !installed ? (
+                            <span className="whisk-dialog__row-meta">
+                              Not installed
+                            </span>
+                          ) : null}
+                        </Button>
+                      );
+                    })
+                  ) : (
+                    <p className="whisk-help whisk-help--error">
+                      No Solana wallets detected. Install Phantom, Solflare, or
+                      Backpack and refresh.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
 
-            <div className="whisk-dialog__list">
-              {connectors.map((c) => (
-                <ConnectorButton
-                  key={c.uid}
-                  connector={c}
-                  pending={evmPending}
-                  disabled={isPending}
-                  onConnect={() => connect({ connector: c })}
-                />
-              ))}
-
-              {solana?.wallets?.map((w) => {
-                const installed = w.readyState === "Installed";
-                const thisPending = pendingSolana === w.adapter.name;
-                return (
-                  <Button
-                    key={w.adapter.name}
-                    variant="outline"
-                    className="whisk-dialog__row"
-                    onClick={() => onSolana(w)}
-                    disabled={isPending || !installed}
-                    title={
-                      installed ? undefined : `${w.adapter.name} not installed`
-                    }
-                  >
-                    <span className="whisk-dialog__row-main">
-                      {w.adapter.icon ? (
-                        // The wallet adapter's icon is a base64 SVG / PNG URL.
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={w.adapter.icon}
-                          alt=""
-                          width={20}
-                          height={20}
-                          className="whisk-dialog__row-icon"
-                        />
-                      ) : null}
-                      <span className="whisk-dialog__row-name">
-                        {w.adapter.name}
-                      </span>
-                      <span className="whisk-dialog__row-tag">Solana</span>
-                    </span>
-                    {thisPending ? (
-                      <span className="whisk-spinner" />
-                    ) : !installed ? (
-                      <span className="whisk-dialog__row-meta">
-                        Not installed
-                      </span>
-                    ) : null}
-                  </Button>
-                );
-              })}
-            </div>
-
-            {error ? (
+            {step === "evm" && error ? (
               <div className="whisk-help whisk-help--error">
                 {error.message}
               </div>
             ) : null}
+            {step === "solana" && solanaError ? (
+              <div className="whisk-help whisk-help--error">{solanaError}</div>
+            ) : null}
           </Dialog.Content>
-        </div>
+        </WhiskScope>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+function EcosystemCard({
+  label,
+  description,
+  onClick,
+}: {
+  label: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="whisk-dialog__eco-card" onClick={onClick}>
+      <span className="whisk-dialog__eco-label">{label}</span>
+      <span className="whisk-dialog__eco-desc">{description}</span>
+      <ChevronRight
+        size={14}
+        strokeWidth={2.5}
+        className="whisk-dialog__eco-chev"
+      />
+    </button>
   );
 }
 

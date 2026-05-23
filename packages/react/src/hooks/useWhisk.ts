@@ -17,7 +17,7 @@ import {
   type WalletKind,
   type WhiskAction,
   type WhiskState,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import { useWhiskContext } from "./useWhiskContext.js";
 import { useWhiskAdapter } from "./useWhiskAdapter.js";
 import { useWhiskAccount } from "./useWhiskAccount.js";

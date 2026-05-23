@@ -11,7 +11,7 @@ import {
   ConnectionProvider,
   WalletProvider,
 } from "@solana/wallet-adapter-react";
-import { createWhisk, ConfigError } from "@signordev/whisk-core";
+import { createWhisk, ConfigError } from "@usewhisk/core";
 import type { WhiskClientConfig } from "../config/types.js";
 import type { SolanaConfig } from "../config/adapters/solana.js";
 import { createDefaultResolver } from "../resolvers/index.js";
@@ -54,8 +54,8 @@ export function WhiskProvider({
   );
 
   const contextValue: WhiskContextValue = useMemo(
-    () => ({ engine, config }),
-    [engine, config],
+    () => ({ engine, config, theme }),
+    [engine, config, theme],
   );
 
   const evmFactory = config.wallets.find((w) => w.kind === "evm");

@@ -14,7 +14,7 @@ import {
   pollAttestation,
   type Chain,
   type IrisMessage,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 
 /** Last-resort: submit `MessageTransmitter.receiveMessage` directly. CCTP v2 nonces prevent replay. */
 export type ManualMintInput = {

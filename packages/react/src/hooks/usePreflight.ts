@@ -7,7 +7,7 @@ import {
   type Chain,
   type Quote,
   type SupportedTokenAlias,
-} from "@signordev/whisk-core";
+} from "@usewhisk/core";
 import { useChainBalance } from "./useChainBalance.js";
 
 export type PreflightCheckId = "balance" | "gas" | "chain";
