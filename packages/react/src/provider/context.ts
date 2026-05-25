@@ -3,12 +3,9 @@ import type { WhiskEngine } from "@usewhisk/core";
 import type { WhiskClientConfig } from "../config/types.js";
 
 /**
- * Internal context shared by every Whisk component and hook. Components
- * never read directly from this context — they go through hooks (`useWhisk`,
- * `useWhiskEngine`, etc.) that provide stable, narrowed signatures.
- *
- * The context value is constructed once by `<WhiskProvider>` per mount and
- * is stable for the lifetime of the provider.
+ * Internal context for every Whisk component and hook. Read through
+ * `useWhisk` / `useWhiskContext`, not directly. Constructed once per
+ * provider mount and stable for the lifetime of that mount.
  */
 export type WhiskContextValue = {
   engine: WhiskEngine;
