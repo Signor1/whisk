@@ -145,7 +145,7 @@ export function InputStep({
     }
   }, [destChain, resolvedRecipient, recipientLocked]);
 
-  // Swap field to the resolved address after resolve so the ENS input ("vitalik.eth")
+  // Swap field to the resolved address after resolve so the ENS input (eg. "vitalik.eth")
   // doesn't keep the Continue button stuck in "resolve" mode.
   useEffect(() => {
     if (
