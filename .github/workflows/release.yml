@@ -44,6 +44,13 @@ jobs:
           cache: pnpm
           registry-url: "https://registry.npmjs.org"
 
+      # Node 22 ships with npm 10.x, which can generate provenance attestations
+      # but does NOT know how to perform the OIDC auth handshake with the npm
+      # registry. Trusted Publishing requires npm >= 11.5.1; without it the
+      # PUT to the registry goes out unauthenticated and we get a 404.
+      - name: Upgrade npm for Trusted Publishing OIDC
+        run: npm install --global npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
