@@ -53,14 +53,20 @@ jobs:
       # Either opens / updates a "Version Packages" PR, or — when that PR
       # has been merged — runs `pnpm release` which publishes new versions
       # to npm with provenance.
+      #
+      # `pnpm run version` (not bare `pnpm version`) is required because pnpm
+      # has a built-in `version` subcommand that just prints diagnostics; the
+      # `run` prefix forces it to invoke our npm script (`changeset version`).
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          version: pnpm version
+          version: pnpm run version
           publish: pnpm release
           commit: "chore: version packages"
           title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # No NPM_TOKEN: this repo publishes via Trusted Publishing (OIDC),
+          # which is granted through the `id-token: write` permission above.
+          # An empty `NPM_TOKEN` would actively interfere with the OIDC handshake.
           NPM_CONFIG_PROVENANCE: "true"
