@@ -109,7 +109,7 @@ function CardHeader({
 }) {
   return (
     <div className="flex items-center justify-between border-b border-border/60 px-5 py-3.5">
-      <NetworkPill chain="Arc Testnet" tone={tone} />
+      <NetworkPill chain="Arc" tone={tone} />
       <AccountChip />
     </div>
   );
@@ -215,8 +215,8 @@ function StageCompose() {
       className="flex flex-col gap-2.5 pt-3"
     >
       <div className="grid grid-cols-2 gap-2">
-        <FieldBoxStatic label="From" value="Arc Testnet" />
-        <FieldBoxStatic label="To" value="Base Sepolia" />
+        <FieldBoxStatic label="From" value="Arc" />
+        <FieldBoxStatic label="To" value="Base" />
       </div>
 
       <FieldBoxStatic
@@ -280,7 +280,7 @@ function StageReview() {
 
       <dl className="space-y-1.5 text-[13px]">
         <SummaryRow label="Recipient gets" value="6 USDC" />
-        <SummaryRow label="Route" value="Arc → Base Sepolia" />
+        <SummaryRow label="Route" value="Arc → Base" />
         <SummaryRow label="To" value="0xbe03CE…e70Fe2" mono />
       </dl>
 

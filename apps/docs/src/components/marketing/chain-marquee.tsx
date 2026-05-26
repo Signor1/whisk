@@ -3,31 +3,35 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { ComponentType, SVGAttributes } from "react";
 import {
-  NetworkArbitrumSepolia,
+  NetworkArbitrumOne,
   NetworkArc,
-  NetworkAvalancheFuji,
-  NetworkBaseSepolia,
+  NetworkAvalanche,
+  NetworkBase,
   NetworkCodex,
+  NetworkEthereum,
   NetworkHyperEvm,
+  NetworkInjective,
   NetworkInk,
-  NetworkLineaSepolia,
-  NetworkMonadTestnet,
-  NetworkOptimismSepolia,
+  NetworkLinea,
+  NetworkMonad,
+  NetworkOptimism,
   NetworkPlume,
-  NetworkPolygonAmoy,
+  NetworkPolygon,
   NetworkSeiNetwork,
-  NetworkSepolia,
+  NetworkSolana,
   NetworkSonic,
   NetworkUnichain,
   NetworkWorld,
+  NetworkXdc,
 } from "@web3icons/react";
 import { FramedSection } from "./framed-section";
 
 /**
- * Auto-scrolling marquee of the testnets Whisk ships with. Each chip
- * pairs the chain's display name with its `@web3icons/react` logo
- * (branded variant — full colour, no monochrome reduction). Doubled
- * content + a linear `x` translate gives a seamless infinite loop.
+ * Auto-scrolling marquee of the chains Whisk routes USDC across. The list
+ * mirrors Circle App Kit's Bridge-supported mainnet chains (the protocol
+ * Whisk wraps) — Whisk runs on the matching testnet for each today, with
+ * mainnet behind the gate. Doubled content + a linear `x` translate gives
+ * a seamless infinite loop.
  *
  * Reduced-motion users get a static, paginated grid instead.
  */
@@ -40,23 +44,26 @@ type Web3Icon = ComponentType<
 >;
 
 const CHAINS: Array<{ name: string; Icon: Web3Icon }> = [
-  { name: "Arc Testnet", Icon: NetworkArc },
-  { name: "Arbitrum Sepolia", Icon: NetworkArbitrumSepolia },
-  { name: "Avalanche Fuji", Icon: NetworkAvalancheFuji },
-  { name: "Base Sepolia", Icon: NetworkBaseSepolia },
-  { name: "Codex Testnet", Icon: NetworkCodex },
-  { name: "Ethereum Sepolia", Icon: NetworkSepolia },
-  { name: "HyperEVM Testnet", Icon: NetworkHyperEvm },
-  { name: "Ink Sepolia", Icon: NetworkInk },
-  { name: "Linea Sepolia", Icon: NetworkLineaSepolia },
-  { name: "Monad Testnet", Icon: NetworkMonadTestnet },
-  { name: "Optimism Sepolia", Icon: NetworkOptimismSepolia },
-  { name: "Plume Testnet", Icon: NetworkPlume },
-  { name: "Polygon Amoy", Icon: NetworkPolygonAmoy },
-  { name: "Sei Testnet", Icon: NetworkSeiNetwork },
-  { name: "Sonic Testnet", Icon: NetworkSonic },
-  { name: "Unichain Sepolia", Icon: NetworkUnichain },
-  { name: "World Chain Sepolia", Icon: NetworkWorld },
+  { name: "Arc", Icon: NetworkArc },
+  { name: "Arbitrum", Icon: NetworkArbitrumOne },
+  { name: "Avalanche", Icon: NetworkAvalanche },
+  { name: "Base", Icon: NetworkBase },
+  { name: "Codex", Icon: NetworkCodex },
+  { name: "Ethereum", Icon: NetworkEthereum },
+  { name: "HyperEVM", Icon: NetworkHyperEvm },
+  { name: "Injective", Icon: NetworkInjective },
+  { name: "Ink", Icon: NetworkInk },
+  { name: "Linea", Icon: NetworkLinea },
+  { name: "Monad", Icon: NetworkMonad },
+  { name: "Optimism", Icon: NetworkOptimism },
+  { name: "Plume", Icon: NetworkPlume },
+  { name: "Polygon", Icon: NetworkPolygon },
+  { name: "Sei", Icon: NetworkSeiNetwork },
+  { name: "Solana", Icon: NetworkSolana },
+  { name: "Sonic", Icon: NetworkSonic },
+  { name: "Unichain", Icon: NetworkUnichain },
+  { name: "World Chain", Icon: NetworkWorld },
+  { name: "XDC", Icon: NetworkXdc },
 ];
 
 export function ChainMarquee({ className }: { className?: string }) {
@@ -66,7 +73,7 @@ export function ChainMarquee({ className }: { className?: string }) {
     return (
       <FramedSection className={className} innerClassName="py-8">
         <p className="mb-4 text-center font-display text-xs font-medium uppercase tracking-[0.15em] text-primary/90">
-          Routes USDC across these testnets today
+          Routes USDC across these chains
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {CHAINS.map(({ name, Icon }) => (
@@ -80,7 +87,7 @@ export function ChainMarquee({ className }: { className?: string }) {
   return (
     <FramedSection className={className} innerClassName="py-8">
       <p className="mb-5 text-center font-display text-xs font-medium uppercase tracking-[0.15em] text-primary/90">
-        Routes USDC across these testnets today
+        Routes USDC across these chains
       </p>
 
       <div
