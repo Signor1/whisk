@@ -1,6 +1,6 @@
 {
   "name": "@usewhisk/example-donate-button",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
   "description": "Vite + React donation page. Recipient locked, amount free — donor picks how generous they feel today.",
   "type": "module",
@@ -14,8 +14,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@usewhisk/core": "^0.0.2",
-    "@usewhisk/react": "^0.0.2",
+    "@usewhisk/core": "^0.0.3",
+    "@usewhisk/react": "^0.0.3",
     "@tanstack/react-query": "^5.59.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -1,5 +1,13 @@
 # @usewhisk/react
 
+## 0.0.3
+
+### Patch Changes
+
+- 66bde26: Include LICENSE in published tarballs; fix license badge link to resolve on npmjs.com.
+- Updated dependencies [66bde26]
+  - @usewhisk/core@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
