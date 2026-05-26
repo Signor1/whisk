@@ -1,9 +1,8 @@
 "use client";
 
-import type { Dispatch } from "react";
+import { useEffect, useState, type Dispatch } from "react";
 import { chainInfo, type Chain } from "@usewhisk/react";
 import { PLAYGROUND_CHAINS } from "./providers";
-import { PRESETS, type PresetId } from "./presets";
 import { ADDRESS_BOOK } from "./address-book";
 import type {
   Palette,
@@ -17,17 +16,17 @@ import type {
  * Grouped by surface so a tester can scan it during the QA sweep.
  *
  * Sections:
- *   1. Presets — five named shapes (Open form / Checkout / Donate /
- *      Invoice / Payroll). Picking one rewrites the entire form.
- *   2. Theme — system / light / dark
- *   3. Surface — wordmark + swap-tab toggles
- *   4. Amount — lock + value + nothing else
+ *   1. Theme — system / light / dark
+ *   2. Palette — Wine / Indigo / Emerald / Amber
+ *   3. Surface — swap-tab toggle
+ *   4. Amount — lock + value
  *   5. Recipient — lock + value + address-book quick-picks
  *   6. Source / destination chain — lock + chain
  *   7. Config — JSON inspector for the live config object
+ *
+ * For preset shapes (checkout, donate, invoice, payroll, themed SaaS)
+ * see the dedicated recipe apps under `examples/`.
  */
-
-const HAS_KIT_KEY = Boolean(process.env.NEXT_PUBLIC_CIRCLE_KIT_KEY);
 
 export function Controls({
   config,
@@ -39,29 +38,10 @@ export function Controls({
   const set = (patch: Partial<PlaygroundConfig>) =>
     dispatch({ type: "SET_CONFIG", patch });
 
-  const applyPreset = (id: PresetId) => {
-    const preset = PRESETS.find((p) => p.id === id);
-    if (preset) dispatch({ type: "APPLY_PRESET", config: preset.config });
-  };
+  const hasKitKey = useHasKitKey();
 
   return (
     <aside className="pg-controls" aria-label="Playground controls">
-      <Section title="Presets">
-        <div className="pg-presets">
-          {PRESETS.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className="pg-preset"
-              onClick={() => applyPreset(p.id)}
-            >
-              <span className="pg-preset__name">{p.name}</span>
-              <span className="pg-preset__hint">{p.description}</span>
-            </button>
-          ))}
-        </div>
-      </Section>
-
       <Section title="Theme">
         <ThemePicker
           value={config.theme}
@@ -85,8 +65,8 @@ export function Controls({
         <Toggle
           label="Swap tab"
           checked={config.swapEnabled}
-          disabled={!HAS_KIT_KEY}
-          hint={HAS_KIT_KEY ? undefined : "Set NEXT_PUBLIC_CIRCLE_KIT_KEY"}
+          disabled={!hasKitKey}
+          hint={hasKitKey ? undefined : "Set CIRCLE_KIT_KEY on the server"}
           onChange={(swapEnabled) => set({ swapEnabled })}
         />
       </Section>
@@ -301,4 +281,29 @@ function ChainSelect({
       ))}
     </select>
   );
+}
+
+/**
+ * Resolves the swap-tab availability flag by hitting the `/api/kit-key`
+ * route once on mount. The route reads `CIRCLE_KIT_KEY` from server-only
+ * env and returns just a boolean — the key itself isn't sent to the
+ * client until the widget actually needs it.
+ */
+function useHasKitKey(): boolean {
+  const [has, setHas] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/kit-key")
+      .then((r) => (r.ok ? r.json() : { available: false }))
+      .then((data) => {
+        if (!cancelled) setHas(Boolean(data?.available));
+      })
+      .catch(() => {
+        /* Treat any error as "no swap support." */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return has;
 }

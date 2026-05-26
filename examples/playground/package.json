@@ -1,5 +1,5 @@
 {
-  "name": "@usewhisk/example-nextjs-basic",
+  "name": "@usewhisk/playground",
   "version": "0.0.0",
   "private": true,
   "description": "Drop-in showcase: Next.js 15 + Whisk's <WhiskSend /> widget on Arc Testnet, Base Sepolia, and Solana Devnet.",

@@ -27,7 +27,7 @@ whisk/
 │   ├── core/         @usewhisk/core — engine, types, recovery primitives, no React
 │   └── react/        @usewhisk/react — provider, hooks, components, widget
 ├── examples/
-│   ├── nextjs-basic/  the playground used for QA + end-to-end testing
+│   ├── playground/  the playground used for QA + end-to-end testing
 │   └── …              one app per integration pattern (checkout, donate, payroll, etc.)
 ├── apps/
 │   └── docs/          the documentation site (whisk.vercel.app/docs) — Fumadocs
@@ -68,8 +68,8 @@ The first run of `pnpm install` also bootstraps Husky's
 # Watch-mode build for the packages
 pnpm dev
 
-# Run the playground (nextjs-basic) in another terminal
-pnpm --filter @usewhisk/example-nextjs-basic dev
+# Run the playground (playground) in another terminal
+pnpm --filter @usewhisk/playground dev
 
 # Now open http://localhost:3000/playground — your widget edits hot-reload.
 ```

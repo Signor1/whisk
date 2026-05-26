@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@usewhisk/core?style=flat-square&color=10b981)](https://www.npmjs.com/package/@usewhisk/core)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@usewhisk/core?style=flat-square&label=bundle)](https://bundlephobia.com/package/@usewhisk/core)
 [![types](https://img.shields.io/badge/types-TypeScript-3178c6?style=flat-square)](https://www.typescriptlang.org/)
-[![license MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](../../LICENSE)
+[![license MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](./LICENSE)
 
 Framework-agnostic engine that powers the Whisk USDC widget. No React,
 no wagmi, no wallet-adapter dependencies — just the state machine,

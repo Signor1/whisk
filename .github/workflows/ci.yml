@@ -57,7 +57,7 @@ jobs:
         run: pnpm test
 
       - name: Build example app
-        run: pnpm --filter @strimz/whisk-example-nextjs-basic build
+        run: pnpm --filter @usewhisk/playground build
 
   audit:
     name: Dependency audit
