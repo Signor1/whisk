@@ -67,10 +67,10 @@ export function Foundation({ className }: { className?: string }) {
 
         <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/40 sm:grid-cols-2 lg:grid-cols-4">
           <Stat
-            value={18}
+            value={20}
             suffix=""
-            label="Testnet chains"
-            sub="Plus 21 mainnets when the gate lifts"
+            label="Chains supported"
+            sub="On their testnets today, mainnet behind the gate"
           />
           <Stat
             value={6}
