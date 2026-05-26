@@ -1,257 +1,90 @@
-:root {
-  color-scheme: light dark;
-  --app-bg: #f5f3e8;
-  --app-fg: #2a1d21;
-  --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
-  --app-border: rgba(110, 77, 84, 0.18);
-  --app-card: rgba(255, 255, 255, 0.7);
-}
+@import "tailwindcss";
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --app-bg: #1a1115;
-    --app-fg: #e4e2d4;
-    --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
-    --app-border: rgba(228, 226, 212, 0.12);
-    --app-card: rgba(42, 29, 33, 0.55);
-  }
-}
+/* ============================================================
+   Studio Fortune — payroll for a creative agency (claret/ivory).
+   ============================================================ */
 
-* {
-  box-sizing: border-box;
+@theme {
+  --color-claret: #5a1933;
+  --color-claret-deep: #3d0e22;
+  --color-burgundy: #8a2a4a;
+  --color-rose: #c97a8a;
+  --color-blush: #f5d5cd;
+  --color-ivory: #faf6ee;
+  --color-bone: #f0eadf;
+  --color-cream: #e8e0cd;
+  --color-ink: #2a1a20;
+  --color-ink-soft: #5a3a44;
+  --color-ink-muted: #8a6a76;
+  --color-line: #d8cebe;
+  --color-line-soft: #ede4d3;
+  --color-gold: #b8924a;
+  --color-emerald: #2d7a5a;
+
+  --font-display:
+    var(--font-display), "PP Editorial New", "Söhne Breit", "Iowan Old Style",
+    Georgia, serif;
+  --font-sans:
+    var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-mono:
+    var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  background: var(--app-bg);
-  color: var(--app-fg);
+  background:
+    radial-gradient(
+      60% 50% at 12% 0%,
+      rgba(201, 122, 138, 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      40% 30% at 92% 100%,
+      rgba(184, 146, 74, 0.06) 0%,
+      transparent 60%
+    ),
+    var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   min-height: 100dvh;
 }
 
-.page {
-  min-height: 100dvh;
-  padding: 1.5rem;
-  max-width: 72rem;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.sf-widget [data-whisk] {
+  --whisk-bg: var(--color-ivory);
+  --whisk-card: var(--color-bone);
+  --whisk-fg: var(--color-ink);
+  --whisk-fg-muted: var(--color-ink-muted);
+  --whisk-border: var(--color-line);
+  --whisk-input: var(--color-line);
+  --whisk-primary: var(--color-claret);
+  --whisk-primary-fg: var(--color-ivory);
+  --whisk-radius: 10px;
 }
 
-.page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.page__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-
-.page__brand-dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 9999px;
-  background: #d65c3c;
-}
-
-.page__tag {
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.55;
-  border: 0.5px solid currentColor;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-}
-
-.page__intro h1 {
-  margin: 0 0 0.375rem;
-  font-size: 1.5rem;
-  letter-spacing: -0.02em;
-}
-
-.page__intro p {
-  margin: 0;
-  color: var(--app-fg-muted);
-  font-size: 0.9375rem;
-  max-width: 36rem;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-
-@media (max-width: 880px) {
-  .layout {
-    grid-template-columns: 1fr;
+@keyframes sf-step {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.payee-list {
-  background: var(--app-card);
-  border: 1px solid var(--app-border);
-  border-radius: 0.875rem;
-  padding: 0.5rem;
-  backdrop-filter: blur(8px);
-}
-
-.payee-list__head {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.payee {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  width: 100%;
-  appearance: none;
-  background: transparent;
-  border: none;
-  border-radius: 0.625rem;
-  padding: 0.625rem 0.875rem;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  color: inherit;
-  transition: background 120ms ease;
-}
-
-.payee:hover:not(:disabled) {
-  background: rgba(214, 92, 60, 0.08);
-}
-
-.payee--active {
-  background: rgba(214, 92, 60, 0.14);
-  outline: 1px solid rgba(214, 92, 60, 0.4);
-}
-
-.payee--paid {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.payee__avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, #d65c3c, #6e4d54);
-  color: #fbf8ee;
-  font-weight: 600;
-  font-size: 0.75rem;
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-}
-
-.payee__main {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.payee__name {
-  font-weight: 600;
-  font-size: 0.9375rem;
-}
-
-.payee__role {
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
-}
-
-.payee__amount {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.payee__amount span {
-  font-size: 0.6875rem;
-  opacity: 0.6;
-  margin-left: 0.25rem;
-}
-
-.payee__badge {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  background: rgba(107, 142, 78, 0.15);
-  color: #2a4a1a;
-  border: 1px solid rgba(107, 142, 78, 0.4);
-}
-
-@media (prefers-color-scheme: dark) {
-  .payee__badge {
-    color: #b3d896;
+@keyframes sf-tick {
+  0% {
+    stroke-dashoffset: 24;
   }
-}
-
-.widget-slot {
-  background: var(--app-card);
-  border: 1px solid var(--app-border);
-  border-radius: 0.875rem;
-  padding: 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.875rem;
-  position: sticky;
-  top: 1.5rem;
-}
-
-.widget-slot__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.widget-slot__head h2 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.widget-slot__cancel {
-  appearance: none;
-  background: transparent;
-  border: none;
-  color: var(--app-fg-muted);
-  font-family: inherit;
-  font-size: 0.75rem;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.widget-slot__empty {
-  text-align: center;
-  color: var(--app-fg-muted);
-  padding: 2rem 0;
-  font-size: 0.875rem;
-  border: 1px dashed var(--app-border);
-  border-radius: 0.625rem;
+  100% {
+    stroke-dashoffset: 0;
+  }
 }
