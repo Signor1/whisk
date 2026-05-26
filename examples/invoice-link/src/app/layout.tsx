@@ -24,8 +24,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Whisk · invoice links",
-  description: "Pre-fill the widget from URL params — share a link, get paid.",
+  title: "Studio Hibiscus · Invoice links",
+  description:
+    "Share a URL — get paid in USDC. Studio Hibiscus is a demo invoice flow built on Whisk.",
 };
 
 export default function RootLayout({

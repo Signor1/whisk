@@ -1,24 +1,14 @@
 import { CreateClientGate } from "./client-gate";
+import { SiteNav, SiteFooter } from "../chrome";
 
 export default function CreatePage() {
   return (
-    <main>
-      <header className="page__header">
-        <a href="/" className="page__brand">
-          <span className="page__brand-dot" aria-hidden="true" />
-          whisk · invoice
-        </a>
-        <span className="page__tag">merchant view</span>
-      </header>
-
-      <section className="page__stage">
+    <main className="mx-auto flex min-h-dvh max-w-[1240px] flex-col gap-7 px-4 py-5 sm:px-8 lg:gap-10">
+      <SiteNav active="create" />
+      <section className="flex-1">
         <CreateClientGate />
       </section>
-
-      <footer className="page__footer">
-        Compose a payment link, share it, get paid. Customers open the link and
-        Whisk pre-fills.
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

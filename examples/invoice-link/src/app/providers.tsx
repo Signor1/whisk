@@ -20,11 +20,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const config = useMemo(
     () =>
       createWhiskConfig({
+        mode: "testnet",
         wallets: [
           evm({
             chains: SUPPORTED,
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-            appName: "Whisk Invoice Demo",
+            appName: "Studio Hibiscus",
           }),
         ],
         chains: SUPPORTED,
