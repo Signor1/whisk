@@ -14,8 +14,8 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@usewhisk/core": "^0.0.3",
-    "@usewhisk/react": "^0.0.3",
+    "@usewhisk/core": "workspace:*",
+    "@usewhisk/react": "workspace:*",
     "@tanstack/react-query": "^5.59.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
