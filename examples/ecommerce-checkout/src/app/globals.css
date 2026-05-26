@@ -1,448 +1,83 @@
-:root {
-  color-scheme: light dark;
+@import "tailwindcss";
+
+/* ============================================================
+   Atelier Hibiscus — design tokens.
+   Tailwind v4 reads `@theme` and emits matching utility classes,
+   so `bg-sand`, `text-charcoal`, `border-line` etc. just work.
+   ============================================================ */
+
+@theme {
+  --color-sand: #f4ede1;
+  --color-sand-2: #ece2cf;
+  --color-paper: #ffffff;
+  --color-charcoal: #2a221c;
+  --color-charcoal-soft: #5b4d3f;
+  --color-charcoal-muted: #8a7762;
+  --color-line: #e2d6c1;
+  --color-line-strong: #cdbb9f;
+  --color-tobacco: #8a6a48;
+  --color-tobacco-deep: #5a3d23;
+  --color-leaf: #5a8a4a;
+
+  --font-display:
+    var(--font-display), Georgia, "Iowan Old Style", "Apple Garamond",
+    "Times New Roman", serif;
+  --font-sans:
+    var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-* {
-  box-sizing: border-box;
-}
-
+/* Page wash — two warm radials over the sand base so the page reads
+   warmer at the top and bottom edges. */
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    var(--font-sans),
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    system-ui,
-    sans-serif;
   background:
-    radial-gradient(
-      ellipse at 50% -10%,
-      rgba(214, 92, 60, 0.08) 0%,
-      transparent 60%
-    ),
-    #faf5e9;
-  color: #2a1d21;
+    radial-gradient(80% 60% at 50% -10%, #fff8eb 0%, transparent 60%),
+    radial-gradient(60% 40% at 50% 110%, #e6d5b5 0%, transparent 60%),
+    var(--color-sand);
+  color: var(--color-charcoal);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  html,
-  body {
-    background:
-      radial-gradient(
-        ellipse at 50% -10%,
-        rgba(214, 92, 60, 0.18) 0%,
-        transparent 60%
-      ),
-      #1a1115;
-    color: #e4e2d4;
+/* Whisk widget retune — inherits the store palette so the embedded
+   widget reads as native to the store, not as a pasted-in card.
+   Scoped to .ah-widget so other surfaces using <WhiskSend> (if any)
+   stay on the widget's own brand. */
+.ah-widget [data-whisk] {
+  --whisk-bg: var(--color-sand);
+  --whisk-card: var(--color-paper);
+  --whisk-fg: var(--color-charcoal);
+  --whisk-fg-muted: color-mix(in srgb, var(--color-charcoal) 70%, transparent);
+  --whisk-border: var(--color-line);
+  --whisk-input: var(--color-line);
+  --whisk-primary: var(--color-charcoal);
+  --whisk-primary-fg: var(--color-sand);
+  --whisk-radius: 10px;
+}
+
+@keyframes ah-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-main {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  gap: 1.5rem;
-  max-width: 70rem;
-  margin: 0 auto;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-code {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.875em;
-  padding: 0.0625rem 0.375rem;
-  border-radius: 0.25rem;
-  background: rgba(110, 77, 84, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-  code {
-    background: rgba(228, 226, 212, 0.08);
+@keyframes ah-floater-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
   }
-}
-
-/* ============================================================
-   Storefront chrome
-   ============================================================ */
-
-.storefront__nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 0.5rem;
-  border-bottom: 0.5px solid rgba(110, 77, 84, 0.18);
-}
-
-.storefront__brand {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-}
-
-.storefront__brand-dot {
-  width: 0.625rem;
-  height: 0.625rem;
-  border-radius: 9999px;
-  background: #d65c3c;
-}
-
-.storefront__nav-links {
-  display: flex;
-  gap: 1.25rem;
-  font-size: 0.875rem;
-  opacity: 0.75;
-}
-
-.storefront__nav-links a:hover {
-  opacity: 1;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.storefront__hero {
-  max-width: 36rem;
-  padding: 1.5rem 0;
-}
-
-.storefront__hero h1 {
-  margin: 0 0 0.75rem;
-  font-size: clamp(1.625rem, 3.5vw, 2.25rem);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-.storefront__hero p {
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
-  opacity: 0.75;
-}
-
-.storefront__stage {
-  flex: 1;
-  display: grid;
-  align-items: start;
-}
-
-.storefront__footer {
-  text-align: center;
-  font-size: 0.75rem;
-  opacity: 0.55;
-  padding-top: 0.75rem;
-  border-top: 0.5px solid rgba(110, 77, 84, 0.12);
-}
-
-/* ============================================================
-   Catalogue
-   ============================================================ */
-
-.storefront__panel {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-}
-
-.storefront__head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.storefront__head h2 {
-  margin: 0 0 0.25rem;
-  font-size: 1.375rem;
-  letter-spacing: -0.02em;
-}
-
-.storefront__head p {
-  margin: 0;
-  opacity: 0.7;
-  font-size: 0.9375rem;
-}
-
-.storefront__pill {
-  font-size: 0.6875rem;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.04em;
-  padding: 0.25rem 0.625rem;
-  border: 1px solid rgba(110, 77, 84, 0.3);
-  border-radius: 9999px;
-  white-space: nowrap;
-}
-
-.storefront__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(15.5rem, 100%), 1fr));
-  gap: 1rem;
-}
-
-.storefront__card {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(110, 77, 84, 0.15);
-  border-radius: 0.875rem;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.storefront__card:hover {
-  border-color: rgba(214, 92, 60, 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -10px rgba(214, 92, 60, 0.18);
-}
-
-@media (prefers-color-scheme: dark) {
-  .storefront__card {
-    background: rgba(42, 29, 33, 0.55);
-    border-color: rgba(228, 226, 212, 0.12);
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
-}
-
-.storefront__art {
-  aspect-ratio: 4 / 3;
-  display: grid;
-  place-items: center;
-}
-
-.storefront__art--small {
-  aspect-ratio: 1 / 1;
-  width: 5rem;
-  border-radius: 0.625rem;
-}
-
-.storefront__glyph {
-  font-size: 4rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: -0.05em;
-}
-
-.storefront__art--small .storefront__glyph {
-  font-size: 2rem;
-}
-
-.storefront__card-body {
-  padding: 0.875rem 1rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4375rem;
-  flex: 1;
-}
-
-.storefront__category {
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  font-family: var(--font-mono), ui-monospace, monospace;
-}
-
-.storefront__card-body h3 {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-
-.storefront__card-body p {
-  margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  opacity: 0.7;
-}
-
-.storefront__card-foot {
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 0.5rem;
-}
-
-.storefront__price {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.storefront__buy {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #d65c3c;
-}
-
-/* ============================================================
-   Checkout view
-   ============================================================ */
-
-.storefront__checkout-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.storefront__checkout-head h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
-}
-
-.storefront__back {
-  appearance: none;
-  background: transparent;
-  border: none;
-  color: inherit;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  cursor: pointer;
-  opacity: 0.75;
-}
-
-.storefront__back:hover {
-  opacity: 1;
-  text-decoration: underline;
-}
-
-.storefront__order {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid rgba(110, 77, 84, 0.15);
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-@media (prefers-color-scheme: dark) {
-  .storefront__order {
-    background: rgba(42, 29, 33, 0.5);
-    border-color: rgba(228, 226, 212, 0.12);
-  }
-}
-
-.storefront__order h3 {
-  margin: 0.125rem 0 0.25rem;
-  font-size: 0.9375rem;
-  font-weight: 600;
-}
-
-.storefront__order-label {
-  margin: 0;
-  font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.6;
-  font-family: var(--font-mono), ui-monospace, monospace;
-}
-
-.storefront__order-blurb {
-  margin: 0;
-  font-size: 0.8125rem;
-  opacity: 0.7;
-  line-height: 1.4;
-}
-
-.storefront__order-total {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.125rem;
-  text-align: right;
-}
-
-.storefront__order-total span {
-  font-size: 0.6875rem;
-  opacity: 0.6;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.storefront__order-total strong {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.storefront__order-token {
-  font-family: var(--font-mono), ui-monospace, monospace !important;
-  letter-spacing: 0.04em !important;
-  text-transform: uppercase;
-}
-
-/* ============================================================
-   Success view
-   ============================================================ */
-
-.storefront__success header {
-  text-align: center;
-  padding: 1.5rem 0;
-}
-
-.storefront__success-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  background: rgba(107, 142, 78, 0.15);
-  border: 1px solid rgba(107, 142, 78, 0.4);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
-}
-
-.storefront__success h2 {
-  margin: 0 0 0.5rem;
-  font-size: 1.375rem;
-}
-
-.storefront__success p {
-  margin: 0;
-  opacity: 0.75;
-  max-width: 28rem;
-  margin-inline: auto;
-  line-height: 1.55;
-}
-
-.storefront__success p a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.storefront__chip {
-  appearance: none;
-  border: 1px solid rgba(110, 77, 84, 0.3);
-  background: transparent;
-  color: inherit;
-  padding: 0.4375rem 0.875rem;
-  border-radius: 9999px;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  cursor: pointer;
-  align-self: center;
 }

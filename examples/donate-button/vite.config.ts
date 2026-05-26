@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 /**
  * Vite config for a Whisk SPA. The two `optimizeDeps.exclude` entries
@@ -7,7 +8,7 @@ import react from "@vitejs/plugin-react";
  * same fix the Next.js config applies via webpack `resolve.fallback`.
  */
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@react-native-async-storage/async-storage": "/src/stub-empty.ts",

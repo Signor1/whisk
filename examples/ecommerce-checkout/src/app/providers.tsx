@@ -13,11 +13,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const config = useMemo(
     () =>
       createWhiskConfig({
+        mode: "testnet",
         wallets: [
           evm({
             chains: ["Arc_Testnet"],
             projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-            appName: "Whisk Checkout Demo",
+            appName: "Atelier Hibiscus",
           }),
         ],
         chains: ["Arc_Testnet"],

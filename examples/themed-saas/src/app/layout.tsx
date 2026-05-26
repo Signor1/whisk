@@ -24,8 +24,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Acme Treasury · powered by Whisk",
-  description: "Whisk re-themed to a corporate teal/navy palette.",
+  title: "Steelpath Cloud · Treasury",
+  description:
+    "Steelpath Cloud — a B2B treasury dashboard. Whisk re-themed to a teal/navy palette.",
 };
 
 export default function RootLayout({

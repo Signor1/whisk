@@ -5,10 +5,12 @@ export function Providers({ children }: { children: ReactNode }) {
   const config = useMemo(
     () =>
       createWhiskConfig({
+        mode: "testnet",
         wallets: [
           evm({
             chains: ["Arc_Testnet"],
-            appName: "Whisk Payroll Demo",
+            projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
+            appName: "Studio Fortune",
           }),
         ],
         chains: ["Arc_Testnet"],

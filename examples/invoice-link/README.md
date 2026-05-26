@@ -1,51 +1,53 @@
 # whisk-example-invoice-link
 
-The whole integration is a URL. The merchant generates a link, the
-customer clicks it, Whisk reads the params and pre-fills the widget.
-No SDK on the merchant's site, no JS coordination — just a hyperlink.
+**Studio Hibiscus** — an invoice-link flow with two views:
 
-## Param schema
+- `/` (customer view) — reads `?to=…&amount=…&chain=…&memo=…` from the
+  URL and renders a polished invoice (line item, totals, paid stamp on
+  success).
+- `/create` (merchant view) — a composer that builds the shareable URL,
+  with copy + preview actions.
 
-```
-/?to=0x…&amount=49.99&chain=Arc_Testnet&memo=Invoice+%23420
-```
+The whole integration is a URL. No SDK on the customer's side.
 
-| Param    | Required | Notes                                                |
-|----------|----------|------------------------------------------------------|
-| `to`     | yes      | Recipient EVM address (0x… 40 hex)                   |
-| `amount` | yes      | USDC amount as a string (e.g. `49.99`)               |
-| `chain`  | yes      | Whisk chain literal (`Arc_Testnet`, `Base_Sepolia`, …) |
-| `memo`   | no       | Free-text shown in the invoice header                |
+## What this recipe shows
 
-## What's interesting
+- All four `<WhiskSend>` props (`amount`, `recipient`, `sourceChain`,
+  `destinationChain`) hydrated from query params on the customer view.
+- Empty-state fallback with three demo invoices if the URL has no
+  params.
+- Animated "Paid" stamp via CSS keyframes when `onSuccess` fires.
+- Composer form on `/create` with validation, live preview of the URL,
+  and copy-to-clipboard.
+- Coral/sage palette (distinct from the Atelier Hibiscus ecommerce
+  recipe — same "Hibiscus" mood, different studio).
 
-- Validates `chain` against the registry — bogus values fall through
-  to a "share a link" fallback page with sample URLs.
-- All controlled props pinned, so the customer can't change anything.
-  This is critical for invoice-link UX: the merchant is the source of
-  truth.
-- `Suspense` boundary around `useSearchParams()` is required by Next.js
-  15 — `client-gate.tsx` handles it.
+## Stack
+
+- **Next.js 15** App Router
+- **Tailwind CSS v4** via `@tailwindcss/postcss`
+- **@usewhisk/react** for the `<WhiskSend>` widget
 
 ## Run
 
 ```bash
 pnpm install
+cp .env.example .env.local  # optional: paste a WalletConnect project ID
 pnpm --filter @usewhisk/example-invoice-link dev
 ```
 
-Open <http://localhost:3014/?to=0x5B8ecaB7096F8aBED873D246629ef9f05f467605&amount=49.99&chain=Arc_Testnet&memo=Invoice+%23420>.
+Open <http://localhost:3030>. Try one of the demo links on the empty
+state, or go straight to `/create` to compose one.
+`NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is optional — without it
+MetaMask / Rabby / Coinbase Wallet still work, you just won't see the
+WalletConnect QR option.
 
 ## Adapt for your project
 
-Inside this monorepo, the example consumes `@usewhisk/react` and
-`@usewhisk/core` via `workspace:*`. When you copy this recipe into
-your own app, install the published packages instead:
-
 ```bash
 pnpm add @usewhisk/react @usewhisk/core
+pnpm add -D tailwindcss @tailwindcss/postcss
 ```
 
-The Whisk-specific code lives under `src/app/`. Lift those files,
-update your own `package.json` with the install above, and the recipe
-runs the same way.
+Customer view in `src/app/invoice.tsx`, composer in
+`src/app/create/form.tsx`, brand tokens in `src/app/globals.css`.

@@ -1,39 +1,49 @@
 # whisk-example-themed-saas
 
-A SaaS dashboard with the Whisk widget retrofitted to match a corporate
-navy / teal palette. The default earth-tone Whisk theme is replaced via
-CSS variable overrides — no fork, no re-export, just a stylesheet.
+**Steelpath Cloud** — a B2B treasury dashboard with sidebar nav, KPI
+cards, a scheduled-vendors table, recent settlements feed, and an
+activity log. Click any vendor row to fund their next payout via Whisk.
 
-## What's interesting
+Dark navy/teal UI demonstrating how to make `<WhiskSend>` feel native to
+a serious enterprise product.
 
-- Every visible property of the widget — background, text, borders,
-  primary CTA, success / warning / destructive tones, even the corner
-  radii — is exposed as a `--whisk-*` CSS variable.
-- `globals.css` redefines all of them under `[data-whisk]` and
-  `[data-whisk][data-whisk-theme="dark"]`. The provider then stamps the
-  attribute on the widget root and your overrides take effect.
-- App chrome has its own variables (`--app-*`) that happen to share the
-  navy palette — looks intentional rather than transplanted.
+## What this recipe shows
+
+- Dark dashboard chrome built with Tailwind CSS v4 — sidebar, top bar,
+  KPI tiles, paginated lists, activity timeline.
+- Vendor table with per-row click that loads `<WhiskSend>` with the
+  vendor's `amount` and `recipient` pinned.
+- Widget re-themed for dark mode via `[data-whisk]` CSS variable
+  overrides — teal/foam primary on dark cards.
+- A confirmed state after `onSuccess` with a tx hash link to the
+  explorer.
+- Idle state when no vendor is selected, prompting the user to pick a
+  row.
+
+## Stack
+
+- **Next.js 15** App Router
+- **Tailwind CSS v4** via `@tailwindcss/postcss`
+- **@usewhisk/react** for the `<WhiskSend>` widget
 
 ## Run
 
 ```bash
 pnpm install
+cp .env.example .env.local  # optional: paste a WalletConnect project ID
 pnpm --filter @usewhisk/example-themed-saas dev
 ```
 
-Open <http://localhost:3012>.
+Open <http://localhost:3020>. `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` is
+optional — without it MetaMask / Rabby / Coinbase Wallet still work, you
+just won't see the WalletConnect QR option.
 
 ## Adapt for your project
 
-Inside this monorepo, the example consumes `@usewhisk/react` and
-`@usewhisk/core` via `workspace:*`. When you copy this recipe into
-your own app, install the published packages instead:
-
 ```bash
 pnpm add @usewhisk/react @usewhisk/core
+pnpm add -D tailwindcss @tailwindcss/postcss
 ```
 
-The Whisk-specific code lives under `src/app/`. Lift those files,
-update your own `package.json` with the install above, and the recipe
-runs the same way.
+The dashboard is in `src/app/dashboard.tsx`; brand tokens in
+`src/app/globals.css` under `@theme`.

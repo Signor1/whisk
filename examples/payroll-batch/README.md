@@ -1,38 +1,48 @@
 # whisk-example-payroll-batch
 
-Vite + React admin tool. A list of payees on the left, a single
-`<WhiskSend>` instance on the right that re-renders with the active
-payee's address + amount as you click rows.
+**Studio Fortune** — a creative agency payroll tool. Three-step flow
+(review → dispatch → confirm), 6 payees on a claret/ivory editorial
+palette, progress bar that animates as each transfer settles.
 
-## What's interesting
+A real internal admin feel demonstrating Whisk dispatching payments
+one-by-one through a single embedded widget.
 
-- One widget instance, many payees. Clicking a row swaps the
-  controlled `recipient` and `amount` props; the widget rebuilds its
-  internal state for that payee.
-- Payee list tracks per-row payment status locally. In a real app
-  this is webhook-driven server state, not local React state.
-- All rows lock to a single chain (`Arc_Testnet`) — typical for an
-  internal payroll tool where the treasury already lives on one chain.
+## What this recipe shows
+
+- Step 1 — Review: exclude any payee from the run, see the batch total
+  update live.
+- Step 2 — Dispatch: a progress bar + per-payee status (queued, in
+  flight, settled). The Whisk widget is re-mounted between payees with
+  the next payee's `amount` and `recipient` pre-filled and locked.
+- Step 3 — Confirm: full run summary with every settled payee and tx.
+- `onSuccess` advances to the next payee automatically — no extra clicks
+  between dispatches.
+- Editorial typography + serif display headers (Studio Fortune brand).
+
+## Stack
+
+- **Vite + React 19**
+- **Tailwind CSS v4** via `@tailwindcss/vite`
+- **@usewhisk/react** for the `<WhiskSend>` widget
 
 ## Run
 
 ```bash
 pnpm install
+cp .env.example .env.local  # optional: paste a WalletConnect project ID
 pnpm --filter @usewhisk/example-payroll-batch dev
 ```
 
-Open <http://localhost:3013>.
+Open <http://localhost:5174>. `VITE_WALLETCONNECT_PROJECT_ID` is
+optional — without it MetaMask / Rabby / Coinbase Wallet still work, you
+just won't see the WalletConnect QR option.
 
 ## Adapt for your project
 
-Inside this monorepo, the example consumes `@usewhisk/react` and
-`@usewhisk/core` via `workspace:*`. When you copy this recipe into
-your own app, install the published packages instead:
-
 ```bash
 pnpm add @usewhisk/react @usewhisk/core
+pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
-The Whisk-specific code lives under `src/app/`. Lift those files,
-update your own `package.json` with the install above, and the recipe
-runs the same way.
+The three-step flow lives in `src/App.tsx`; brand tokens in
+`src/styles.css`.

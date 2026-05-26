@@ -1,31 +1,14 @@
 import { ClientGate } from "./client-gate";
+import { SiteNav, SiteFooter } from "./chrome";
 
 export default function Page() {
   return (
-    <main>
-      <header className="page__header">
-        <span className="page__brand">
-          <span className="page__brand-dot" aria-hidden="true" />
-          whisk · invoice
-        </span>
-        <nav style={{ display: "flex", gap: "1rem", fontSize: "0.875rem" }}>
-          <a href="/" style={{ opacity: 0.7 }}>
-            customer view
-          </a>
-          <a href="/create" style={{ opacity: 0.7 }}>
-            create link →
-          </a>
-        </nav>
-      </header>
-
-      <section className="page__stage">
+    <main className="mx-auto flex min-h-dvh max-w-[1240px] flex-col gap-7 px-4 py-5 sm:px-8 lg:gap-10">
+      <SiteNav active="customer" />
+      <section className="flex-1">
         <ClientGate />
       </section>
-
-      <footer className="page__footer">
-        Pre-fill via URL params:{" "}
-        <code>?to=0x…&amount=49.99&chain=Arc_Testnet&memo=…</code>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

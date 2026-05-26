@@ -1,189 +1,87 @@
 "use client";
 
 import { useState } from "react";
-import { WhiskSend } from "@usewhisk/react";
+import { useCart, type HydratedLine } from "../hooks/use-cart";
+import { makeOrderId } from "../lib/order";
+import { SiteNav, SiteFooter } from "../components/chrome";
+import { ShopView } from "../components/shop/shop-view";
+import { CartFloater } from "../components/shop/cart-floater";
+import { CheckoutView } from "../components/checkout/checkout-view";
+import { SuccessView } from "../components/success/success-view";
 
-const MERCHANT_ADDRESS = "0x5B8ecaB7096F8aBED873D246629ef9f05f467605";
+type Step = "shop" | "checkout" | "success";
 
-type Product = {
-  id: string;
-  name: string;
-  blurb: string;
-  priceUsdc: string;
-  glyph: string;
-  gradient: string;
-  category: string;
+type PaidOrder = {
+  orderId: string;
+  txHash?: string;
+  cart: HydratedLine[];
+  totalStr: string;
 };
 
-const CATALOG: Product[] = [
-  {
-    id: "handbook",
-    name: "Whisk handbook · annotated edition",
-    blurb:
-      "200-page softcover. Earth-tone palette, nine chapters, signed by the author.",
-    priceUsdc: "49.99",
-    glyph: "W",
-    gradient: "linear-gradient(135deg, #d65c3c 0%, #6e4d54 100%)",
-    category: "Books",
-  },
-  {
-    id: "tshirt",
-    name: "Cream / wine tee — fitted",
-    blurb:
-      "Heavyweight 240gsm cotton, double-stitched hem, matches the widget's palette.",
-    priceUsdc: "32.00",
-    glyph: "T",
-    gradient: "linear-gradient(135deg, #b04f3e 0%, #f5e8d6 100%)",
-    category: "Apparel",
-  },
-  {
-    id: "pin",
-    name: "Brand pin set (3 pieces)",
-    blurb:
-      "Hard enamel pins · whisk wordmark, stablecoin glyph, terracotta dot. Magnetic backs.",
-    priceUsdc: "18.50",
-    glyph: "◉",
-    gradient: "linear-gradient(135deg, #c98c56 0%, #6e4d54 100%)",
-    category: "Accessories",
-  },
-  {
-    id: "sticker-pack",
-    name: "Sticker pack · 12 designs",
-    blurb:
-      "Vinyl, weather-resistant, palm-sized. Stick on a laptop, post a thread, ship.",
-    priceUsdc: "9.00",
-    glyph: "✦",
-    gradient: "linear-gradient(135deg, #6e4d54 0%, #d65c3c 100%)",
-    category: "Accessories",
-  },
-];
-
-type CartItem = { product: Product };
-
+/**
+ * Atelier Hibiscus checkout — top-level state router. The shop, checkout, and
+ * success screens each live in their own module; this file only owns the step
+ * machine and snapshots the cart at the moment the order settles (so the
+ * confirmation keeps showing the right items after `clear()`).
+ */
 export function ExampleCheckout() {
-  const [cart, setCart] = useState<CartItem | null>(null);
-  const [paid, setPaid] = useState<{
-    txHash?: string;
-    product: Product;
-  } | null>(null);
+  const [step, setStep] = useState<Step>("shop");
+  const [order, setOrder] = useState<PaidOrder | null>(null);
+  const cart = useCart();
 
-  if (paid) {
-    return (
-      <article className="storefront__panel storefront__success">
-        <header>
-          <span className="storefront__success-badge">Order placed</span>
-          <h2>Thanks for buying {paid.product.name.toLowerCase()}.</h2>
-          <p>
-            We've received your payment.{" "}
-            {paid.txHash ? (
-              <a
-                href={`https://testnet.arcscan.app/tx/${paid.txHash}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View tx on Arc Explorer
-              </a>
-            ) : null}{" "}
-            You'll get a shipping email when this leaves the warehouse.
-          </p>
-        </header>
-        <button
-          type="button"
-          className="storefront__chip"
-          onClick={() => {
-            setPaid(null);
-            setCart(null);
-          }}
-        >
-          ← Back to store
-        </button>
-      </article>
-    );
-  }
+  const completeOrder = (txHash?: string) => {
+    setOrder({
+      orderId: makeOrderId(),
+      txHash,
+      cart: cart.hydrated,
+      totalStr: cart.totals.totalStr,
+    });
+    setStep("success");
+  };
 
-  if (cart) {
-    return (
-      <article className="storefront__panel storefront__checkout">
-        <header className="storefront__checkout-head">
-          <button
-            type="button"
-            className="storefront__back"
-            onClick={() => setCart(null)}
-          >
-            ← Continue shopping
-          </button>
-          <h2>Checkout</h2>
-        </header>
-
-        <div className="storefront__order">
-          <div
-            className="storefront__art storefront__art--small"
-            style={{ background: cart.product.gradient }}
-          >
-            <span className="storefront__glyph">{cart.product.glyph}</span>
-          </div>
-          <div>
-            <p className="storefront__order-label">{cart.product.category}</p>
-            <h3>{cart.product.name}</h3>
-            <p className="storefront__order-blurb">{cart.product.blurb}</p>
-          </div>
-          <div className="storefront__order-total">
-            <span>Total</span>
-            <strong>${cart.product.priceUsdc}</strong>
-            <span className="storefront__order-token">USDC · Arc Testnet</span>
-          </div>
-        </div>
-
-        <WhiskSend
-          amount={cart.product.priceUsdc}
-          recipient={MERCHANT_ADDRESS}
-          sourceChain="Arc_Testnet"
-          destinationChain="Arc_Testnet"
-          onSuccess={({ finalTxHash }) =>
-            setPaid({ txHash: finalTxHash, product: cart.product })
-          }
-        />
-      </article>
-    );
-  }
+  const shopAgain = () => {
+    cart.clear();
+    setOrder(null);
+    setStep("shop");
+  };
 
   return (
-    <article className="storefront__panel">
-      <header className="storefront__head">
-        <div>
-          <h2>Today's drops</h2>
-          <p>Pay-with-USDC, settles in seconds, no card details required.</p>
-        </div>
-        <span className="storefront__pill">Arc Testnet · live</span>
-      </header>
+    <main className="mx-auto flex min-h-dvh max-w-7xl flex-col gap-8 px-4 py-5 sm:px-8 md:gap-12">
+      <SiteNav cartCount={cart.totals.itemCount} />
 
-      <div className="storefront__grid">
-        {CATALOG.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className="storefront__card"
-            onClick={() => setCart({ product: p })}
-          >
-            <div
-              className="storefront__art"
-              style={{ background: p.gradient }}
-              aria-hidden="true"
-            >
-              <span className="storefront__glyph">{p.glyph}</span>
-            </div>
-            <div className="storefront__card-body">
-              <span className="storefront__category">{p.category}</span>
-              <h3>{p.name}</h3>
-              <p>{p.blurb}</p>
-              <div className="storefront__card-foot">
-                <span className="storefront__price">${p.priceUsdc}</span>
-                <span className="storefront__buy">Buy →</span>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-    </article>
+      {step === "shop" && (
+        <ShopView cart={cart.hydrated} onAdd={cart.addLine} />
+      )}
+
+      {step === "checkout" && (
+        <CheckoutView
+          cart={cart.hydrated}
+          totals={cart.totals}
+          onUpdateQty={cart.setQty}
+          onBackToShop={() => setStep("shop")}
+          onPaid={completeOrder}
+        />
+      )}
+
+      {step === "success" && order && (
+        <SuccessView
+          orderId={order.orderId}
+          txHash={order.txHash}
+          cart={order.cart}
+          totalStr={order.totalStr}
+          onShopAgain={shopAgain}
+        />
+      )}
+
+      {step === "shop" && cart.totals.itemCount > 0 && (
+        <CartFloater
+          count={cart.totals.itemCount}
+          total={cart.totals.subtotal}
+          onCheckout={() => setStep("checkout")}
+        />
+      )}
+
+      <SiteFooter />
+    </main>
   );
 }
