@@ -1,242 +1,81 @@
-/* ============================================================
-   Whisk theme override — corporate teal / navy palette
-   ============================================================
-   Every Whisk visual property routes through a CSS variable. To
-   re-theme the widget, the host app overrides the tokens under
-   `[data-whisk]`. Below we replace the warm earth-tone defaults
-   with a cooler navy / teal stack consistent with the SaaS
-   dashboard chrome around it.
-*/
-
-[data-whisk] {
-  --whisk-bg: #f6f9fc;
-  --whisk-fg: #0f1f3d;
-  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
-  --whisk-border: #d8e1ee;
-  --whisk-primary: #1f6feb; /* navy-ish blue */
-  --whisk-primary-fg: #ffffff;
-  --whisk-success: #15803d;
-  --whisk-warning: #d97706;
-  --whisk-destructive: #dc2626;
-  --whisk-radius: 0.5rem;
-  --whisk-radius-md: 0.5rem;
-  --whisk-radius-lg: 0.75rem;
-}
-
-[data-whisk][data-whisk-theme="dark"],
-[data-whisk].dark {
-  --whisk-bg: #0c1322;
-  --whisk-fg: #e6edf6;
-  --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
-  --whisk-border: #1f2c47;
-  --whisk-primary: #4d8bff;
-  --whisk-primary-fg: #0c1322;
-  --whisk-card: #111a2e;
-}
+@import "tailwindcss";
 
 /* ============================================================
-   App chrome (independent of Whisk)
+   Steelpath Cloud — dark B2B SaaS palette (navy/teal/ink).
    ============================================================ */
 
-:root {
-  color-scheme: light dark;
-  --app-bg: #f1f4fa;
-  --app-fg: #0f1f3d;
-  --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
-  --app-border: #d8e1ee;
-  --app-card: #ffffff;
-  --app-accent: #1f6feb;
-}
+@theme {
+  --color-ink: #050810;
+  --color-ink-2: #0a1220;
+  --color-navy: #0f1c2e;
+  --color-navy-2: #142436;
+  --color-card: #0c1827;
+  --color-card-2: #15263a;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-foam: #5dd9c5;
+  --color-foam-deep: #2db8a3;
+  --color-azure: #4a90e2;
+  --color-cobalt: #2563b3;
+  --color-text: #e8eef7;
+  --color-text-soft: #b4c0d0;
+  --color-text-muted: #6b7a8d;
+  --color-warn: #f5a142;
+  --color-pos: #4ade80;
+  --color-neg: #f87171;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --app-bg: #060a14;
-    --app-fg: #e6edf6;
-    --app-fg-muted: color-mix(in srgb, var(--app-fg) 75%, transparent);
-    --app-border: #1f2c47;
-    --app-card: #0c1322;
-  }
-}
-
-* {
-  box-sizing: border-box;
+  --font-display:
+    var(--font-display), "Familjen Grotesk", Inter, system-ui, sans-serif;
+  --font-sans:
+    var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-mono:
+    var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    var(--font-sans),
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
-  background: var(--app-bg);
-  color: var(--app-fg);
-  -webkit-font-smoothing: antialiased;
-}
-
-main {
-  min-height: 100dvh;
-  padding: 2rem 1.5rem;
-}
-
-.dashboard {
-  max-width: 72rem;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dashboard__top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.dashboard__top h1 {
-  margin: 0;
-  font-size: 1.625rem;
-  letter-spacing: -0.02em;
-}
-
-.dashboard__top p {
-  margin: 0.375rem 0 0;
-  color: var(--app-fg-muted);
-  font-size: 0.9375rem;
-}
-
-.dashboard__top-meta {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.dashboard__pill {
-  font-size: 0.6875rem;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.04em;
-  padding: 0.25rem 0.625rem;
-  border: 1px solid var(--app-border);
-  border-radius: 9999px;
-  color: var(--app-fg-muted);
-}
-
-.dashboard__pill--accent {
-  background: rgba(31, 111, 235, 0.12);
-  border-color: var(--app-accent);
-  color: var(--app-accent);
-}
-
-.dashboard__stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-}
-
-@media (max-width: 640px) {
-  .dashboard__stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-.dashboard__stat {
-  background: var(--app-card);
-  border: 1px solid var(--app-border);
-  border-radius: 0.75rem;
-  padding: 1rem 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.dashboard__stat-label {
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
-  letter-spacing: 0.02em;
-}
-
-.dashboard__stat-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.dashboard__stat-delta {
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
-}
-
-.dashboard__main {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 880px) {
-  .dashboard__main {
-    grid-template-columns: 1fr;
-  }
-}
-
-.dashboard__panel {
-  background: var(--app-card);
-  border: 1px solid var(--app-border);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.dashboard__panel header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.dashboard__panel h2 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.dashboard__panel--accent {
   background:
-    linear-gradient(180deg, rgba(31, 111, 235, 0.06), transparent),
-    var(--app-card);
+    radial-gradient(
+      60% 50% at 15% 0%,
+      rgba(93, 217, 197, 0.06) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 40% at 95% 100%,
+      rgba(74, 144, 226, 0.06) 0%,
+      transparent 60%
+    ),
+    var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.dashboard__rows {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
+/* Steelpath widget theme: dark card, foam-teal primary. */
+.sp-widget [data-whisk] {
+  --whisk-bg: var(--color-card);
+  --whisk-card: var(--color-card-2);
+  --whisk-fg: var(--color-text);
+  --whisk-fg-muted: var(--color-text-muted);
+  --whisk-border: var(--color-line-strong);
+  --whisk-input: var(--color-line-strong);
+  --whisk-primary: var(--color-foam);
+  --whisk-primary-fg: var(--color-ink);
+  --whisk-radius: 10px;
 }
 
-.dashboard__row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 0.75rem;
-  align-items: center;
-  padding: 0.625rem 0;
-  border-bottom: 1px solid var(--app-border);
-  font-size: 0.875rem;
-}
-
-.dashboard__row:last-child {
-  border-bottom: none;
-}
-
-.dashboard__row-meta {
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
-  font-family: var(--font-mono), ui-monospace, monospace;
-}
-
-.dashboard__row-time {
-  font-size: 0.75rem;
-  color: var(--app-fg-muted);
+@keyframes sp-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
 }
