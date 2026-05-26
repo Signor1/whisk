@@ -169,7 +169,7 @@ whisk/
 │   ├── core/         # @usewhisk/core   — framework-agnostic engine
 │   └── react/        # @usewhisk/react  — components, hooks, provider
 ├── examples/
-│   └── nextjs-basic/ # Drop-in showcase + playground
+│   └── playground/ # Drop-in showcase + playground
 └── apps/
     └── docs/         # Documentation site (Fumadocs)
 ```
@@ -203,7 +203,7 @@ Adding a chain = a single new entry in `packages/core/src/chains/registry.ts`.
 
 ## Theming
 
-Whisk ships with a default theme (warm earth-tones) driven by `--whisk-*` CSS variables on `[data-whisk]`. Override any of them in your own stylesheet to retune the whole widget — light mode, dark mode, accent, border radius, fonts, the lot. The playground's palette picker (Wine / Indigo / Emerald / Amber) does exactly this — see `examples/nextjs-basic/src/app/globals.css` for the full pattern.
+Whisk ships with a default theme (warm earth-tones) driven by `--whisk-*` CSS variables on `[data-whisk]`. Override any of them in your own stylesheet to retune the whole widget — light mode, dark mode, accent, border radius, fonts, the lot. The playground's palette picker (Wine / Indigo / Emerald / Amber) does exactly this — see `examples/playground/src/app/globals.css` for the full pattern.
 
 ```css
 /* Override the widget's defaults — values are plain CSS colour strings. */

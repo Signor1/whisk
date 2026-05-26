@@ -47,7 +47,6 @@ export type PlaygroundState = {
 
 export type PlaygroundAction =
   | { type: "SET_CONFIG"; patch: Partial<PlaygroundConfig> }
-  | { type: "APPLY_PRESET"; config: Partial<PlaygroundConfig> }
   | { type: "LOG_EVENT"; event: Omit<PlaygroundEvent, "id" | "at"> }
   | { type: "CLEAR_LOG" };
 
@@ -84,20 +83,6 @@ function reducer(
   switch (action.type) {
     case "SET_CONFIG":
       return { ...state, config: { ...state.config, ...action.patch } };
-
-    case "APPLY_PRESET":
-      // Reset to initial first, then layer the preset — keeps the user
-      // from inheriting stale locks from the previous preset. Theme and
-      // palette are preserved because they're UI preferences, not payment shape.
-      return {
-        ...state,
-        config: {
-          ...INITIAL_CONFIG,
-          theme: state.config.theme,
-          palette: state.config.palette,
-          ...action.config,
-        },
-      };
 
     case "LOG_EVENT": {
       const event: PlaygroundEvent = {

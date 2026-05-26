@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@usewhisk/react?style=flat-square&color=10b981)](https://www.npmjs.com/package/@usewhisk/react)
 [![types](https://img.shields.io/badge/types-TypeScript-3178c6?style=flat-square)](https://www.typescriptlang.org/)
-[![license MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](../../LICENSE)
+[![license MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](./LICENSE)
 
 Drop-in React widget for sending and bridging USDC. One component
 handles wallet connect, recipient resolution, fee preview, and the
@@ -228,7 +228,7 @@ const WhiskSend = dynamic(
 );
 ```
 
-See the [`nextjs-basic` example](https://github.com/Signor1/whisk/tree/main/examples/nextjs-basic)
+See the [`playground` example](https://github.com/Signor1/whisk/tree/main/examples/playground)
 for a complete setup, including `next.config.ts` webpack fallbacks
 for transitive Node-only deps.
 

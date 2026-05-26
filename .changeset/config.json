@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@usewhisk/example-nextjs-basic"]
+  "ignore": ["@usewhisk/playground"]
 }

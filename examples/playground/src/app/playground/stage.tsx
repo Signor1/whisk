@@ -1,10 +1,43 @@
 "use client";
 
-import { useCallback, type Dispatch } from "react";
+import { useCallback, useEffect, useState, type Dispatch } from "react";
 import { WhiskSend, type SwapState, type WhiskState } from "@usewhisk/react";
 import type { PlaygroundAction, PlaygroundConfig } from "./store";
 
-const KIT_KEY = process.env.NEXT_PUBLIC_CIRCLE_KIT_KEY;
+/**
+ * Fetches the Circle App Kit kit key from the playground's own
+ * `/api/kit-key` route when Swap is enabled. The key never appears in
+ * the static JS bundle — the server reads it from `CIRCLE_KIT_KEY`
+ * and returns it only after the origin allow-list check passes.
+ *
+ * Returns `undefined` while the request is in flight or when Swap is
+ * off, so `<WhiskSend>` falls back to transfer-only until the key
+ * lands.
+ */
+function useSwapKitKey(enabled: boolean): string | undefined {
+  const [kitKey, setKitKey] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!enabled) {
+      setKitKey(undefined);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/kit-key", { method: "POST" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.kitKey) setKitKey(data.kitKey);
+      })
+      .catch(() => {
+        /* Swap stays disabled. The widget renders transfer-only. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return kitKey;
+}
 
 /**
  * The actual `<WhiskSend>` driven by the current playground config.
@@ -31,7 +64,8 @@ export function Stage({
   config: PlaygroundConfig;
   dispatch: Dispatch<PlaygroundAction>;
 }) {
-  const swapAvailable = Boolean(KIT_KEY) && config.swapEnabled;
+  const kitKey = useSwapKitKey(config.swapEnabled);
+  const swapAvailable = Boolean(kitKey) && config.swapEnabled;
 
   const handleSuccess = useCallback(
     (result: { finalTxHash?: string }) => {
@@ -129,7 +163,7 @@ export function Stage({
   return (
     <WhiskSend
       showFooter={config.showFooter}
-      kitKey={swapAvailable ? KIT_KEY : undefined}
+      kitKey={swapAvailable ? kitKey : undefined}
       tabs={swapAvailable ? ["transfer", "swap"] : ["transfer"]}
       amount={config.lockAmount ? config.amount : undefined}
       defaultAmount={config.lockAmount ? undefined : config.amount || undefined}
