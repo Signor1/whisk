@@ -10,8 +10,6 @@ Drop-in React component. Same interface for same-chain sends and cross-chain bri
 [![npm @usewhisk/core](https://img.shields.io/npm/v/@usewhisk/core?style=flat&label=%40usewhisk%2Fcore&color=d65c3c&logo=npm)](https://www.npmjs.com/package/@usewhisk/core)
 [![CI](https://img.shields.io/github/actions/workflow/status/Signor1/whisk/ci.yml?branch=main&label=CI&logo=github&style=flat)](./.github/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg?style=flat)](LICENSE)
-[![Core Bundle size](https://img.shields.io/bundlephobia/minzip/@usewhisk/core?label=core%20bundle&style=flat)](https://bundlephobia.com/package/@usewhisk/core)
-[![React Bundle size](https://img.shields.io/bundlephobia/minzip/@usewhisk/react?label=react%20bundle&style=flat)](https://bundlephobia.com/package/@usewhisk/react)
 [![Types](https://img.shields.io/badge/types-TypeScript-3178c6?style=flat)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](CONTRIBUTING.md)
 [![Built with Circle App Kit](https://img.shields.io/badge/built%20on-Circle%20App%20Kit-0052FF?style=flat)](https://docs.arc.network/app-kit)
