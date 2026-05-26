@@ -35,3 +35,17 @@ pnpm --filter @usewhisk/example-invoice-link dev
 ```
 
 Open <http://localhost:3014/?to=0x5B8ecaB7096F8aBED873D246629ef9f05f467605&amount=49.99&chain=Arc_Testnet&memo=Invoice+%23420>.
+
+## Adapt for your project
+
+Inside this monorepo, the example consumes `@usewhisk/react` and
+`@usewhisk/core` via `workspace:*`. When you copy this recipe into
+your own app, install the published packages instead:
+
+```bash
+pnpm add @usewhisk/react @usewhisk/core
+```
+
+The Whisk-specific code lives under `src/app/`. Lift those files,
+update your own `package.json` with the install above, and the recipe
+runs the same way.

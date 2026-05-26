@@ -23,3 +23,17 @@ pnpm --filter @usewhisk/example-themed-saas dev
 ```
 
 Open <http://localhost:3012>.
+
+## Adapt for your project
+
+Inside this monorepo, the example consumes `@usewhisk/react` and
+`@usewhisk/core` via `workspace:*`. When you copy this recipe into
+your own app, install the published packages instead:
+
+```bash
+pnpm add @usewhisk/react @usewhisk/core
+```
+
+The Whisk-specific code lives under `src/app/`. Lift those files,
+update your own `package.json` with the install above, and the recipe
+runs the same way.

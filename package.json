@@ -21,7 +21,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\" --ignore-path .gitignore",
     "clean": "pnpm -r exec rm -rf dist .turbo node_modules/.cache",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "changeset version && pnpm install --lockfile-only",
     "release": "pnpm build && changeset publish",
     "prepare": "husky"
   },
