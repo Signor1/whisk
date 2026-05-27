@@ -175,7 +175,7 @@ whisk/
 - **`@usewhisk/core`** — pure TypeScript. No React, no DOM, no wallet imports. Exports the `createWhisk()` engine plus the chain registry, fee logic, resolver composition, routing, error classes, and state-machine reducer.
 - **`@usewhisk/react`** — components, hooks, and the provider. Wraps wagmi (EVM) and `@solana/wallet-adapter-react` (Solana) and hands a typed `WhiskAdapter` to the engine. Ships `<WhiskSend>` (drop-in) and `useWhisk()` (headless) — same engine underneath.
 
-Deeper design docs — engine boundary, state machine, fee model, resolvers, errors — live on [the documentation site](https://whisk-docs.example) (or `apps/docs/` in this repo).
+Deeper design docs — engine boundary, state machine, fee model, resolvers, errors — live on [the documentation site](https://www.usewhisk.xyz/docs) (or `apps/docs/` in this repo).
 
 ---
 

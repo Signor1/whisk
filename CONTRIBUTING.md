@@ -30,7 +30,7 @@ whisk/
 │   ├── playground/  the playground used for QA + end-to-end testing
 │   └── …              one app per integration pattern (checkout, donate, payroll, etc.)
 ├── apps/
-│   └── docs/          the documentation site (whisk.vercel.app/docs) — Fumadocs
+│   └── docs/          the documentation site (www.usewhisk.xyz/docs) — Fumadocs
 └── .github/workflows  CI + release pipelines
 ```
 
@@ -224,7 +224,7 @@ losing money. Changes there get extra scrutiny:
   invariant X is harder to silently break than a comment that says
   invariant X holds.
 
-The [error handling concepts page](https://whisk.vercel.app/docs/concepts/error-handling)
+The [error handling concepts page](https://www.usewhisk.xyz/docs/concepts/error-handling)
 has the full story. Read it before changing recovery code.
 
 ---
@@ -247,7 +247,7 @@ npm publish rights.
 
 ## Questions
 
-- Is the docs site at https://whisk.vercel.app/docs.
+- Is the docs site at https://www.usewhisk.xyz/docs.
 - Bug? Open an
   [issue](https://github.com/Signor1/whisk/issues/new/choose).
 - Idea? Open a

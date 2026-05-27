@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://whisk.vercel.app";
+const SITE_URL = "https://usewhisk.vercel.app";
 
 /**
  * Open to every crawler. Whisk's docs are public on purpose — the

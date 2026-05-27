@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { source } from "@/lib/source";
 
-const SITE_URL = "https://whisk.vercel.app";
+const SITE_URL = "https://usewhisk.vercel.app";
 
 /**
  * Sitemap covering both surfaces — marketing landing and every docs
