@@ -53,20 +53,23 @@ const SITE_URL = "https://usewhisk.vercel.app";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Whisk — embeddable USDC send & bridge widget for React",
+    default: "Whisk · React widget for USDC payments across chains",
     template: "%s · Whisk",
   },
   description:
-    "Drop-in React component for sending and bridging USDC across any chain. Built on Circle App Kit. MIT licensed.",
+    "A React widget that sends, bridges, and swaps USDC across any chain. Built on Circle App Kit. Open source under MIT.",
   keywords: [
+    "Whisk",
     "USDC",
-    "Circle",
-    "App Kit",
-    "CCTP",
-    "stablecoin",
-    "bridge",
     "React",
-    "widget",
+    "React widget",
+    "React component",
+    "USDC payments",
+    "stablecoin payments",
+    "cross-chain",
+    "payment widget",
+    "Circle App Kit",
+    "CCTP",
     "Web3",
   ],
   authors: [{ name: "SignorDev", url: "https://github.com/Signor1" }],
@@ -94,30 +97,30 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Whisk",
-    title: "Whisk — embeddable USDC send & bridge widget for React",
+    title: "Whisk · React widget for USDC payments across chains",
     description:
-      "Send and bridge USDC across any chain with one React component.",
+      "Send, bridge, and swap USDC across any chain with one React widget. Built on Circle App Kit, open source under MIT.",
     url: SITE_URL,
     images: [
       {
         url: "/thumbnail.png",
         width: 1200,
         height: 630,
-        alt: "Whisk — embeddable USDC send & bridge widget for React",
+        alt: "Whisk · React widget for USDC payments across chains",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Whisk — embeddable USDC send & bridge widget for React",
+    title: "Whisk · React widget for USDC payments across chains",
     description:
-      "Send and bridge USDC across any chain with one React component.",
+      "One React widget for USDC payments across chains. Handles sends, bridges, and swaps. Built on Circle App Kit. MIT licensed.",
     images: [
       {
         url: "/thumbnail.png",
         width: 1200,
         height: 630,
-        alt: "Whisk — embeddable USDC send & bridge widget for React",
+        alt: "Whisk · React widget for USDC payments across chains",
       },
     ],
   },
