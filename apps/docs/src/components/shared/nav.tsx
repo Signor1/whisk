@@ -27,7 +27,7 @@ export function Nav({ className }: { className?: string }) {
           <Logo />
         </Link>
 
-        <nav className="flex items-center gap-5 text-sm font-medium text-foreground/75">
+        <nav className="flex items-center gap-1.5 md:gap-5 text-sm font-medium text-foreground/75">
           <Link
             href="/docs"
             className="transition-colors hover:text-foreground"
