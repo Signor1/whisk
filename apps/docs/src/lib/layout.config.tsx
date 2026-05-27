@@ -1,5 +1,6 @@
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { Logo } from "@/components/shared/logo";
+import { XLogo } from "@/components/shared/icons";
 
 /**
  * Base layout props shared by every fumadocs surface (the docs
@@ -30,6 +31,14 @@ export const baseOptions: BaseLayoutProps = {
       type: "main",
       text: "npm",
       url: "https://www.npmjs.com/package/@usewhisk/react",
+      external: true,
+    },
+    {
+      type: "icon",
+      label: "Whisk on X",
+      text: "X",
+      icon: <XLogo className="h-4 w-4" />,
+      url: "https://x.com/usewhisk",
       external: true,
     },
   ],

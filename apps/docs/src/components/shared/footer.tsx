@@ -27,11 +27,8 @@ const FOOTER_GROUPS = [
     title: "Community",
     links: [
       { label: "Telegram", href: "https://t.me/usewhisk" },
+      { label: "X (formerly Twitter)", href: "https://x.com/usewhisk" },
       { label: "GitHub", href: "https://github.com/Signor1/whisk" },
-      {
-        label: "Issues",
-        href: "https://github.com/Signor1/whisk/issues",
-      },
     ],
   },
 ];
