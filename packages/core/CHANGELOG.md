@@ -1,5 +1,11 @@
 # @usewhisk/core
 
+## 0.0.4
+
+### Patch Changes
+
+- c205454: docs: update docs site URL to usewhisk.xyz in package READMEs
+
 ## 0.0.3
 
 ### Patch Changes
