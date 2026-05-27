@@ -249,7 +249,7 @@ registry, and recovery primitives. Runs in under 100 ms.
 
 ## Docs and examples
 
-- **Full docs:** <https://whisk.vercel.app/docs>
+- **Full docs:** <https://www.usewhisk.xyz/docs>
 - **React widget:** [`@usewhisk/react`](https://www.npmjs.com/package/@usewhisk/react)
 - **Source:** <https://github.com/Signor1/whisk>
 

@@ -278,7 +278,7 @@ auto-discovered. There's no adapter list to maintain.
 
 ## Docs and examples
 
-- **Full docs:** <https://whisk.vercel.app/docs>
+- **Full docs:** <https://www.usewhisk.xyz/docs>
 - **Live playground:** <https://whisk-playground.vercel.app>
 - **Examples in the repo:** [`examples/`](https://github.com/Signor1/whisk/tree/main/examples)
   (e-commerce checkout, donate button, themed SaaS, payroll batch,

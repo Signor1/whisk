@@ -20,7 +20,7 @@ export default function Page() {
         </span>
         <nav className="pg-header__nav">
           <a
-            href="https://whisk.vercel.app/docs"
+            href="https://www.usewhisk.xyz/docs"
             target="_blank"
             rel="noreferrer"
           >

@@ -33,20 +33,6 @@ export function Nav({ className }: { className?: string }) {
           >
             Docs
           </Link>
-          <Link
-            href="/#examples"
-            className="hidden transition-colors hover:text-foreground sm:inline-flex"
-          >
-            Examples
-          </Link>
-          <a
-            href="https://www.npmjs.com/package/@usewhisk/react"
-            target="_blank"
-            rel="noreferrer"
-            className="hidden transition-colors hover:text-foreground sm:inline-flex"
-          >
-            npm
-          </a>
           <a
             href="https://github.com/Signor1/whisk"
             target="_blank"

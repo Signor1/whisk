@@ -48,7 +48,7 @@ const ibmPlexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
-const SITE_URL = "https://whisk.vercel.app";
+const SITE_URL = "https://usewhisk.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
