@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Github } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
+import { XLogo } from "./icons";
 import { cn } from "@/lib/utils";
 
 /**
@@ -41,6 +42,15 @@ export function Nav({ className }: { className?: string }) {
             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
           >
             <Github className="h-4 w-4" />
+          </a>
+          <a
+            href="https://x.com/usewhisk"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Whisk on X"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground/75 transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <XLogo className="h-[16px] w-[16px]" />
           </a>
           <ThemeToggle />
         </nav>

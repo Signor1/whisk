@@ -33,6 +33,9 @@ export default function Page() {
           >
             GitHub ↗
           </a>
+          <a href="https://x.com/usewhisk" target="_blank" rel="noreferrer">
+            X ↗
+          </a>
           <a href="https://faucet.circle.com" target="_blank" rel="noreferrer">
             USDC faucet ↗
           </a>
