@@ -1,6 +1,6 @@
 {
   "name": "@usewhisk/react",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Whisk React — embeddable USDC send & bridge widget components, hooks, and providers built on Circle App Kit.",
   "license": "MIT",
   "author": "SignorDev (https://github.com/Signor1)",
