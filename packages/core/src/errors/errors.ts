@@ -250,13 +250,25 @@ const NO_ROUTE_MESSAGE =
  * `cause`, so nothing is lost for debugging.
  */
 export function cleanErrorMessage(message: string): string {
-  const firstLine = message.split("\n")[0] ?? message;
-  const beforeArgs = firstLine.split(/\s*Request Arguments:/i)[0] ?? firstLine;
-  const unwrapped = beforeArgs.replace(
-    /^Unknown blockchain error on [^:]+:\s*/i,
-    "",
-  );
-  return unwrapped.trim() || message.trim();
+  // Plain string scans only (indexOf/startsWith/slice) — no regex, so there's
+  // no backtracking to make this superlinear on adversarial input.
+
+  // First line only — the human part sits up front.
+  const newline = message.indexOf("\n");
+  let line = newline === -1 ? message : message.slice(0, newline);
+
+  // Drop viem's "Request Arguments: …" tail.
+  const argsAt = line.toLowerCase().indexOf("request arguments:");
+  if (argsAt !== -1) line = line.slice(0, argsAt);
+
+  // Strip App Kit's "Unknown blockchain error on <chain>: " wrapper.
+  const prefix = "unknown blockchain error on ";
+  if (line.toLowerCase().startsWith(prefix)) {
+    const colon = line.indexOf(":", prefix.length);
+    if (colon !== -1) line = line.slice(colon + 1);
+  }
+
+  return line.trim() || message.trim();
 }
 
 /** Coerce an unknown thrown value into a `WhiskError`. Prefer `category` over heuristic message matching. */
