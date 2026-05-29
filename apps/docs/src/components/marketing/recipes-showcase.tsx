@@ -50,7 +50,7 @@ const RECIPES: Recipe[] = [
     title: "E-commerce checkout",
     blurb:
       "Recipient + total + both chains are locked from the cart. The widget collapses to a confirm-and-pay surface so the buyer can't fat-finger it.",
-    href: "https://github.com/Signor1/whisk/tree/main/examples/ecommerce-checkout",
+    href: "https://whisk-ecommerce-checkout.vercel.app/",
     Shell: EcommerceShell,
     snippet: [
       [b("<"), c("WhiskSend"), txt("")],
@@ -68,7 +68,7 @@ const RECIPES: Recipe[] = [
     title: "Donate button",
     blurb:
       "Treasury wallet and both chains are pinned. Donors pick from preset amounts the host renders above the widget; the selection seeds defaultAmount.",
-    href: "https://github.com/Signor1/whisk/tree/main/examples/donate-button",
+    href: "https://whisk-donate-button.vercel.app/",
     Shell: DonateShell,
     snippet: [
       [
@@ -98,7 +98,7 @@ const RECIPES: Recipe[] = [
     title: "Themed SaaS dashboard",
     blurb:
       "Override --whisk-* CSS variables once and the widget repaints to the dashboard's palette. The customer can pay from any chain; Whisk bridges to the treasury chain automatically.",
-    href: "https://github.com/Signor1/whisk/tree/main/examples/themed-saas",
+    href: "https://whisk-themed-saas.vercel.app/",
     Shell: SaasShell,
     snippet: [
       [cm("// customer pays from their L2, treasury collects on Base")],
@@ -117,7 +117,7 @@ const RECIPES: Recipe[] = [
     title: "Payroll batch",
     blurb:
       "An admin tool that walks a list of payees. The widget remounts per row with the payee's address + amount locked, and bridges treasury USDC to whatever chain the payee prefers.",
-    href: "https://github.com/Signor1/whisk/tree/main/examples/payroll-batch",
+    href: "https://whisk-payroll-batch.vercel.app/",
     Shell: PayrollShell,
     snippet: [
       [cm("// treasury on Base, payees collect on Polygon")],
@@ -139,7 +139,7 @@ const RECIPES: Recipe[] = [
     title: "Invoice payment link",
     blurb:
       "A shareable URL that opens a pre-filled checkout. Everything comes from the invoice record, including the source chain the client is paying from. Whisk bridges to the studio's home chain in one click.",
-    href: "https://github.com/Signor1/whisk/tree/main/examples/invoice-link",
+    href: "https://whisk-invoice-link.vercel.app/",
     Shell: InvoiceShell,
     snippet: [
       [cm("// app/i/[id]/page.tsx")],

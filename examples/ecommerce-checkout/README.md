@@ -1,5 +1,7 @@
 # whisk-example-ecommerce-checkout
 
+> **Live demo:** https://whisk-ecommerce-checkout.vercel.app/ (testnet)
+
 **Atelier Hibiscus** — an editorial DTC storefront with a 5-product
 catalog, multi-item cart, two-step checkout, and order confirmation.
 Pay-with-USDC at checkout via Whisk.

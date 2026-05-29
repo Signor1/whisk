@@ -1,5 +1,7 @@
 # whisk-example-donate-button
 
+> **Live demo:** https://whisk-donate-button.vercel.app/ (testnet)
+
 **OpenForest** — a reforestation NGO landing page with a public donor
 wall, annual-goal progress bar, three donation tiers (Seedling, Grove,
 Canopy), custom-amount fallback, and an active-projects showcase.

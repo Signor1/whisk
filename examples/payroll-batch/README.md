@@ -1,5 +1,7 @@
 # whisk-example-payroll-batch
 
+> **Live demo:** https://whisk-payroll-batch.vercel.app/ (testnet)
+
 **Studio Fortune** — a creative agency payroll tool. Three-step flow
 (review → dispatch → confirm), 6 payees on a claret/ivory editorial
 palette, progress bar that animates as each transfer settles.

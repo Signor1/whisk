@@ -17,6 +17,23 @@
  * other fetch — wagmi RPC calls, our own routes, analytics — passes
  * through untouched.
  */
+
+/**
+ * True only when the URL's host is Circle's API (`api.circle.com` or any
+ * `*.circle.com` host). Parses the URL and checks the host rather than
+ * substring-matching, so the name can't be smuggled into a path or query
+ * string (e.g. `https://evil.com/?x=api.circle.com`).
+ */
+function isCircleApiUrl(url: string): boolean {
+  let host: string;
+  try {
+    host = new URL(url, window.location.href).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  return host === "circle.com" || host.endsWith(".circle.com");
+}
+
 let installed = false;
 
 export function installCircleCorsShim() {
@@ -37,7 +54,7 @@ export function installCircleCorsShim() {
           ? input.href
           : input.url;
 
-    if (!url.includes("api.circle.com")) {
+    if (!isCircleApiUrl(url)) {
       return originalFetch(input, init);
     }
 

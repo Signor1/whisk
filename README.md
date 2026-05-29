@@ -168,7 +168,12 @@ whisk/
 │   ├── core/         # @usewhisk/core   — framework-agnostic engine
 │   └── react/        # @usewhisk/react  — components, hooks, provider
 ├── examples/
-│   └── playground/ # Drop-in showcase + playground
+│   ├── playground/         # Drop-in showcase + every-prop playground
+│   ├── ecommerce-checkout/ # Atelier Hibiscus — Next.js storefront
+│   ├── donate-button/      # OpenForest — Vite donation page
+│   ├── themed-saas/        # Steelpath Cloud — Next.js dark dashboard
+│   ├── payroll-batch/      # Studio Fortune — Vite batch payouts
+│   └── invoice-link/       # Studio Hibiscus — Next.js invoice links
 └── apps/
     └── docs/         # Documentation site (Fumadocs)
 ```
@@ -177,6 +182,24 @@ whisk/
 - **`@usewhisk/react`** — components, hooks, and the provider. Wraps wagmi (EVM) and `@solana/wallet-adapter-react` (Solana) and hands a typed `WhiskAdapter` to the engine. Ships `<WhiskSend>` (drop-in) and `useWhisk()` (headless) — same engine underneath.
 
 Deeper design docs — engine boundary, state machine, fee model, resolvers, errors — live on [the documentation site](https://www.usewhisk.xyz/docs) (or `apps/docs/` in this repo).
+
+---
+
+## Recipes
+
+Five reference integrations, each a themed mini-app. All run on testnet —
+grab test USDC from the [Circle faucet](https://faucet.circle.com).
+
+| Recipe                  | What it shows                                                       | Live demo                                                  |
+| ----------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| **E-commerce checkout** | Cart total + merchant address locked; the widget is confirm-and-pay | [demo](https://whisk-ecommerce-checkout.vercel.app/)       |
+| **Donate button**       | Pinned treasury + preset amounts that seed `defaultAmount`         | [demo](https://whisk-donate-button.vercel.app/)            |
+| **Themed SaaS**         | `--whisk-*` overrides repaint the widget into a dark dashboard      | [demo](https://whisk-themed-saas.vercel.app/)              |
+| **Payroll batch**       | Widget remounts per payee, bridging treasury USDC to each one's chain | [demo](https://whisk-payroll-batch.vercel.app/)          |
+| **Invoice link**        | A shareable URL opens a pre-filled, locked checkout                | [demo](https://whisk-invoice-link.vercel.app/)             |
+
+Source for each lives under `examples/`. They're starting points to clone and
+adapt, not finished apps.
 
 ---
 
