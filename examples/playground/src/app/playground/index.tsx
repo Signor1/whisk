@@ -39,7 +39,10 @@ export function Playground() {
   }, [palette]);
 
   return (
-    <PlaygroundProviders theme={state.config.theme}>
+    <PlaygroundProviders
+      theme={state.config.theme}
+      feeBearer={state.config.feeBearer}
+    >
       <div className="pg-layout">
         <Controls config={state.config} dispatch={dispatch} />
         <main className="pg-stage" aria-label="Widget stage">

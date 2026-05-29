@@ -12,6 +12,7 @@ import {
   fetchAttestationOnce,
   manualMintExplorerUrl,
   pollAttestation,
+  toWhiskError,
   type Chain,
   type IrisMessage,
 } from "@usewhisk/core";
@@ -125,7 +126,7 @@ export function useManualMint(): UseManualMintResult {
         return {
           kind: "failure",
           reason: "submission-failed",
-          message: err instanceof Error ? err.message : String(err),
+          message: toWhiskError(err, "Couldn't submit the mint.").message,
         };
       }
     },

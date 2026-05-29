@@ -157,6 +157,27 @@ When recipient + amount + chains are all controlled, the widget
 short-circuits to a confirm-only surface — useful for invoice,
 subscription, or one-product checkout flows.
 
+### Who pays the bridge fees
+
+By default the recipient absorbs the CCTP and Forwarding fees, so a
+$50 transfer arrives a little short. For checkout, payroll, and invoice
+flows where the recipient needs an exact figure, set `feeBearer:
+"sender"` on the config. Whisk then sizes the burn up by the estimated
+fees so the recipient nets the full amount and the sender's debit grows
+to cover them.
+
+```tsx
+const config = createWhiskConfig({
+  wallets: [evm({ projectId })],
+  chains: ["Base_Sepolia", "Arbitrum_Sepolia"],
+  feeBearer: "sender", // default is "receiver"
+});
+```
+
+The review screen reflects it: "Recipient gets $50.00 · You pay
+$50.30". See the [fees guide](https://www.usewhisk.xyz/docs/concepts/fees)
+for the full breakdown and the accuracy caveat on variable gas.
+
 ### Headless entry
 
 If you don't want any of the bundled UI, import from the
@@ -265,6 +286,11 @@ solana({
 
 Phantom, Solflare, Backpack, and every Wallet-Standard wallet are
 auto-discovered. There's no adapter list to maintain.
+
+**On Vite:** `@solana/web3.js` needs Node's `Buffer` global, which Vite
+doesn't shim. Add a one-line polyfill at the top of your entry file or the
+first Solana operation throws `Buffer is not defined`. Next.js handles this
+automatically. See the [install guide](https://www.usewhisk.xyz/docs/getting-started/install#vite-solana-polyfill-buffer).
 
 ## Subpath exports
 

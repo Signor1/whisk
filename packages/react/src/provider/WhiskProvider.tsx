@@ -43,6 +43,7 @@ export function WhiskProvider({
         resolver:
           config.resolver ?? createDefaultResolver({ mode: config.mode }),
         feePolicy: config.feePolicy,
+        feeBearer: config.feeBearer,
         rpcUrls: config.rpcUrls,
         useForwarder: config.useForwarder,
         mode: config.mode,

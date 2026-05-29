@@ -6,8 +6,16 @@ import type { Token } from "./token.js";
 export type Quote = {
   route: Route;
   recipient: ResolvedRecipient;
+  /** Total debited from the sender (display "You pay"). */
   amountIn: string;
+  /** What the recipient receives (display "Recipient gets"). */
   amountOut: string;
+  /**
+   * On-chain transfer amount fed to App Kit. Equals `amountOut` in receiver
+   * mode, grossed up by estimated fees in sender mode. Optional so externally
+   * built quotes still type-check; consumers fall back to `amountOut`.
+   */
+  amountBurned?: string;
   token: Token;
   fees: FeeBreakdown;
   estimatedDurationMs?: number;

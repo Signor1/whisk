@@ -47,9 +47,16 @@ function LineItemRow({
     <li className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-3.5 border-b border-line py-2 last:border-b-0">
       <span
         aria-hidden
-        className="h-14 w-14 rounded-lg bg-cover bg-center"
-        style={{ background: line.product.art }}
-      />
+        className="h-14 w-14 shrink-0 overflow-hidden rounded-lg"
+        style={{ backgroundColor: line.product.fallbackColor }}
+      >
+        <img
+          src={line.product.image}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      </span>
       <div className="flex flex-col">
         <span className="text-[15px]">{line.product.name}</span>
         <span className="inline-flex items-center gap-1.5 text-xs text-charcoal-muted">

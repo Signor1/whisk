@@ -61,7 +61,8 @@ function SelectedVendor({
             {vendor.handle} · {vendor.chain}
           </span>
           <span className="mt-1 font-mono text-[10px] text-foam">
-            Amount + recipient locked from vendor profile
+            Locked from vendor profile · fees covered, vendor nets the full
+            amount
           </span>
         </div>
         <button

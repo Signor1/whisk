@@ -19,6 +19,8 @@ a serious enterprise product.
   explorer.
 - Idle state when no vendor is selected, prompting the user to pick a
   row.
+- Runs `feeBearer: "sender"` so the treasury covers the bridge fees and
+  each vendor receives their exact invoiced amount.
 
 ## Stack
 

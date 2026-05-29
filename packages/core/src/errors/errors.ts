@@ -228,6 +228,49 @@ const TRANSIENT_PATTERNS =
 
 const REJECTION_PATTERNS = /user rejected|user denied|rejected by user/i;
 
+/** Shown when the user declines the wallet prompt. The raw provider error
+ *  (the full viem/App Kit dump) is kept on `cause` for debugging. */
+const REJECTION_MESSAGE = "You cancelled the transaction in your wallet.";
+
+/**
+ * App Kit's Swap (RFQ liquidity) and routing report this when no quote exists
+ * for the requested pair, direction, or size — common on testnet, where
+ * liquidity is sparse and often one-directional.
+ */
+const NO_ROUTE_PATTERNS =
+  /no route|route or resource not found|route not found/i;
+const NO_ROUTE_MESSAGE =
+  "No quote available for this pair right now. Try again in a moment or use a different amount.";
+
+/**
+ * viem and App Kit errors append a verbose dump to a short first line
+ * ("Request Arguments: …", "Details: …", "Version: viem@x"). Surface only the
+ * human part: the first line, minus App Kit's "Unknown blockchain error on
+ * <chain>:" wrapper and any inline argument dump. The full text stays on
+ * `cause`, so nothing is lost for debugging.
+ */
+export function cleanErrorMessage(message: string): string {
+  // Plain string scans only (indexOf/startsWith/slice) — no regex, so there's
+  // no backtracking to make this superlinear on adversarial input.
+
+  // First line only — the human part sits up front.
+  const newline = message.indexOf("\n");
+  let line = newline === -1 ? message : message.slice(0, newline);
+
+  // Drop viem's "Request Arguments: …" tail.
+  const argsAt = line.toLowerCase().indexOf("request arguments:");
+  if (argsAt !== -1) line = line.slice(0, argsAt);
+
+  // Strip App Kit's "Unknown blockchain error on <chain>: " wrapper.
+  const prefix = "unknown blockchain error on ";
+  if (line.toLowerCase().startsWith(prefix)) {
+    const colon = line.indexOf(":", prefix.length);
+    if (colon !== -1) line = line.slice(colon + 1);
+  }
+
+  return line.trim() || message.trim();
+}
+
 /** Coerce an unknown thrown value into a `WhiskError`. Prefer `category` over heuristic message matching. */
 export function toWhiskError(
   err: unknown,
@@ -246,33 +289,49 @@ export function toWhiskError(
   if (category) {
     switch (category) {
       case "user_rejected":
-        return new UserRejectedError(message, err);
+        return new UserRejectedError(REJECTION_MESSAGE, err);
       case "failed_offchain":
-        return new NetworkError(message, err, category);
+        return new NetworkError(cleanErrorMessage(message), err, category);
       case "polling_timeout":
       case "atomic_unsupported":
       case "batch_too_large":
       case "duplicate_batch_id":
       case "unknown_bundle":
-        return new WalletCapabilityError(category, message, err);
+        return new WalletCapabilityError(
+          category,
+          cleanErrorMessage(message),
+          err,
+        );
       case "reverted_onchain":
       case "partial_reverted":
       case "chain_revert":
-        return new OnchainRevertError(category, message, err);
+        return new OnchainRevertError(
+          category,
+          cleanErrorMessage(message),
+          err,
+        );
       case "unknown":
         break;
     }
   }
 
   if (REJECTION_PATTERNS.test(message)) {
-    return new UserRejectedError(message, err);
+    return new UserRejectedError(REJECTION_MESSAGE, err);
+  }
+  if (NO_ROUTE_PATTERNS.test(message)) {
+    return new WhiskError({
+      code: "UNKNOWN",
+      message: NO_ROUTE_MESSAGE,
+      retryable: false,
+      cause: err,
+    });
   }
   if (TRANSIENT_PATTERNS.test(message)) {
-    return new NetworkError(message, err);
+    return new NetworkError(cleanErrorMessage(message), err);
   }
   return new WhiskError({
     code: "UNKNOWN",
-    message,
+    message: cleanErrorMessage(message),
     retryable: false,
     cause: err,
   });

@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Wrench,
 } from "lucide-react";
+import { toWhiskError } from "@usewhisk/core";
 import type { Quote, Step, WhiskError } from "@usewhisk/core";
 import type { ManualMintResult } from "../../hooks/useManualMint.js";
 import { Badge } from "../ui/Badge.js";
@@ -164,7 +165,7 @@ function ManualMintButton({
     } catch (err) {
       setPhase({
         kind: "failure",
-        message: err instanceof Error ? err.message : String(err),
+        message: toWhiskError(err, "Couldn't submit the mint.").message,
       });
     }
   };

@@ -146,6 +146,7 @@ export default {
 | **Multi-wallet**         | Ecosystem-first connect modal — EVM (MetaMask, Coinbase, WalletConnect, Rabby) and Solana (Phantom, Solflare, Backpack) never collide. |
 | **Recipient resolvers**  | Address + ENSIP-11 multichain ENS built in; bring your own (email, phone…). |
 | **Fee transparency**     | Custom + protocol + gas + forwarder, displayed before confirm.              |
+| **Fee bearer**           | `feeBearer: "sender"` grosses up the burn so the recipient nets the exact amount; default `"receiver"` deducts fees from the transfer. |
 | **Progress streaming**   | Live step state from App Kit's bridge events.                               |
 | **Mid-flight recovery**  | Burn-but-no-mint failures: in-tab retry, cross-refresh persistence (localStorage, 48h), manual-mint escape hatch via direct `MessageTransmitter.receiveMessage`. |
 | **Pre-flight checks**    | Read-only balance / gas / chain-alignment inspection before the user signs. |

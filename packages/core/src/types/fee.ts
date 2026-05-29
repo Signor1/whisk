@@ -19,6 +19,18 @@ export type FeeEntryKind =
   | "forwarder"
   | "provider";
 
+/**
+ * Who absorbs the CCTP protocol + Forwarding Service fees on a bridge.
+ *
+ * - `"receiver"` (default): fees are deducted from the bridged amount, so the
+ *   recipient nets `amount − fees`. The sender's debit equals `amount`.
+ * - `"sender"`: the burn is sized up by the estimated fees so the recipient
+ *   receives the full `amount`. The sender's debit grows to cover the fees.
+ *   Because fees are estimated at quote time, the delivered amount can differ
+ *   by a few cents if destination gas shifts before the mint lands.
+ */
+export type FeeBearer = "sender" | "receiver";
+
 export type FeeEntry = {
   kind: FeeEntryKind;
   amount: string;

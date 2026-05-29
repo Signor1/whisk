@@ -6,20 +6,39 @@ export function Providers({ children }: { children: ReactNode }) {
     () =>
       createWhiskConfig({
         mode: "testnet",
+        // Studio treasury covers the bridge fees so each contractor is paid
+        // their exact salary, net of nothing.
+        feeBearer: "sender",
         wallets: [
           evm({
-            chains: ["Arc_Testnet"],
+            chains: [
+              "Arbitrum_Sepolia",
+              "Arc_Testnet",
+              "Base_Sepolia",
+              "Optimism_Sepolia",
+            ],
             projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
             appName: "Studio Fortune",
           }),
         ],
-        chains: ["Arc_Testnet"],
-        defaultSourceChain: "Arc_Testnet",
-        defaultDestinationChain: "Arc_Testnet",
+        chains: [
+          "Arbitrum_Sepolia",
+          "Arc_Testnet",
+          "Base_Sepolia",
+          "Optimism_Sepolia",
+        ],
+        // Treasury sits on Arbitrum for cheap outgoing payouts; each
+        // dispatch then bridges to the contractor's preferred chain.
+        defaultSourceChain: "Arbitrum_Sepolia",
+        defaultDestinationChain: "Arbitrum_Sepolia",
         appLabel: "whisk-example-payroll",
       }),
     [],
   );
 
-  return <WhiskProvider config={config}>{children}</WhiskProvider>;
+  return (
+    <WhiskProvider config={config} theme="light">
+      {children}
+    </WhiskProvider>
+  );
 }

@@ -18,6 +18,8 @@ one-by-one through a single embedded widget.
 - `onSuccess` advances to the next payee automatically — no extra clicks
   between dispatches.
 - Editorial typography + serif display headers (Studio Fortune brand).
+- Runs `feeBearer: "sender"` so the studio treasury covers the bridge
+  fees and each contractor is paid their exact salary.
 
 ## Stack
 

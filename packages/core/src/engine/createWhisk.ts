@@ -21,6 +21,8 @@ import {
   buildCustomFeeEntries,
   fromAppKitFees,
   sumFees,
+  sumForwarderFees,
+  sumProtocolFees,
 } from "../fees/calculate.js";
 import { chainInfo, explorerTxUrl } from "../chains/registry.js";
 import {
@@ -93,11 +95,14 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
           };
           await kit.estimateSend(appKitParams);
           const breakdown = sumFees([...customFees], effectiveToken);
+          // Same-chain sends don't deduct USDC fees (only native gas), so the
+          // recipient already nets the full amount — feeBearer is a no-op here.
           return {
             route,
             recipient: params.recipient,
             amountIn,
             amountOut: params.amount,
+            amountBurned: params.amount,
             token: effectiveToken,
             fees: breakdown,
             estimatedDurationMs: 15_000,
@@ -121,11 +126,40 @@ export function createWhisk(config: WhiskConfig): WhiskEngine {
           [...customFees, ...protocolFees],
           effectiveToken,
         );
+
+        // "sender" grosses the burn up by the fees so the recipient nets the
+        // full amount; "receiver" lets the fees reduce the transfer instead.
+        const feeBearer = config.feeBearer ?? "receiver";
+        if (feeBearer === "sender") {
+          const protocolFeeTotal = sumProtocolFees(
+            protocolFees,
+            effectiveToken,
+          );
+          // Forwarder fee is re-priced from gas at mint time, so pad just that
+          // portion so the recipient nets at least `amount` despite drift.
+          const forwarderFee = sumForwarderFees(protocolFees, effectiveToken);
+          const base = parseFloat(params.amount) || 0;
+          const amountBurned = fmtUsdc(
+            base + protocolFeeTotal + forwarderFee * FORWARDER_FEE_CUSHION,
+          );
+          return {
+            route,
+            recipient: params.recipient,
+            amountIn: addCustomFee(amountBurned, config.feePolicy?.value),
+            amountOut: params.amount,
+            amountBurned,
+            token: effectiveToken,
+            fees: breakdown,
+            estimatedDurationMs: 30_000,
+          };
+        }
+
         return {
           route,
           recipient: params.recipient,
           amountIn,
           amountOut: params.amount,
+          amountBurned: params.amount,
           token: effectiveToken,
           fees: breakdown,
           estimatedDurationMs: 30_000,
@@ -280,6 +314,15 @@ function addCustomFee(amount: string, customFee?: string): string {
   if (Number.isNaN(a) || Number.isNaN(c)) return amount;
   const sum = a + c;
   return sum.toFixed(6).replace(/\.?0+$/, "") || "0";
+}
+
+/** Headroom on the forwarder fee in a `"sender"` gross-up. 2% absorbs normal
+ *  gas drift between quote and mint while keeping overage sub-cent on L2s. */
+const FORWARDER_FEE_CUSHION = 0.02;
+
+/** Format a number as a USDC amount (6 dp, trailing zeros stripped). */
+function fmtUsdc(n: number): string {
+  return n.toFixed(6).replace(/\.?0+$/, "") || "0";
 }
 
 type BridgeAction = "approve" | "burn" | "fetchAttestation" | "mint";

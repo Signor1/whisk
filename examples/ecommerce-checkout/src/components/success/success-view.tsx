@@ -98,9 +98,16 @@ function OrderReceipt({
           >
             <span
               aria-hidden
-              className="h-[18px] w-[18px] rounded-full bg-cover"
-              style={{ background: c.product.art }}
-            />
+              className="h-[18px] w-[18px] shrink-0 overflow-hidden rounded-full"
+              style={{ backgroundColor: c.product.fallbackColor }}
+            >
+              <img
+                src={c.product.image}
+                alt=""
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            </span>
             {c.qty}× {c.product.name}
           </span>
         ))}

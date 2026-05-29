@@ -21,6 +21,8 @@ The whole integration is a URL. No SDK on the customer's side.
   and copy-to-clipboard.
 - Coral/sage palette (distinct from the Atelier Hibiscus ecommerce
   recipe — same "Hibiscus" mood, different studio).
+- Runs `feeBearer: "sender"` so the payer covers the bridge fees and the
+  freelancer receives the exact invoiced amount.
 
 ## Stack
 

@@ -23,16 +23,16 @@ export function PaymentAside({ totalStr, onPaid }: PaymentAsideProps) {
       </header>
 
       <p className="mt-4 text-[13px] leading-relaxed text-charcoal-muted">
-        Amount and merchant address are locked from the cart. Pick a chain in
-        the widget — settles in seconds.
+        Amount and merchant address are locked from the cart. Bridge fees are
+        added to your total, so Atelier Hibiscus receives the exact price.
       </p>
 
       <div className="ah-widget mt-4 flex justify-center">
         <WhiskSend
           amount={totalStr}
           recipient={MERCHANT_ADDRESS}
-          sourceChain="Arc_Testnet"
-          destinationChain="Arc_Testnet"
+          sourceChain="Base_Sepolia"
+          destinationChain="Base_Sepolia"
           onSuccess={({ finalTxHash }) => onPaid(finalTxHash)}
         />
       </div>

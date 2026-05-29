@@ -3,7 +3,12 @@
 import { createPublicClient, fallback, http, type PublicClient } from "viem";
 import { mainnet, sepolia } from "viem/chains";
 import { normalize } from "viem/ens";
-import { ResolverError, chainInfo, type Resolver } from "@usewhisk/core";
+import {
+  ResolverError,
+  chainInfo,
+  cleanErrorMessage,
+  type Resolver,
+} from "@usewhisk/core";
 
 export type EnsResolverChain = "mainnet" | "sepolia";
 
@@ -120,7 +125,9 @@ async function safeGetEnsAddress(
   } catch (err) {
     throw new ResolverError(
       "ens",
-      err instanceof Error ? err.message : "ENS lookup failed",
+      err instanceof Error
+        ? cleanErrorMessage(err.message)
+        : "ENS lookup failed",
       err,
     );
   }

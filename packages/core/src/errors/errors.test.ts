@@ -27,6 +27,44 @@ describe("toWhiskError", () => {
     expect(result.code).toBe("USER_REJECTED");
   });
 
+  it("shows a friendly message for a cancelled tx, keeping the raw dump on cause", () => {
+    const raw = new Error(
+      "Unknown blockchain error on Arc Testnet: User rejected the request. " +
+        "Request Arguments: chain: Arc Testnet (id: 5042002) from: 0xd9d… " +
+        "Details: MetaMask Tx Signature: User denied transaction signature. " +
+        "Version: viem@2.48.4",
+    );
+    const result = toWhiskError(raw);
+    expect(result).toBeInstanceOf(UserRejectedError);
+    expect(result.message).toBe(
+      "You cancelled the transaction in your wallet.",
+    );
+    expect(result.cause).toBe(raw);
+  });
+
+  it("strips the viem/App Kit boilerplate from unknown errors", () => {
+    const result = toWhiskError(
+      new Error(
+        "Unknown blockchain error on Base Sepolia: execution reverted. " +
+          "Request Arguments: chain: Base Sepolia data: 0x… Version: viem@2.48.4",
+      ),
+    );
+    expect(result.code).toBe("UNKNOWN");
+    expect(result.message).toBe("execution reverted.");
+  });
+
+  it("gives a friendly message when no swap route exists", () => {
+    const result = toWhiskError(
+      new Error(
+        "Stablecoin Service createSwap failed: Route or resource not found. " +
+          "Details: No route available",
+      ),
+    );
+    expect(result.message).toBe(
+      "No quote available for this pair right now. Try again in a moment or use a different amount.",
+    );
+  });
+
   it("classifies transient network failures", () => {
     for (const msg of [
       "ECONNRESET",

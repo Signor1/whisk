@@ -36,6 +36,7 @@ export type {
   ResolvedRecipient,
   Route,
   FeePolicy,
+  FeeBearer,
   FeeEntry,
   FeeEntryKind,
   FeeBreakdown,
@@ -98,6 +99,7 @@ export {
   OnchainRevertError,
   ConfigError,
   toWhiskError,
+  cleanErrorMessage,
 } from "./errors/index.js";
 export type {
   WhiskErrorCode,

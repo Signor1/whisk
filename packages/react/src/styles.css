@@ -93,10 +93,16 @@
       win over the media query.
 
    Light is always the default; everything else opts in.
+
+   The theme discriminators are wrapped in `:where()` so they add no
+   specificity — every block stays at `[data-whisk]` (0,1,0). That keeps
+   the host override contract intact: a recipe that re-themes `--whisk-*`
+   on `[data-whisk]` (loaded after this file) wins in light AND dark,
+   instead of being out-specified by the dark block.
 */
 
 @media (prefers-color-scheme: dark) {
-  [data-whisk]:not([data-whisk-theme="light"]) {
+  [data-whisk]:where(:not([data-whisk-theme="light"])) {
     --whisk-bg: #2a1d21; /* deep wine */
     --whisk-fg: #e4e2d4; /* cream becomes text */
     --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
@@ -115,8 +121,7 @@
   }
 }
 
-[data-whisk][data-whisk-theme="dark"],
-[data-whisk].dark {
+[data-whisk]:where([data-whisk-theme="dark"], .dark) {
   --whisk-bg: #2a1d21;
   --whisk-fg: #e4e2d4;
   --whisk-fg-muted: color-mix(in srgb, var(--whisk-fg) 75%, transparent);
