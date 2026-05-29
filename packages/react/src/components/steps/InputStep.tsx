@@ -179,9 +179,12 @@ export function InputStep({
   const amountValid = !Number.isNaN(amountValue) && amountValue > 0;
 
   // Locked recipient counts as matched by construction — covers locked-ENS where
-  // input="vitalik.eth" never literal-matches the resolved 0x… address.
+  // input="vitalik.eth" never literal-matches the resolved 0x… address. The
+  // chain must also match: the quote bridges to `resolvedRecipient.chain`, so a
+  // resolution on a stale destination has to be redone before quoting.
   const recipientMatchesResolved = Boolean(
     resolvedRecipient &&
+    resolvedRecipient.chain === destChain &&
     (recipientLocked || resolvedRecipient.address === recipientInput.trim()),
   );
   const recipientInvalid = Boolean(

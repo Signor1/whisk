@@ -177,18 +177,28 @@ export function WhiskSend({
     }
   }, [state, onSuccess, onError]);
 
-  // Auto-resolve when `recipient` is host-pinned, so the user doesn't have to click Continue.
-  const autoResolvedRef = useRef(false);
+  // Auto-resolve a host-pinned `recipient` so the user doesn't have to click
+  // Continue. Keyed on recipient + destination, not a one-shot flag: the quote
+  // bridges to `recipient.chain`, so changing the destination has to re-resolve
+  // or the quote stays stuck on the original chain. Skipped mid-send and on
+  // terminal states so we don't interrupt or wipe a completed transfer.
+  const autoResolveKeyRef = useRef<string | null>(null);
   useEffect(() => {
     if (!connected) return;
-    if (autoResolvedRef.current) return;
-    if (state.kind !== "idle") return;
     if (!recipient) return;
-    autoResolvedRef.current = true;
-    const target = destinationChain ?? sourceChain ?? undefined;
-    if (target) {
-      void actions.resolve(recipient, target);
+    if (
+      state.kind === "sending" ||
+      state.kind === "succeeded" ||
+      state.kind === "failed"
+    ) {
+      return;
     }
+    const target = destinationChain ?? sourceChain ?? undefined;
+    if (!target) return;
+    const key = `${recipient}::${target}`;
+    if (autoResolveKeyRef.current === key) return;
+    autoResolveKeyRef.current = key;
+    void actions.resolve(recipient, target);
   }, [
     connected,
     state.kind,
