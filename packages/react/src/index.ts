@@ -163,6 +163,7 @@ export type {
   Quote,
   ResolvedRecipient,
   FeePolicy,
+  FeeBearer,
   FeeBreakdown,
   Resolver,
   WhiskState,

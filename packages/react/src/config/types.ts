@@ -1,6 +1,7 @@
 import type {
   Chain,
   FeePolicy,
+  FeeBearer,
   Resolver,
   Token,
   WhiskMode,
@@ -27,6 +28,8 @@ export type WhiskClientConfig = {
   token?: Token;
   resolver?: Resolver;
   feePolicy?: FeePolicy;
+  /** Who pays bridge fees. Default `"receiver"`. Set `"sender"` so the recipient receives the full amount. */
+  feeBearer?: FeeBearer;
   rpcUrls?: Partial<Record<Chain, string | string[]>>;
   useForwarder?: boolean;
   /** Inferred from `chains` when omitted. */

@@ -1,4 +1,9 @@
-import type { FeeBreakdown, FeeEntry, FeePolicy } from "../types/fee.js";
+import type {
+  FeeBreakdown,
+  FeeEntry,
+  FeeEntryKind,
+  FeePolicy,
+} from "../types/fee.js";
 import type { Token } from "../types/token.js";
 
 export type AppKitEstimateFee = {
@@ -64,6 +69,39 @@ function mapAppKitFeeType(type: AppKitEstimateFee["type"]): FeeEntry["kind"] {
     default:
       return "protocol";
   }
+}
+
+/**
+ * Fee kinds deducted from the bridged USDC, i.e. the ones that reduce what the
+ * recipient receives. Excludes `gas` (paid in the source chain's native token)
+ * and `custom` (the host fee, added on top of the transfer).
+ */
+const DEDUCTED_FROM_TRANSFER: ReadonlyArray<FeeEntryKind> = [
+  "provider",
+  "forwarder",
+  "protocol",
+];
+
+/**
+ * Total of the fees deducted from the bridged amount, in the transfer token.
+ * Used to gross up the burn when `feeBearer` is `"sender"` so the recipient
+ * still nets the full amount.
+ */
+export function sumProtocolFees(entries: FeeEntry[], token: Token): number {
+  return entries
+    .filter((e) => e.token === token && DEDUCTED_FROM_TRANSFER.includes(e.kind))
+    .reduce((acc, e) => acc + (parseFloat(e.amount || "0") || 0), 0);
+}
+
+/**
+ * Just the Forwarding Service fee, in the transfer token. Isolated from the
+ * other deducted fees because it's gas-priced at mint time, so it's the only
+ * part the `"sender"` gross-up cushions against drift.
+ */
+export function sumForwarderFees(entries: FeeEntry[], token: Token): number {
+  return entries
+    .filter((e) => e.token === token && e.kind === "forwarder")
+    .reduce((acc, e) => acc + (parseFloat(e.amount || "0") || 0), 0);
 }
 
 /** Cross-token entries (e.g. gas in ETH) stay in `entries` but don't roll into `total`. */

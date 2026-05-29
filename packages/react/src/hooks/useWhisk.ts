@@ -148,7 +148,8 @@ export function useWhisk(): UseWhiskResult {
           destinationChain:
             q.route.kind === "send" ? q.route.chain : q.route.destinationChain,
           recipient: q.recipient,
-          amount: q.amountOut,
+          // Fall back to amountOut for quotes built before amountBurned existed.
+          amount: q.amountBurned ?? q.amountOut,
           adapter,
           quote: q,
         },

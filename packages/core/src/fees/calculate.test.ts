@@ -3,8 +3,10 @@ import {
   buildCustomFeeEntries,
   fromAppKitFees,
   sumFees,
+  sumProtocolFees,
   type AppKitEstimateFee,
 } from "./calculate.js";
+import type { FeeEntry } from "../types/fee.js";
 
 const HOST = "0xH00000000000000000000000000000000000000h";
 
@@ -124,5 +126,30 @@ describe("sumFees", () => {
     const breakdown = sumFees([], "USDC");
     expect(breakdown.total).toBe("0");
     expect(breakdown.entries).toEqual([]);
+  });
+});
+
+describe("sumProtocolFees", () => {
+  const entries: FeeEntry[] = [
+    { kind: "provider", amount: "0.0007", token: "USDC" },
+    { kind: "forwarder", amount: "2.43", token: "USDC" },
+    { kind: "protocol", amount: "0.01", token: "USDC" },
+    // Excluded: gas is paid in native token, not deducted from the transfer.
+    { kind: "gas", amount: "0.005", token: "NATIVE" },
+    // Excluded: custom host fee is added on top, not deducted from the transfer.
+    { kind: "custom", amount: "0.9", token: "USDC" },
+  ];
+
+  it("sums only the fees deducted from the bridged amount", () => {
+    // 0.0007 + 2.43 + 0.01 — excludes gas (native) and custom (added on top)
+    expect(sumProtocolFees(entries, "USDC")).toBeCloseTo(2.4407, 6);
+  });
+
+  it("ignores entries denominated in a different token", () => {
+    expect(sumProtocolFees(entries, "EURC")).toBe(0);
+  });
+
+  it("returns zero for an empty list", () => {
+    expect(sumProtocolFees([], "USDC")).toBe(0);
   });
 });
