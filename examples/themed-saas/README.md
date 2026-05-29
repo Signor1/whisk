@@ -1,5 +1,7 @@
 # whisk-example-themed-saas
 
+> **Live demo:** https://whisk-themed-saas.vercel.app/ (testnet)
+
 **Steelpath Cloud** — a B2B treasury dashboard with sidebar nav, KPI
 cards, a scheduled-vendors table, recent settlements feed, and an
 activity log. Click any vendor row to fund their next payout via Whisk.

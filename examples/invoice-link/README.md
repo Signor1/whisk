@@ -1,5 +1,7 @@
 # whisk-example-invoice-link
 
+> **Live demo:** https://whisk-invoice-link.vercel.app/ (testnet)
+
 **Studio Hibiscus** — an invoice-link flow with two views:
 
 - `/` (customer view) — reads `?to=…&amount=…&chain=…&memo=…` from the
