@@ -1,6 +1,6 @@
 {
   "name": "@usewhisk/core",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Whisk core — framework-agnostic engine, types, errors, and state machine for the Whisk USDC widget.",
   "license": "MIT",
   "author": "SignorDev (https://github.com/Signor1)",
