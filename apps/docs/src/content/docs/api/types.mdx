@@ -83,17 +83,19 @@ type FeeBreakdown = FeeEntry[];
 
 ```ts
 type Quote = {
-  route: Route;
-  sourceChain: Chain;
-  destinationChain: Chain;
-  amountIn: string;
-  amountOut: string;
-  fees: FeeBreakdown;
-  expiresAt: number; // ms-epoch
+  route: Route; // same-chain "send" or cross-chain "bridge"
   recipient: ResolvedRecipient;
+  amountIn: string; // total debited from the sender ("You pay")
+  amountOut: string; // what the recipient receives ("Recipient gets")
+  amountBurned?: string; // on-chain transfer amount; grossed up in sender mode
   token: Token;
+  fees: FeeBreakdown;
+  estimatedDurationMs?: number;
 };
 ```
+
+`amountIn`, `amountOut`, and `amountBurned` can all differ on a bridge,
+depending on [`feeBearer`](/docs/concepts/fees#who-pays-the-bridge-fees-feebearer).
 
 ## `FeePolicy`
 

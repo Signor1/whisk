@@ -1,101 +1,164 @@
 ---
 title: Fees and quotes
-description: What's in a Quote, how fees are calculated, and how to charge your own platform fee.
+description: What a Quote contains, who pays the bridge fees, and how to charge your own platform fee.
 ---
 
-A `Quote` is the engine's answer to "if I send X to Y, what
-happens?". It's pure data until the user clicks confirm, no
-transaction is submitted. You can build a quote, throw it away,
-build another one, do whatever you want with it before the user
-commits.
+A `Quote` is the engine's answer to "if I send X to Y, what happens?".
+It's pure data. Nothing is signed or submitted until the user confirms,
+so you can build a quote, inspect it, throw it away, and build another
+one freely.
 
 ## What a Quote contains
 
 ```ts
 type Quote = {
   route: Route; // same-chain "send" or cross-chain "bridge"
-  sourceChain: Chain;
-  destinationChain: Chain;
-  amountIn: string; // what the user types
-  amountOut: string; // what the recipient receives
-  fees: FeeBreakdown; // every line item
-  expiresAt: number; // ms-epoch, quotes get stale
   recipient: ResolvedRecipient;
+  amountIn: string; // total debited from the sender ("You pay")
+  amountOut: string; // what the recipient receives ("Recipient gets")
+  amountBurned?: string; // the on-chain transfer amount fed to App Kit
   token: Token;
+  fees: FeeBreakdown; // every line item
+  estimatedDurationMs?: number;
 };
 ```
 
-`amountIn - amountOut === sumFees(fees)`. Whisk never sneaks in a
-fee that isn't enumerated in the breakdown. If the math doesn't add
-up, that's a bug — file it.
+Three amounts, because on a bridge they can all differ:
+
+- **`amountIn`** is what leaves the sender's wallet. This is the "You
+  pay" figure on the review screen.
+- **`amountOut`** is what the recipient receives. This is the "Recipient
+  gets" figure.
+- **`amountBurned`** is the amount handed to CCTP on the source chain.
+  Fees are deducted from it during the bridge. It equals `amountOut` in
+  receiver mode and is grossed up in sender mode (see below). The widget
+  uses this internally; you rarely read it directly.
 
 ## Where fees come from
 
-Two sources contribute:
+Two sources contribute, and they behave differently.
 
-- **App Kit fees.** Gas, the bridge protocol fee, the forwarder fee
-  when applicable. These come from Circle's quote API; Whisk passes
-  them through.
-- **Your platform fee.** Optional. If you've configured a `feePolicy`
-  on the config, Whisk adds your line item and (if you've set a
-  recipient) routes the cut to your treasury.
+**Circle App Kit fees** are the cost of moving USDC across chains:
 
-The review step renders each line so the user can see what they're
-paying before they sign.
+| Fee                    | When it applies                              | Sized by                                          |
+| ---------------------- | -------------------------------------------- | ------------------------------------------------- |
+| CCTP protocol fee      | Fast Transfers only (Standard is free)       | A few basis points of the amount, by source chain |
+| Forwarding Service fee | When the destination mint is relayed for you | Destination-chain gas                             |
+| Gas                    | Source-chain approve/burn                    | Paid in the source chain's native token           |
+
+The CCTP protocol and Forwarding fees come out of the bridged USDC. Gas
+is paid separately in the native token, so it never reduces the USDC the
+recipient receives.
+
+The Forwarding fee is the one to watch. It tracks destination-chain gas,
+not the transfer amount, so it's a near-fixed cost. Bridging to an L2
+(Base, Arbitrum, Optimism, Arc) costs cents; bridging to Ethereum L1 can
+cost dollars regardless of how much you send. Pick cheap destinations for
+small transfers.
+
+**Your platform fee** is optional and added on top. See
+[Adding a platform fee](#adding-a-platform-fee).
+
+## Who pays the bridge fees: `feeBearer`
+
+By default the recipient absorbs the App Kit fees, the same way a wire
+transfer arrives short of the amount sent. For a checkout, payroll run,
+or invoice, that's usually wrong: the merchant needs to net an exact
+figure. `feeBearer` controls this.
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId })],
+  chains: ["Base", "Arbitrum"],
+  feeBearer: "sender", // default is "receiver"
+});
+```
+
+**`"receiver"` (default)** — the bridge fees are deducted from the
+transfer. The sender is debited the amount; the recipient nets
+`amount − fees`.
+
+```
+amount = 100 USDC, fees = 0.30 USDC
+You pay:        100.00 USDC
+Recipient gets:  99.70 USDC
+```
+
+**`"sender"`** — the burn is sized up by the estimated fees so the
+recipient receives the full amount. The sender's debit grows to cover
+them.
+
+```
+amount = 100 USDC, fees = 0.30 USDC
+You pay:        100.30 USDC
+Recipient gets: 100.00 USDC
+```
+
+### The accuracy caveat
+
+In sender mode the gross-up uses the fee **estimated at quote time**. The
+Forwarding fee is priced from destination gas at mint time, which lands a
+little later, so the live cost can drift from the estimate. To keep the
+recipient whole, the gross-up pads the forwarding portion by a small margin
+(2%) before sizing the burn. The recipient therefore receives **at least**
+the requested amount; if gas comes in under the estimate, the unused margin
+is minted to them. Penny-exact delivery isn't possible with a variable-fee
+bridge unless you control the mint with a custom contract, so Whisk rounds
+in the recipient's favor.
+
+Same-chain sends never deduct USDC fees (only native gas), so `feeBearer`
+is a no-op there: the recipient always receives the full amount.
 
 ## Adding a platform fee
 
-Pass `feePolicy` to `createWhiskConfig`:
+`feePolicy` charges your own fee on top of the transfer. Per Circle App
+Kit, the fee is split 90% to your `recipient` and 10% to Arc, and it's
+collected on the source chain.
 
 ```ts
 const config = createWhiskConfig({
   wallets: [evm({ projectId })],
   chains: ["Base"],
   feePolicy: {
-    flat: "0.05", // 5¢ flat
-    percent: 0.001, // plus 0.1%
-    recipient: "0xYourTreasury…", // fee wallet
-    label: "Platform fee", // shown in the review UI
+    value: "0.05", // absolute USDC amount, added on top
+    recipient: "0xYourTreasury…", // your fee wallet (source chain)
   },
 });
 ```
 
-Every field is optional. Mix flat + percent, leave `recipient` off
-to display the fee without collecting (useful when you're staging a
-rollout), or skip `feePolicy` entirely if you don't charge.
+`feePolicy` and `feeBearer` are independent. Your platform fee is always
+added on top of the amount; `feeBearer` only decides who absorbs the
+network fees. With both set to `"sender"` plus a `feePolicy`, the sender
+is debited `amount + network fees + your fee`, and the recipient still
+nets the full amount.
 
 ## Building a quote without rendering
 
-Want a fee preview on a checkout summary before the widget mounts?
-Call the engine directly. The engine doesn't render, so this works
-on the server or in a button click handler:
+Want a fee preview on a checkout summary before the widget mounts? Call
+the engine directly. It doesn't render, so this works in a click handler
+or anywhere you hold an adapter:
 
 ```ts
 const quote = await engine.quote({
   recipient,
   amount: "100",
   sourceChain: "Base",
+  destinationChain: "Arbitrum",
   adapter,
 });
 
-console.log(quote.amountOut); // "99.92"
-console.log(quote.fees);
+console.log(quote.amountIn); // "100.3" in sender mode
+console.log(quote.amountOut); // "100"
+console.log(quote.fees.entries);
 // → [
-//     { kind: "gas",      label: "Gas",          amount: "0.04"  },
-//     { kind: "platform", label: "Platform fee", amount: "0.04"  },
+//     { kind: "provider",  amount: "0.013", token: "USDC" },
+//     { kind: "forwarder", amount: "0.287", token: "USDC" },
 //   ]
 ```
 
-## Stale quotes
-
-`expiresAt` is in milliseconds since epoch. Quotes go stale fast
-because gas prices and bridge availability shift. If a user lingers
-on a confirmation screen for a few minutes, re-quote before they
-sign — `engine.quote(...)` is idempotent, and the new quote will
-have a fresh `expiresAt`.
-
-The bundled `<WhiskSend>` handles this automatically. The check
-matters when you're driving the engine yourself.
+Quotes go stale as gas prices shift, so re-quote before the user signs if
+they've lingered. The bundled `<WhiskSend>` handles that for you; it
+matters when you drive the engine yourself.
 
 ## Next
 

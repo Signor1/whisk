@@ -47,6 +47,9 @@ const engine = createWhisk({
   chains: ["Arc_Testnet", "Base_Sepolia", "Solana_Devnet"],
   defaultSourceChain: "Arc_Testnet",
   resolver: composeResolvers([addressResolver]),
+  // "sender" grosses up the burn so the recipient nets the exact amount.
+  // Default "receiver" deducts the bridge fees from the transfer.
+  feeBearer: "receiver",
   appLabel: "my-checkout",
 });
 

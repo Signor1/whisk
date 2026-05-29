@@ -54,6 +54,45 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-project-id
   protocol. No project ID needed on that side.
 </Callout>
 
+## Vite + Solana: polyfill `Buffer`
+
+Skip this unless you're on **Vite** _and_ using Solana. Next.js polyfills
+Node globals for you, so App Router and Pages Router apps need nothing here.
+
+`@solana/web3.js` reaches for Node's `Buffer` global (base58 encoding,
+transaction serialization). The browser has no `Buffer`, and Vite doesn't
+shim it, so the first Solana operation — connecting a Solana wallet, or a
+CCTP bridge that crosses the Solana/EVM boundary — throws
+`Buffer is not defined`.
+
+Add the polyfill once, at the very top of your entry file, before any other
+import so it's in place before wallet code loads:
+
+```tsx title="src/main.tsx"
+import { Buffer } from "buffer";
+if (typeof globalThis.Buffer === "undefined") {
+  globalThis.Buffer = Buffer;
+}
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "@usewhisk/react/styles.css";
+import { App } from "./App";
+// …
+```
+
+The `buffer` package ships as a transitive dependency of the Solana SDK, but
+some package managers won't surface it to your app's `node_modules`. If the
+import doesn't resolve, install it directly:
+
+<InstallCommand packages={["buffer"]} />
+
+<Callout type="info">
+  Prefer a plugin? `vite-plugin-node-polyfills` handles `Buffer` (plus `process`
+  and `crypto`) for you. The three-line shim above is lighter if Buffer is all
+  you need.
+</Callout>
+
 ## Verify the install
 
 Quick sanity check before you move on. Add this to any page in your

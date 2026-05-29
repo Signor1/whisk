@@ -28,7 +28,8 @@ createWhiskConfig(options: CreateWhiskConfigOptions): WhiskClientConfig
 | `defaultDestinationChain` | `Chain`                          | no       | Initial destination.                                             |
 | `token`                   | `Token`                          | no       | Default token alias. USDC today.                                 |
 | `resolver`                | `Resolver`                       | no       | Custom resolver chain. Defaults to address + ENS.                |
-| `feePolicy`               | `FeePolicy`                      | no       | Platform fee config.                                             |
+| `feePolicy`               | `FeePolicy`                      | no       | Platform fee, charged on top of the transfer.                    |
+| `feeBearer`               | `"sender" \| "receiver"`         | no       | Who absorbs the bridge fees. Defaults to `"receiver"`.           |
 | `rpcUrls`                 | `Partial<Record<Chain, string>>` | no       | Override the default public RPC for a chain.                     |
 | `useForwarder`            | `boolean`                        | no       | Forwarder Service. Defaults to `true`.                           |
 | `appLabel`                | `string`                         | no       | Shown in some wallet UIs as the connecting app's name.           |
@@ -94,10 +95,23 @@ const config = createWhiskConfig({
   wallets: [evm({ projectId: "abc123…" })],
   chains: ["Base"],
   feePolicy: {
-    flat: "0.05",
-    percent: 0.002,
-    recipient: "0xMyFeeTreasury…",
-    label: "Service fee",
+    value: "0.05", // absolute USDC, added on top of the transfer
+    recipient: "0xMyFeeTreasury…", // split 90% to you, 10% to Arc
   },
+});
+```
+
+### Recipient receives the exact amount
+
+Set `feeBearer: "sender"` so the bridge fees are added to the sender's
+debit instead of deducted from the transfer. Useful for checkout,
+payroll, and invoice flows where the recipient needs to net an exact
+figure. See [Fees and quotes](/docs/concepts/fees#who-pays-the-bridge-fees-feebearer).
+
+```ts
+const config = createWhiskConfig({
+  wallets: [evm({ projectId: "abc123…" })],
+  chains: ["Base", "Arbitrum"],
+  feeBearer: "sender",
 });
 ```
