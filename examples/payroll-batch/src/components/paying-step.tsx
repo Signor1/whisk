@@ -247,7 +247,7 @@ function ActivePayeeCard({
 
       <div className="rounded-md border border-claret/20 bg-blush/20 p-2.5 text-[11px]">
         <span className="font-mono text-[10px] uppercase tracking-wider text-claret">
-          Locked
+          Locked · fees on the studio
         </span>
         <p className="m-0 mt-0.5 text-ink-soft">
           ${payee.amount.toLocaleString()} USDC →{" "}
@@ -259,6 +259,7 @@ function ActivePayeeCard({
         <WhiskSend
           amount={String(payee.amount)}
           recipient={STUDIO_TREASURY}
+          destinationChain={payee.chainCode}
           showFooter={false}
           onSuccess={() => onPaid()}
         />

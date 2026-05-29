@@ -5,7 +5,7 @@ export type Tier = {
   caption: string;
 };
 
-export const TREASURY_ADDRESS = "0xbFc6981dE968C96058932963e5d2B7621DEa8f59";
+export const TREASURY_ADDRESS = "0xbe03CE9d6001D27BE41fc87e3E3f777d04e70Fe2";
 
 export const ANNUAL_GOAL = 250_000;
 export const RAISED = 187_420;

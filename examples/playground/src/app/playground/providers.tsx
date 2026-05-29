@@ -7,6 +7,7 @@ import {
   evm,
   solana,
   type Chain,
+  type FeeBearer,
 } from "@usewhisk/react";
 
 /**
@@ -50,21 +51,26 @@ export const PLAYGROUND_CHAINS = TESTNET_CHAINS;
  * or react-query underneath. Wallet connection survives a theme
  * change.
  *
- * `config` is memoized with empty deps because it's static for the
- * lifetime of the playground — every adjustable knob lives on
- * `<WhiskSend>` props or the provider's `theme` prop, not on
- * `createWhiskConfig`.
+ * `config` is memoized on `feeBearer` — almost every knob lives on
+ * `<WhiskSend>` props or the reactive `theme` prop, but `feeBearer` is
+ * part of `createWhiskConfig`, which the engine reads once at creation.
+ * The `key={feeBearer}` on the provider forces a clean remount when it
+ * flips, so a fresh engine picks up the new fee policy. (Toggling it
+ * therefore drops the wallet connection — fine for a QA knob.)
  */
 export function PlaygroundProviders({
   theme,
+  feeBearer,
   children,
 }: {
   theme: "system" | "light" | "dark";
+  feeBearer: FeeBearer;
   children: React.ReactNode;
 }) {
   const config = useMemo(
     () =>
       createWhiskConfig({
+        feeBearer,
         wallets: [
           evm({
             chains: TESTNET_CHAINS,
@@ -95,11 +101,11 @@ export function PlaygroundProviders({
         defaultDestinationChain: "Base_Sepolia",
         appLabel: "whisk-playground",
       }),
-    [],
+    [feeBearer],
   );
 
   return (
-    <WhiskProvider config={config} theme={theme}>
+    <WhiskProvider key={feeBearer} config={config} theme={theme}>
       {children}
     </WhiskProvider>
   );

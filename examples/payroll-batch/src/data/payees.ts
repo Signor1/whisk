@@ -1,10 +1,15 @@
+import type { Chain } from "@usewhisk/react";
+
 export type Payee = {
   id: string;
   name: string;
   role: string;
   address: string;
   amount: number;
+  /** Display label for the chain. */
   chain: string;
+  /** Typed Whisk chain identifier for `<WhiskSend destinationChain>`. */
+  chainCode: Chain;
   status: "pending" | "approved" | "sent" | "settled";
   initials: string;
   hue: number;
@@ -20,6 +25,7 @@ export const PAYEES: Payee[] = [
     address: "0x5B8e…f7605",
     amount: 6400,
     chain: "Arc Testnet",
+    chainCode: "Arc_Testnet",
     status: "pending",
     initials: "MC",
     hue: 340,
@@ -31,6 +37,7 @@ export const PAYEES: Payee[] = [
     address: "0x9b21…ed12",
     amount: 4800,
     chain: "Base Sepolia",
+    chainCode: "Base_Sepolia",
     status: "pending",
     initials: "JH",
     hue: 12,
@@ -42,6 +49,7 @@ export const PAYEES: Payee[] = [
     address: "0x3f41…b9aa",
     amount: 5600,
     chain: "Arc Testnet",
+    chainCode: "Arc_Testnet",
     status: "pending",
     initials: "SA",
     hue: 280,
@@ -53,6 +61,7 @@ export const PAYEES: Payee[] = [
     address: "0x7a92…1cde",
     amount: 4200,
     chain: "OP Sepolia",
+    chainCode: "Optimism_Sepolia",
     status: "pending",
     initials: "YT",
     hue: 200,
@@ -63,7 +72,8 @@ export const PAYEES: Payee[] = [
     role: "Motion Designer",
     address: "0x2b11…cd54",
     amount: 3800,
-    chain: "Arc Testnet",
+    chain: "Arbitrum Sepolia",
+    chainCode: "Arbitrum_Sepolia",
     status: "pending",
     initials: "RM",
     hue: 50,
@@ -75,6 +85,7 @@ export const PAYEES: Payee[] = [
     address: "0xe4f0…77b1",
     amount: 5100,
     chain: "Base Sepolia",
+    chainCode: "Base_Sepolia",
     status: "pending",
     initials: "OP",
     hue: 320,

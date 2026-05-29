@@ -20,6 +20,8 @@ locked into a fixed price + merchant address at the payment step.
 - `onSuccess` flips state to an order confirmation with a tx hash, order
   ID, and itemized list. In a real app this is where your backend would
   catch a webhook and finalize the order.
+- Runs `feeBearer: "sender"` so the customer covers the bridge fees and
+  the merchant receives the exact cart total.
 
 ## Stack
 

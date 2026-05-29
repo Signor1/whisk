@@ -17,9 +17,15 @@ export function ProductCard({ product, inCart, onAdd }: ProductCardProps) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-paper transition-all duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-[0_1px_2px_rgba(56,38,22,0.04),0_8px_28px_-12px_rgba(56,38,22,0.14)]">
       <div
-        className="relative flex aspect-[4/5] items-start justify-end p-3"
-        style={{ background: product.art }}
+        className="relative flex aspect-[4/5] items-start justify-end overflow-hidden p-3"
+        style={{ backgroundColor: product.fallbackColor }}
       >
+        <img
+          src={product.image}
+          alt={product.name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+        />
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0"

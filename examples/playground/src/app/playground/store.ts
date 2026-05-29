@@ -1,7 +1,7 @@
 "use client";
 
 import { useReducer } from "react";
-import type { Chain } from "@usewhisk/react";
+import type { Chain, FeeBearer } from "@usewhisk/react";
 
 export type Theme = "system" | "light" | "dark";
 
@@ -13,6 +13,10 @@ export type PlaygroundConfig = {
   /* Provider-level — drives <WhiskProvider theme=…> */
   theme: Theme;
   palette: Palette;
+
+  /* Engine-level — part of createWhiskConfig. Changing it remounts the
+   * provider (the engine is built once per provider lifetime). */
+  feeBearer: FeeBearer;
 
   /* Surface toggles */
   showFooter: boolean;
@@ -55,6 +59,7 @@ export type PlaygroundAction =
 export const INITIAL_CONFIG: PlaygroundConfig = {
   theme: "system",
   palette: "wine",
+  feeBearer: "receiver",
   showFooter: true,
   swapEnabled: true,
   lockAmount: false,

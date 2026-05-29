@@ -59,21 +59,23 @@ function WidgetSurface({
 }) {
   return (
     <div
-      className="of-widget rounded-xl bg-cream/40 p-3"
+      className="rounded-xl bg-cream/40 p-3"
       style={{ animation: "of-fade-in 240ms ease-out" }}
     >
-      <WhiskSend
-        recipient={TREASURY_ADDRESS}
-        destinationChain="Arc_Testnet"
-        amount={widgetAmount}
-        onSuccess={({ quote, finalTxHash }) =>
-          onPaid({ amount: quote.amountIn, txHash: finalTxHash })
-        }
-      />
+      <div className="flex justify-center">
+        <WhiskSend
+          recipient={TREASURY_ADDRESS}
+          destinationChain="Optimism_Sepolia"
+          amount={widgetAmount}
+          onSuccess={({ quote, finalTxHash }) =>
+            onPaid({ amount: quote.amountIn, txHash: finalTxHash })
+          }
+        />
+      </div>
       <p className="m-0 mt-2 text-center text-[11px] uppercase tracking-[0.15em] text-ink-muted">
         {widgetAmount
-          ? `Tier locked — $${widgetAmount} · recipient pinned`
-          : "Custom amount · recipient pinned"}
+          ? `Tier locked — $${widgetAmount} · fees covered, OpenForest receives the full amount`
+          : "Custom amount · fees covered, OpenForest receives the full amount"}
       </p>
     </div>
   );

@@ -19,7 +19,7 @@ export const DEMO_INVOICES: DemoInvoice[] = [
     label: "Photography · half-day shoot",
     memo: "Half-day editorial shoot",
     amount: "850",
-    chain: "Arc_Testnet",
+    chain: "Optimism_Sepolia",
     to: "0x5B8ecaB7096F8aBED873D246629ef9f05f467605",
   },
 ];

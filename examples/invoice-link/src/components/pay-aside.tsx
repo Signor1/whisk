@@ -41,7 +41,8 @@ function PayPanel({
           Settle in seconds with USDC.
         </h2>
         <p className="m-0 mt-1 text-[12px] text-ink-muted">
-          Amount, recipient, and chain are pinned to this invoice.
+          Amount, recipient, and chain are pinned to this invoice. Bridge fees
+          are added to your total, so Studio Hibiscus receives the full amount.
         </p>
       </header>
 

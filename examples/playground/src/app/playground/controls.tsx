@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type Dispatch } from "react";
-import { chainInfo, type Chain } from "@usewhisk/react";
+import { chainInfo, type Chain, type FeeBearer } from "@usewhisk/react";
 import { PLAYGROUND_CHAINS } from "./providers";
 import { ADDRESS_BOOK } from "./address-book";
 import type {
@@ -54,6 +54,18 @@ export function Controls({
           value={config.palette}
           onChange={(palette) => set({ palette })}
         />
+      </Section>
+
+      <Section title="Fee bearer">
+        <FeeBearerPicker
+          value={config.feeBearer}
+          onChange={(feeBearer) => set({ feeBearer })}
+        />
+        <span className="pg-toggle__hint">
+          {config.feeBearer === "sender"
+            ? "Burn is grossed up so the recipient nets the full amount. Switching reconnects the widget."
+            : "Fees come out of the transfer; recipient nets amount − fees. Switching reconnects the widget."}
+        </span>
       </Section>
 
       <Section title="Surface">
@@ -183,6 +195,33 @@ function ThemePicker({
   const options: Theme[] = ["system", "light", "dark"];
   return (
     <div role="radiogroup" className="pg-radio-group" aria-label="Theme">
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          role="radio"
+          aria-checked={value === opt}
+          className="pg-radio"
+          data-active={value === opt ? "true" : "false"}
+          onClick={() => onChange(opt)}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FeeBearerPicker({
+  value,
+  onChange,
+}: {
+  value: FeeBearer;
+  onChange: (f: FeeBearer) => void;
+}) {
+  const options: FeeBearer[] = ["receiver", "sender"];
+  return (
+    <div role="radiogroup" className="pg-radio-group" aria-label="Fee bearer">
       {options.map((opt) => (
         <button
           key={opt}

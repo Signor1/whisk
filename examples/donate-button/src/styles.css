@@ -55,16 +55,42 @@ body {
 }
 
 /* Widget palette overrides inside .of-widget */
-.of-widget [data-whisk] {
+/* ============================================================
+   Widget theme — overrides every `--whisk-*` token to the OpenForest
+   palette. The selector is `[data-whisk]` (not `.of-widget [data-whisk]`)
+   because `<WhiskProvider>` puts the `data-whisk` attribute on the
+   outer app wrapper — it's an ancestor of every recipe surface, and
+   CSS variables cascade through portals via WhiskScope.
+   ============================================================ */
+[data-whisk] {
+  /* surfaces */
   --whisk-bg: var(--color-paper);
   --whisk-card: var(--color-paper);
+  --whisk-card-fg: var(--color-ink);
   --whisk-fg: var(--color-ink);
   --whisk-fg-muted: color-mix(in srgb, var(--color-ink) 65%, transparent);
+  /* lines */
   --whisk-border: var(--color-line);
   --whisk-input: var(--color-line);
+  --whisk-border-w: 1px;
+  /* accent */
   --whisk-primary: var(--color-moss);
   --whisk-primary-fg: var(--color-paper);
+  --whisk-ring: var(--color-fern);
+  /* semantic */
+  --whisk-success: var(--color-moss);
+  --whisk-warning: var(--color-sun);
+  --whisk-destructive: var(--color-bark);
+  --whisk-destructive-fg: var(--color-paper);
+  /* radii */
   --whisk-radius: 12px;
+  --whisk-radius-sm: 8px;
+  --whisk-radius-md: 12px;
+  --whisk-radius-lg: 16px;
+  /* fonts — inherit the recipe's stack so the widget reads native */
+  --whisk-font: var(--font-sans);
+  --whisk-font-display: var(--font-display);
+  --whisk-font-mono: var(--font-mono);
 }
 
 @keyframes of-grow {

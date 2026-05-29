@@ -8,8 +8,10 @@ export type Product = {
   caption: string;
   priceUsdc: number;
   variants: Variant[];
-  /** Two-stop radial gradient composed to read as a product photograph. */
-  art: string;
+  /** Product photo. Unsplash CDN — stable URLs, free commercial license. */
+  image: string;
+  /** Solid fallback while the image loads, picked to match the photograph. */
+  fallbackColor: string;
   category: "Apparel" | "Home" | "Stationery" | "Accessories";
 };
 
@@ -29,17 +31,10 @@ export const CATALOG: Product[] = [
       { id: "l", label: "L" },
       { id: "xl", label: "XL" },
     ],
-    art: "radial-gradient(120% 80% at 30% 25%, #d6c4a3 0%, #b89a72 55%, #8a6a48 100%)",
+    image:
+      "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80&auto=format&fit=crop",
+    fallbackColor: "#b89a72",
     category: "Apparel",
-  },
-  {
-    id: "candle",
-    name: "Fig + cedar candle",
-    caption: "Ceramic vessel · 8oz · 45-hour burn",
-    priceUsdc: 32,
-    variants: [{ id: "8oz", label: "8oz" }],
-    art: "radial-gradient(120% 80% at 70% 30%, #f0e2c4 0%, #c69b6f 60%, #7a4f30 100%)",
-    category: "Home",
   },
   {
     id: "pin",
@@ -47,7 +42,9 @@ export const CATALOG: Product[] = [
     caption: "Acetate · amber tortoise · neutral lens",
     priceUsdc: 29,
     variants: [{ id: "amber", label: "Amber" }],
-    art: "radial-gradient(120% 80% at 25% 30%, #b89160 0%, #6a4423 65%, #2a1a0c 100%)",
+    image:
+      "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&q=80&auto=format&fit=crop",
+    fallbackColor: "#6a4423",
     category: "Accessories",
   },
   {
@@ -59,7 +56,9 @@ export const CATALOG: Product[] = [
       { id: "natural", label: "Natural" },
       { id: "umber", label: "Umber" },
     ],
-    art: "radial-gradient(120% 80% at 65% 40%, #cdb094 0%, #94714d 60%, #5a3d23 100%)",
+    image:
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?w=800&q=80&auto=format&fit=crop",
+    fallbackColor: "#94714d",
     category: "Accessories",
   },
   {
@@ -71,7 +70,9 @@ export const CATALOG: Product[] = [
       { id: "rust", label: "Rust" },
       { id: "olive", label: "Olive" },
     ],
-    art: "radial-gradient(120% 80% at 30% 25%, #c98c66 0%, #944c2e 65%, #4f1f0d 100%)",
+    image:
+      "https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80&auto=format&fit=crop",
+    fallbackColor: "#944c2e",
     category: "Stationery",
   },
 ];

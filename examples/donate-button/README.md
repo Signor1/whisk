@@ -22,6 +22,8 @@ with a locked recipient + soft-prefilled amount per tier.
 - Public donor wall, impact stats, and an active-projects grid with
   per-project progress.
 - `onSuccess` shows a tier-specific thank-you with a tx hash link.
+- Runs `feeBearer: "sender"` so the donor covers the bridge fees and the
+  treasury receives the full tier amount ($25 lands as $25).
 
 ## Stack
 

@@ -56,16 +56,38 @@ body {
 }
 
 /* Steelpath widget theme: dark card, foam-teal primary. */
-.sp-widget [data-whisk] {
+/* Widget theme — set on the provider's `[data-whisk]` so the cascade
+   reaches portals. Loads after @usewhisk/react/styles.css → wins at
+   equal specificity. */
+[data-whisk] {
+  /* surfaces */
   --whisk-bg: var(--color-card);
   --whisk-card: var(--color-card-2);
+  --whisk-card-fg: var(--color-text);
   --whisk-fg: var(--color-text);
   --whisk-fg-muted: var(--color-text-muted);
+  /* lines */
   --whisk-border: var(--color-line-strong);
   --whisk-input: var(--color-line-strong);
+  --whisk-border-w: 1px;
+  /* accent */
   --whisk-primary: var(--color-foam);
   --whisk-primary-fg: var(--color-ink);
+  --whisk-ring: var(--color-foam);
+  /* semantic */
+  --whisk-success: var(--color-pos);
+  --whisk-warning: var(--color-warn);
+  --whisk-destructive: var(--color-neg);
+  --whisk-destructive-fg: var(--color-ink);
+  /* radii */
   --whisk-radius: 10px;
+  --whisk-radius-sm: 6px;
+  --whisk-radius-md: 10px;
+  --whisk-radius-lg: 14px;
+  /* fonts */
+  --whisk-font: var(--font-sans);
+  --whisk-font-display: var(--font-display);
+  --whisk-font-mono: var(--font-mono);
 }
 
 @keyframes sp-pulse {

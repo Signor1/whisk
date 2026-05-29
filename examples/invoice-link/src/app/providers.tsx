@@ -21,6 +21,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     () =>
       createWhiskConfig({
         mode: "testnet",
+        // Payer covers the bridge fees so the freelancer receives the exact
+        // invoiced amount.
+        feeBearer: "sender",
         wallets: [
           evm({
             chains: SUPPORTED,
@@ -36,5 +39,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  return <WhiskProvider config={config}>{children}</WhiskProvider>;
+  return (
+    <WhiskProvider config={config} theme="light">
+      {children}
+    </WhiskProvider>
+  );
 }
