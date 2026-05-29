@@ -12,6 +12,7 @@ export {
   OnchainRevertError,
   ConfigError,
   toWhiskError,
+  cleanErrorMessage,
 } from "./errors.js";
 export type {
   WhiskErrorCode,

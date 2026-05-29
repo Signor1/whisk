@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronRight, Wallet, X } from "lucide-react";
 import { useAccount, useConnect, type Connector } from "wagmi";
 import { type Wallet as SolanaWallet } from "@solana/wallet-adapter-react";
 import type { WalletName } from "@solana/wallet-adapter-base";
+import { toWhiskError } from "@usewhisk/core";
 import { Button } from "./Button.js";
 import { WhiskScope } from "./WhiskScope.js";
 import { safeUseWallet } from "../../hooks/internal/safeSolana.js";
@@ -56,7 +57,7 @@ export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
       .connect()
       .catch((err: unknown) => {
         setSolanaError(
-          err instanceof Error ? err.message : "Solana wallet connect failed.",
+          toWhiskError(err, "Solana wallet connect failed.").message,
         );
       })
       .finally(() => setPendingSolana(null));
@@ -232,7 +233,7 @@ export function ConnectModal({ open, onOpenChange }: ConnectModalProps) {
 
             {step === "evm" && error ? (
               <div className="whisk-help whisk-help--error">
-                {error.message}
+                {toWhiskError(error).message}
               </div>
             ) : null}
             {step === "solana" && solanaError ? (
