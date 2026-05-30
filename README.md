@@ -2,9 +2,9 @@
 
 # Whisk
 
-**Embeddable USDC send & bridge widget, built on Circle App Kit.**
+**Embeddable React widget for USDC send, bridge, and swap. Built on Circle App Kit.**
 
-Drop-in React component. Same interface for same-chain sends and cross-chain bridges. Multi-chain. Pluggable recipient resolution. MIT-licensed.
+Drop-in React component: same-chain sends, cross-chain bridges over CCTP, and stablecoin swaps. EVM and Solana wallets. Multichain ENS resolution in the box. Mid-flight recovery if a bridge burns but the mint doesn't arrive. Theme with CSS variables, go headless with `useWhisk()`. MIT-licensed.
 
 [![npm @usewhisk/react](https://img.shields.io/npm/v/@usewhisk/react?style=flat&label=%40usewhisk%2Freact&color=d65c3c&logo=npm)](https://www.npmjs.com/package/@usewhisk/react)
 [![npm @usewhisk/core](https://img.shields.io/npm/v/@usewhisk/core?style=flat&label=%40usewhisk%2Fcore&color=d65c3c&logo=npm)](https://www.npmjs.com/package/@usewhisk/core)
@@ -21,12 +21,13 @@ Drop-in React component. Same interface for same-chain sends and cross-chain bri
 Whisk is the embeddable USDC widget you wish came with Circle App Kit. Drop a single React component into your app, configure a few chains, and your users can:
 
 - **Send** USDC to any address on the same chain
-- **Bridge** USDC across chains (Arc Testnet, Base, Ethereum, Solana, and more)
+- **Bridge** USDC across chains via CCTP (Arc, Base, Ethereum, Solana, and more)
+- **Swap** between stablecoins on the same chain (USDC and EURC on Arc Testnet today; more pairs on mainnet)
 - Pay through **any wallet** (MetaMask, Phantom, WalletConnect, Rabby, Circle Wallets)
 - See a **transparent fee breakdown** before confirming
 - Watch the transfer progress through every step (`approve` → `burn` → `attestation` → `mint`)
 
-Whisk wraps Circle's [App Kit](https://docs.arc.network/app-kit) so you don't have to think about CCTP, Gateway, attestations, or chain-specific quirks. One method for sends. One method for bridges. Same interface, same UX.
+Whisk wraps Circle's [App Kit](https://docs.arc.network/app-kit) so you don't have to think about CCTP, attestations, swap routing, or chain-specific quirks. One method for sends, one for bridges, one for swaps. Same interface, same UX.
 
 ```tsx
 <WhiskProvider config={config}>
