@@ -42,7 +42,7 @@ const FEATURES = [
   },
   {
     title: "Type-safe end to end",
-    body: "Chain names are a real union type from @usewhisk/core. A typo fails the build, not the user.",
+    body: "Chain names are a real union type from @usewhisk/react. A typo fails the build, not the user.",
     Icon: ShieldCheck,
     span: "md:col-span-1",
     visual: <TypeSafeVisual />,
@@ -193,9 +193,9 @@ function ChainGridVisual() {
 }
 
 /**
- * Real Whisk `Chain` union from `@usewhisk/core` (see
- * `packages/core/src/types/chain.ts`). A typo fails at the
- * TypeScript layer, never at runtime.
+ * Real Whisk `Chain` union from `@usewhisk/react` (re-exported from
+ * `@usewhisk/core`, see `packages/core/src/types/chain.ts`). A typo
+ * fails at the TypeScript layer, never at runtime.
  */
 function TypeSafeVisual() {
   const lines: CodeLine[] = [
@@ -203,7 +203,7 @@ function TypeSafeVisual() {
       { t: "import type", c: "keyword" },
       { t: " { Chain } " },
       { t: "from", c: "keyword" },
-      { t: ' "@usewhisk/core"', c: "string" },
+      { t: ' "@usewhisk/react"', c: "string" },
     ],
     [
       { t: "const", c: "keyword" },

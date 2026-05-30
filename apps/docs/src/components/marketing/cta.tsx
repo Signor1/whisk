@@ -25,8 +25,8 @@ export function CTA({ className }: { className?: string }) {
           version.
         </p>
 
-        <div className="mx-auto mt-8 max-w-xl">
-          <InstallTabs packages={["@usewhisk/react", "@usewhisk/core"]} />
+        <div className="mx-auto mt-8 max-w-xl text-left">
+          <InstallTabs packages={["@usewhisk/react"]} />
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

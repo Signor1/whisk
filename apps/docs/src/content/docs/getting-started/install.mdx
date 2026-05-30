@@ -1,26 +1,58 @@
 ---
 title: Install
-description: Get the Whisk packages and their wallet-layer peers into your project.
+description: One package for almost everyone. Here is what to install, and when.
 ---
 
-Whisk lives in two packages. The React package pulls in the core
-engine automatically and re-exports the helpers you'll touch most
-often, so installing it once is usually enough:
+For a React app, install one package:
 
-<InstallCommand packages={["@usewhisk/react", "@usewhisk/core"]} />
+<InstallCommand packages={["@usewhisk/react"]} />
 
-The React package speaks to wallets through `wagmi` (EVM) and
-`@solana/wallet-adapter-react` (Solana). If your app already uses
-them, you can skip ahead. If not, install them now:
+That is enough for most integrations. `@usewhisk/react` bundles the
+core engine as a regular dependency and re-exports the helpers and
+types you will actually touch (`Chain`, `Token`, `Quote`, `FeeBearer`,
+`chainInfo`, `addressResolver`, `composeResolvers`, and more), so every
+import in your app comes from `@usewhisk/react`. You never need to
+write `@usewhisk/core` in an import path.
 
-<InstallCommand packages={["wagmi", "viem", "@tanstack/react-query"]} />
+## The one required peer
 
-Solana support is optional. Add these only if you'll be sending from
-a Solana address:
+`@usewhisk/react` uses `wagmi` internally, which needs
+`@tanstack/react-query` as a peer. If your app does not have it yet,
+add it:
+
+<InstallCommand packages={["@tanstack/react-query"]} />
+
+`wagmi` and `viem` themselves are bundled (regular dependencies of
+`@usewhisk/react`), so they are already in your `node_modules` after the
+first install. Add them to your own `package.json` only if you also call
+`wagmi`/`viem` APIs directly in your own code and want to pin a version.
+
+## Solana support (optional)
+
+Add these only if your widget should accept sends from a Solana wallet
+(Phantom, Solflare, Backpack). EVM-only apps can skip this:
 
 <InstallCommand
   packages={["@solana/wallet-adapter-react", "@solana/wallet-adapter-base"]}
 />
+
+## Going headless or framework-agnostic
+
+There is exactly one situation that calls for installing `@usewhisk/core`
+on its own: you want to run the engine **outside React**, for example
+in a Node script, a Vue or Svelte app, or a server-side flow.
+
+<InstallCommand packages={["@usewhisk/core"]} />
+
+`@usewhisk/core` is framework-agnostic. It exposes `createWhisk()`
+plus the chain registry, fee logic, resolvers, error classes, and the
+state-machine reducer. No DOM, no React, no wallet imports.
+
+<Callout type="info">
+  If you are using React, you do **not** need to install `@usewhisk/core`
+  directly. The React package already includes it, and every type and helper you
+  need is re-exported from `@usewhisk/react`.
+</Callout>
 
 ## Import the stylesheet once
 
