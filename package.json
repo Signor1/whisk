@@ -38,6 +38,13 @@
   "pnpm": {
     "overrides": {
       "axios@<1.15.2": ">=1.15.2"
+    },
+    "packageExtensions": {
+      "@circle-fin/app-kit": {
+        "dependencies": {
+          "@coral-xyz/anchor": "^0.31.1"
+        }
+      }
     }
   },
   "lint-staged": {
